@@ -11,7 +11,6 @@ import io.dataease.engine.sql.SQLProvider;
 import io.dataease.engine.trans.Dimension2SQLObj;
 import io.dataease.engine.trans.Quota2SQLObj;
 import io.dataease.engine.utils.Utils;
-import io.dataease.extensions.datasource.api.PluginManageApi;
 import io.dataease.extensions.datasource.dto.DatasetTableFieldDTO;
 import io.dataease.extensions.datasource.dto.DatasourceRequest;
 import io.dataease.extensions.datasource.dto.DatasourceSchemaDTO;
@@ -32,7 +31,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -54,8 +52,6 @@ public class DefaultChartHandler extends AbstractChartPlugin {
     private String render = "antv";
     @Getter
     private String type = "*";
-    @Autowired(required = false)
-    public PluginManageApi pluginManage;
 
     @PostConstruct
     public void init() {
@@ -109,12 +105,12 @@ public class DefaultChartHandler extends AbstractChartPlugin {
         var xAxis = formatResult.getAxisMap().get(ChartAxis.xAxis);
         var yAxis = formatResult.getAxisMap().get(ChartAxis.yAxis);
         var allFields = (List<ChartViewFieldDTO>) filterResult.getContext().get("allFields");
-        Dimension2SQLObj.dimension2sqlObj(sqlMeta, xAxis, FieldUtil.transFields(allFields), crossDs, dsMap, Utils.getParams(FieldUtil.transFields(allFields)), view.getCalParams(), pluginManage);
-        Quota2SQLObj.quota2sqlObj(sqlMeta, yAxis, FieldUtil.transFields(allFields), crossDs, dsMap, Utils.getParams(FieldUtil.transFields(allFields)), view.getCalParams(), pluginManage);
+        Dimension2SQLObj.dimension2sqlObj(sqlMeta, xAxis, FieldUtil.transFields(allFields), crossDs, dsMap);
+        Quota2SQLObj.quota2sqlObj(sqlMeta, yAxis, FieldUtil.transFields(allFields), crossDs, dsMap);
         String querySql = SQLProvider.createQuerySQL(sqlMeta, true, needOrder, view);
         querySql = provider.rebuildSQL(querySql, sqlMeta, crossDs, dsMap);
         datasourceRequest.setQuery(querySql);
-        logger.debug("calcite chart sql: " + querySql);
+        logger.info("calcite chart sql: " + querySql);
         List<String[]> data = (List<String[]>) provider.fetchResultField(datasourceRequest).get("data");
         //自定义排序
         data = ChartDataUtil.resultCustomSort(xAxis, data);
@@ -250,120 +246,6 @@ public class DefaultChartHandler extends AbstractChartPlugin {
         return res;
     }
 
-    protected List<ChartViewFieldDTO> getAssistFields(List<ChartSeniorAssistDTO> list, List<ChartViewFieldDTO> yAxis, List<ChartViewFieldDTO> xAxis) {
-        List<ChartViewFieldDTO> res = new ArrayList<>();
-        for (ChartSeniorAssistDTO dto : list) {
-            DatasetTableFieldDTO curField = dto.getCurField();
-            ChartViewFieldDTO field = null;
-            String alias = "";
-            for (int i = 0; i < yAxis.size(); i++) {
-                ChartViewFieldDTO yField = yAxis.get(i);
-                if (Objects.equals(yField.getId(), curField.getId())) {
-                    field = yField;
-                    alias = String.format(SQLConstants.FIELD_ALIAS_Y_PREFIX, i);
-                    break;
-                }
-            }
-            if (ObjectUtils.isEmpty(field) && CollectionUtils.isNotEmpty(xAxis)) {
-                for (int i = 0; i < xAxis.size(); i++) {
-                    ChartViewFieldDTO xField = xAxis.get(i);
-                    if (StringUtils.equalsIgnoreCase(String.valueOf(xField.getId()), String.valueOf(curField.getId()))) {
-                        field = xField;
-                        alias = String.format(SQLConstants.FIELD_ALIAS_X_PREFIX, i);
-                        break;
-                    }
-                }
-            }
-            if (ObjectUtils.isEmpty(field)) {
-                continue;
-            }
-
-            ChartViewFieldDTO chartViewFieldDTO = new ChartViewFieldDTO();
-            BeanUtils.copyBean(chartViewFieldDTO, curField);
-            chartViewFieldDTO.setSummary(dto.getSummary());
-            chartViewFieldDTO.setOriginName(alias);// yAxis的字段别名，就是查找的字段名
-            res.add(chartViewFieldDTO);
-        }
-        return res;
-    }
-
-    public List<ChartSeniorAssistDTO> getDynamicThresholdFields(ChartViewDTO view) {
-        List<ChartSeniorAssistDTO> list = new ArrayList<>();
-        Map<String, Object> senior = view.getSenior();
-        if (ObjectUtils.isEmpty(senior)) {
-            return list;
-        }
-        ChartSeniorThresholdCfgDTO thresholdCfg = JsonUtil.parseObject((String) JsonUtil.toJSONString(senior.get("threshold")), ChartSeniorThresholdCfgDTO.class);
-
-        if (null == thresholdCfg || !thresholdCfg.isEnable()) {
-            return list;
-        }
-        List<TableThresholdDTO> tableThreshold = thresholdCfg.getTableThreshold();
-
-        if (ObjectUtils.isEmpty(tableThreshold)) {
-            return list;
-        }
-
-        List<ChartSeniorThresholdDTO> conditionsList = tableThreshold.stream()
-                .filter(item -> !ObjectUtils.isEmpty(item))
-                .map(TableThresholdDTO::getConditions)
-                .flatMap(List::stream)
-                .filter(condition -> StringUtils.equalsAnyIgnoreCase(condition.getType(), "dynamic"))
-                .toList();
-
-        List<ChartSeniorAssistDTO> assistDTOs = conditionsList.stream()
-                .flatMap(condition -> getConditionFields(condition).stream())
-                .filter(this::solveThresholdCondition)
-                .toList();
-
-        list.addAll(assistDTOs);
-
-        return list;
-    }
-
-    private boolean solveThresholdCondition(ChartSeniorAssistDTO fieldDTO) {
-        Long fieldId = fieldDTO.getFieldId();
-        String summary = fieldDTO.getValue();
-        if (ObjectUtils.isEmpty(fieldId) || StringUtils.isEmpty(summary)) {
-            return false;
-        }
-
-        DatasetTableFieldDTO datasetTableFieldDTO = datasetTableFieldManage.selectById(fieldId);
-        if (ObjectUtils.isEmpty(datasetTableFieldDTO)) {
-            return false;
-        }
-        ChartViewFieldDTO datasetTableField = new ChartViewFieldDTO();
-        BeanUtils.copyBean(datasetTableField, datasetTableFieldDTO);
-        fieldDTO.setCurField(datasetTableField);
-        fieldDTO.setSummary(summary);
-        return true;
-    }
-
-    private List<ChartSeniorAssistDTO> getConditionFields(ChartSeniorThresholdDTO condition) {
-        List<ChartSeniorAssistDTO> list = new ArrayList<>();
-        if ("between".equals(condition.getTerm())) {
-            if (!StringUtils.equalsIgnoreCase(condition.getDynamicMaxField().getSummary(), "value")) {
-                list.add(of(condition.getDynamicMaxField()));
-            }
-            if (!StringUtils.equalsIgnoreCase(condition.getDynamicMinField().getSummary(), "value")) {
-                list.add(of(condition.getDynamicMinField()));
-            }
-        } else {
-            if (!StringUtils.equalsIgnoreCase(condition.getDynamicField().getSummary(), "value")) {
-                list.add(of(condition.getDynamicField()));
-            }
-        }
-
-        return list;
-    }
-
-    private ChartSeniorAssistDTO of(ThresholdDynamicFieldDTO dynamicField){
-        ChartSeniorAssistDTO conditionField = new ChartSeniorAssistDTO();
-        conditionField.setFieldId(Long.parseLong(dynamicField.getFieldId()));
-        conditionField.setValue(dynamicField.getSummary());
-        return conditionField;
-    }
-
     protected String assistSQL(String sql, List<ChartViewFieldDTO> assistFields) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < assistFields.size(); i++) {
@@ -442,8 +324,6 @@ public class DefaultChartHandler extends AbstractChartPlugin {
                                                 .setScale(8, RoundingMode.HALF_UP)
                                                 .toString();
                                     }
-                                } else if (StringUtils.equalsIgnoreCase(resultData, "pre")) {
-                                    item[dataIndex] = new BigDecimal(lastValue).toString();
                                 }
                             }
                         }

@@ -43,12 +43,6 @@ export const dsTypes = [
       'characterEncoding=UTF-8&connectTimeout=5000&useSSL=false&allowPublicKeyRetrieval=true'
   },
   {
-    type: 'es',
-    name: 'Elasticsearch',
-    catalog: 'OLAP',
-    extraParams: ''
-  },
-  {
     type: 'StarRocks',
     name: 'StarRocks',
     catalog: 'OLAP',

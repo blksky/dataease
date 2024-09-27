@@ -1,11 +1,8 @@
 <script lang="ts" setup>
-import icon_viewList_outlined from '@/assets/svg/icon_view-list_outlined.svg'
-import icon_expandRight_filled from '@/assets/svg/icon_expand-right_filled.svg'
 import { ref, reactive, shallowRef, provide } from 'vue'
 import draggable from 'vuedraggable'
 import FilterHead from './FilterHead.vue'
 import { fieldType } from '@/utils/attr'
-import { iconFieldMap } from '@/components/icon-group/field-list'
 const initials = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 
 const selectValue = ref()
@@ -109,7 +106,7 @@ const handleTabClick = () => {
     <div class="name">
       选项值来源
       <el-icon>
-        <Icon name="icon_view-list_outlined"><icon_viewList_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_view-list_outlined"></Icon>
       </el-icon>
     </div>
     <el-tabs v-model="activeNameData" @tab-click="handleTabClick">
@@ -138,7 +135,7 @@ const handleTabClick = () => {
     <div class="filed-list field-d">
       <div :class="['filed-name', { expanded: expandedD }]" @click="expandedD = !expandedD">
         <ElIcon class="expand">
-          <Icon name="icon_expand-right_filled"><icon_expandRight_filled class="svg-icon" /></Icon>
+          <Icon name="icon_expand-right_filled"></Icon>
         </ElIcon>
         &nbsp;维度
       </div>
@@ -152,11 +149,8 @@ const handleTabClick = () => {
             <div class="filter-db-row">
               <el-icon>
                 <Icon
-                  ><component
-                    class="svg-icon"
-                    :class="`field-icon-${fieldType[element.deType]}`"
-                    :is="iconFieldMap[fieldType[element.deType]]"
-                  ></component
+                  :name="`field_${fieldType[element.deType]}`"
+                  :className="`field-icon-${fieldType[element.deType]}`"
                 ></Icon>
               </el-icon>
               <span :title="element.name">{{ element.name }}</span>
@@ -168,7 +162,7 @@ const handleTabClick = () => {
     <div class="filed-list field-d">
       <div :class="['filed-name', { expanded: expandedQ }]" @click="expandedQ = !expandedQ">
         <ElIcon class="expand">
-          <Icon name="icon_expand-right_filled"><icon_expandRight_filled class="svg-icon" /></Icon>
+          <Icon name="icon_expand-right_filled"></Icon>
         </ElIcon>
         &nbsp;指标
       </div>
@@ -182,11 +176,8 @@ const handleTabClick = () => {
             <div class="filter-db-row">
               <el-icon>
                 <Icon
-                  ><component
-                    class="svg-icon"
-                    :class="`field-icon-${fieldType[element.deType]}`"
-                    :is="iconFieldMap[fieldType[element.deType]]"
-                  ></component
+                  :name="`field_${fieldType[element.deType]}`"
+                  :className="`field-icon-${fieldType[element.deType]}`"
                 ></Icon>
               </el-icon>
               <span :title="element.name">{{ element.name }}</span>
@@ -200,7 +191,7 @@ const handleTabClick = () => {
     <div class="name">
       文本下拉组件
       <el-icon>
-        <Icon name="icon_view-list_outlined"><icon_viewList_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_view-list_outlined"></Icon>
       </el-icon>
     </div>
     <el-tabs v-model="activeName">
@@ -368,7 +359,7 @@ const handleTabClick = () => {
       position: sticky;
       top: 0;
       height: 32px;
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-style: normal;
       font-weight: 500;
       font-size: 14px;

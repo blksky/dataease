@@ -98,9 +98,6 @@ const templateInnerPreview = () => {
   width: 100%;
   background: #fff;
   overflow: hidden;
-  &:hover {
-    box-shadow: 0px 6px 24px 0px #1f232914;
-  }
 }
 
 .demonstration {

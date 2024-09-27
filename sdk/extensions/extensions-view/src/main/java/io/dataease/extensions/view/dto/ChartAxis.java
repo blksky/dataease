@@ -9,6 +9,5 @@ public enum ChartAxis {
     yAxis,
     yAxisExt,
     drill,
-    extColor,
     extBubble;
 }

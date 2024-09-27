@@ -1,7 +1,7 @@
 package io.dataease.exportCenter.server;
 
 import io.dataease.api.exportCenter.ExportCenterApi;
-import io.dataease.model.ExportTaskDTO;
+import io.dataease.api.exportCenter.vo.ExportTaskDTO;
 import io.dataease.exportCenter.manage.ExportCenterManage;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,9 +46,5 @@ public class ExportCenterServer implements ExportCenterApi {
     @Override
     public void retry(String id) {
         exportCenterManage.retry(id);
-    }
-
-    public String exportLimit() {
-        return exportCenterManage.exportLimit();
     }
 }

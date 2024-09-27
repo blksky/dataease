@@ -19,7 +19,9 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
+import org.apache.calcite.config.Lex;
 import org.apache.calcite.sql.*;
+import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.util.SqlShuttle;
 import org.apache.commons.collections4.CollectionUtils;
@@ -57,16 +59,7 @@ public class SqlparserUtils {
         Statement statement = CCJSqlParserUtil.parse(tmpSql);
         Select select = (Select) statement;
 
-        if (CollectionUtils.isNotEmpty(select.getWithItemsList())) {
-            for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext(); ) {
-                WithItem withItem = iter.next();
-                ParenthesedSelect parenthesedSelect = (ParenthesedSelect) withItem.getSelect();
-                parenthesedSelect.setSelect((Select) CCJSqlParserUtil.parse(removeVariables(parenthesedSelect.getSelect().toString(), dsType)));
-            }
-        }
-
         if (select.getSelectBody() instanceof PlainSelect) {
-
             return handlePlainSelect((PlainSelect) select.getSelectBody(), select, dsType);
         } else {
             StringBuilder result = new StringBuilder();
@@ -77,7 +70,7 @@ public class SqlparserUtils {
                     result.append(" ").append(setOperationList.getOperations().get(i).toString()).append(" ");
                 }
             }
-            return select.toString();
+            return result.toString();
         }
     }
 
@@ -85,7 +78,6 @@ public class SqlparserUtils {
         handleSelectItems(plainSelect, dsType);
         handleFromItems(plainSelect, dsType);
         handleJoins(plainSelect, dsType);
-        handleHaving(plainSelect);
         return handleWhere(plainSelect, statementSelect, dsType);
     }
 
@@ -109,44 +101,31 @@ public class SqlparserUtils {
     private static void handleFromItems(PlainSelect plainSelect, String dsType) throws Exception {
         FromItem fromItem = plainSelect.getFromItem();
         if (fromItem instanceof ParenthesedSelect) {
-            handleParenthesedSelect(fromItem, dsType);
-            plainSelect.setFromItem(fromItem);
-        } else {
-            if (fromItem instanceof ParenthesedFromItem) {
-                fromItem = ((ParenthesedFromItem) fromItem).getFromItem();
-                while (fromItem instanceof ParenthesedFromItem) {
-                    fromItem = ((ParenthesedFromItem) fromItem).getFromItem();
-                }
-                handleParenthesedSelect(fromItem, dsType);
-            }
-            plainSelect.setFromItem(fromItem);
-        }
-    }
-
-    private static void handleParenthesedSelect(FromItem fromItem, String dsType) throws Exception {
-        if (((ParenthesedSelect) fromItem).getSelect() instanceof SetOperationList) {
-            StringBuilder result = new StringBuilder();
-            SetOperationList setOperationList = (SetOperationList) ((ParenthesedSelect) fromItem).getSelect().getSelectBody();
-            for (int i = 0; i < setOperationList.getSelects().size(); i++) {
-                result.append(handlePlainSelect((PlainSelect) setOperationList.getSelects().get(i), null, dsType));
-                if (i < setOperationList.getSelects().size() - 1) {
-                    result.append(" ").append(setOperationList.getOperations().get(i).toString()).append(" ");
-                }
-            }
-        } else {
-            PlainSelect selectBody = ((ParenthesedSelect) fromItem).getSelect().getPlainSelect();
-            Select subSelectTmp = (Select) CCJSqlParserUtil.parse(removeVariables(selectBody.toString(), dsType));
-            ((ParenthesedSelect) fromItem).setSelect(subSelectTmp.getSelectBody());
-            if (dsType.equals(DatasourceConfiguration.DatasourceType.oracle.getType())) {
-                if (fromItem.getAlias() != null) {
-                    fromItem.setAlias(new Alias(fromItem.getAlias().toString(), false));
+            if (((ParenthesedSelect) fromItem).getSelect() instanceof SetOperationList) {
+                StringBuilder result = new StringBuilder();
+                SetOperationList setOperationList = (SetOperationList) ((ParenthesedSelect) fromItem).getSelect().getSelectBody();
+                for (int i = 0; i < setOperationList.getSelects().size(); i++) {
+                    result.append(handlePlainSelect((PlainSelect) setOperationList.getSelects().get(i), null, dsType));
+                    if (i < setOperationList.getSelects().size() - 1) {
+                        result.append(" ").append(setOperationList.getOperations().get(i).toString()).append(" ");
+                    }
                 }
             } else {
-                if (fromItem.getAlias() == null) {
-                    throw new Exception("Failed to parse sql, Every derived table must have its own alias！");
+                PlainSelect selectBody = ((ParenthesedSelect) fromItem).getSelect().getPlainSelect();
+                Select subSelectTmp = (Select) CCJSqlParserUtil.parse(removeVariables(selectBody.toString(), dsType));
+                ((ParenthesedSelect) fromItem).setSelect(subSelectTmp.getSelectBody());
+                if (dsType.equals(DatasourceConfiguration.DatasourceType.oracle.getType())) {
+                    if (fromItem.getAlias() != null) {
+                        fromItem.setAlias(new Alias(fromItem.getAlias().toString(), false));
+                    }
+                } else {
+                    if (fromItem.getAlias() == null) {
+                        throw new Exception("Failed to parse sql, Every derived table must have its own alias！");
+                    }
+                    fromItem.setAlias(new Alias(fromItem.getAlias().toString(), false));
                 }
-                fromItem.setAlias(new Alias(fromItem.getAlias().toString(), false));
             }
+            plainSelect.setFromItem(fromItem);
         }
     }
 
@@ -175,30 +154,6 @@ public class SqlparserUtils {
             }
             plainSelect.setJoins(joinsList);
         }
-    }
-
-    private static void handleHaving(PlainSelect plainSelect) throws Exception {
-        Expression expr = plainSelect.getHaving();
-        if (expr == null) {
-            return;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        BinaryExpression binaryExpression = null;
-        try {
-            binaryExpression = (BinaryExpression) expr;
-        } catch (Exception e) {
-        }
-        if (binaryExpression != null) {
-            boolean hasSubBinaryExpression = binaryExpression instanceof AndExpression || binaryExpression instanceof OrExpression;
-            if (!hasSubBinaryExpression && !(binaryExpression.getLeftExpression() instanceof BinaryExpression) && !(binaryExpression.getLeftExpression() instanceof InExpression) && (hasVariable(binaryExpression.getLeftExpression().toString()) || hasVariable(binaryExpression.getRightExpression().toString()))) {
-                stringBuilder.append(SubstitutedSql);
-            } else {
-                expr.accept(getExpressionDeParser(stringBuilder));
-            }
-        } else {
-            expr.accept(getExpressionDeParser(stringBuilder));
-        }
-        plainSelect.setHaving(CCJSqlParserUtil.parseCondExpression(stringBuilder.toString()));
     }
 
     private static String handleWhere(PlainSelect plainSelect, Select statementSelect, String dsType) throws Exception {
@@ -444,6 +399,35 @@ public class SqlparserUtils {
     }
 
 
+    public static String removeVariables(final String sql) {
+        String tmpSql = sql;
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(sql);
+        boolean hasVariables = false;
+        while (matcher.find()) {
+            hasVariables = true;
+            tmpSql = tmpSql.replace(matcher.group(), SubstitutedParams);
+        }
+        if (!hasVariables && !tmpSql.contains(SubstitutedParams)) {
+            return tmpSql;
+        }
+
+        SqlParser.Config config =
+                SqlParser.config()
+                        .withLex(Lex.JAVA)
+                        .withIdentifierMaxLength(256);
+        SqlParser sqlParser = SqlParser.create(tmpSql, config);
+        SqlNode sqlNode;
+        try {
+            sqlNode = sqlParser.parseStmt();
+        } catch (SqlParseException e) {
+            throw new RuntimeException("使用 Calcite 进行语法分析发生了异常", e);
+        }
+        // 递归遍历语法树
+        getDependencies(sqlNode, false);
+        return sqlNode.toString();
+    }
+
     private static void getDependencies(SqlNode sqlNode, Boolean fromOrJoin) {
         if (sqlNode == null) {
             return;
@@ -507,8 +491,7 @@ public class SqlparserUtils {
         if (StringUtils.isEmpty(sql)) {
             DEException.throwException(Translator.get("i18n_sql_not_empty"));
         }
-        sql = sql.trim();
-        if (sql.endsWith(";")) {
+        if (sql.trim().endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
 

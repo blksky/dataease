@@ -1,17 +1,8 @@
 <script lang="tsx" setup>
-import icon_sortAToZ_outlined from '@/assets/svg/icon_sort-a-to-z_outlined.svg'
-import icon_sortZToA_outlined from '@/assets/svg/icon_sort-z-to-a_outlined.svg'
-import icon_sort_outlined from '@/assets/svg/icon_sort_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_down_outlined1 from '@/assets/svg/icon_down_outlined-1.svg'
-import icon_right_outlined from '@/assets/svg/icon_right_outlined.svg'
-import icon_done_outlined from '@/assets/svg/icon_done_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import { computed, onMounted, ref, toRefs, watch } from 'vue'
 import { getItemType } from '@/views/chart/components/editor/drag-item/utils'
 import { fieldType } from '@/utils/attr'
-import { iconFieldMap } from '@/components/icon-group/field-list'
 
 const { t } = useI18n()
 
@@ -182,16 +173,6 @@ const showCustomSort = item => {
   }
   return !item.chartId && (item.deType === 0 || item.deType === 5)
 }
-const showSort = () => {
-  const isExtColor = props.type === 'extColor'
-  const isChartMix = props.chart.type.includes('chart-mix')
-  const isDimensionOrDimensionStack =
-    props.type === 'dimension' || props.type === 'dimensionStack' || props.type === 'dimensionExt'
-  if (isExtColor) {
-    return false
-  }
-  return !isChartMix || isDimensionOrDimensionStack
-}
 onMounted(() => {
   getItemTagType()
 })
@@ -205,41 +186,21 @@ onMounted(() => {
         :class="['editor-' + props.themes, `${themes}_icon-right`]"
         :style="{ backgroundColor: tagType + '0a', border: '1px solid ' + tagType }"
       >
-        <span v-if="type !== 'extColor'" style="display: flex; color: #646a73">
+        <span style="display: flex; color: #646a73">
           <el-icon v-if="'asc' === item.sort">
-            <Icon name="icon_sort-a-to-z_outlined"
-              ><icon_sortAToZ_outlined class="svg-icon"
-            /></Icon>
+            <Icon name="icon_sort-a-to-z_outlined" />
           </el-icon>
           <el-icon v-if="'desc' === item.sort">
-            <Icon name="icon_sort-z-to-a_outlined"
-              ><icon_sortZToA_outlined class="svg-icon"
-            /></Icon>
+            <Icon name="icon_sort-z-to-a_outlined" />
           </el-icon>
           <el-icon v-if="'custom_sort' === item.sort">
-            <Icon name="icon_sort_outlined"><icon_sort_outlined class="svg-icon" /></Icon>
+            <Icon name="icon_sort_outlined" />
           </el-icon>
-          <el-icon>
-            <Icon :className="`field-icon-${fieldType[[2, 3].includes(item.deType) ? 2 : 0]}`"
-              ><component
-                class="svg-icon"
-                :class="`field-icon-${fieldType[[2, 3].includes(item.deType) ? 2 : 0]}`"
-                :is="iconFieldMap[fieldType[item.deType]]"
-              ></component
-            ></Icon>
-          </el-icon>
-        </span>
-        <span v-if="type === 'extColor'" style="display: flex; color: #646a73">
           <el-icon>
             <Icon
-              :className="`field-icon-${fieldType[[2, 3].includes(item.deType) ? 2 : 0]}`"
+              :className="`field-icon-${fieldType[item.deType]}`"
               :name="`field_${fieldType[item.deType]}`"
-              ><component
-                class="svg-icon"
-                :class="`field-icon-${fieldType[[2, 3].includes(item.deType) ? 2 : 0]}`"
-                :is="iconFieldMap[fieldType[item.deType]]"
-              ></component
-            ></Icon>
+            />
           </el-icon>
         </span>
         <el-tooltip
@@ -257,13 +218,11 @@ onMounted(() => {
             <span>{{ t('chart.delete') }}</span>
           </template>
           <el-icon class="child remove-icon">
-            <Icon
-              ><icon_deleteTrash_outlined @click="removeItem" class="svg-icon inner-class"
-            /></Icon>
+            <Icon class-name="inner-class" name="icon_delete-trash_outlined" @click="removeItem" />
           </el-icon>
         </el-tooltip>
         <el-icon class="child" style="position: absolute; top: 7px; right: 10px; cursor: pointer">
-          <Icon name="icon_down_outlined-1"><icon_down_outlined1 class="svg-icon" /></Icon>
+          <Icon name="icon_down_outlined-1" />
         </el-icon>
       </el-tag>
       <template #dropdown>
@@ -272,7 +231,13 @@ onMounted(() => {
           class="drop-style"
           :class="themes === 'dark' ? 'dark-dimension-quota' : ''"
         >
-          <el-dropdown-item @click.prevent v-if="showSort()">
+          <el-dropdown-item
+            @click.prevent
+            v-if="
+              !chart.type.includes('chart-mix') ||
+              (chart.type.includes('chart-mix') && type === 'dimension')
+            "
+          >
             <el-dropdown
               :effect="themes"
               popper-class="data-dropdown_popper_mr9"
@@ -283,13 +248,13 @@ onMounted(() => {
               <span class="inner-dropdown-menu menu-item-padding">
                 <span class="menu-item-content">
                   <el-icon>
-                    <Icon name="icon_sort_outlined"><icon_sort_outlined class="svg-icon" /></Icon>
+                    <Icon name="icon_sort_outlined" />
                   </el-icon>
                   <span>{{ t('chart.sort') }}</span>
                   <span class="summary-span-item">({{ t('chart.' + props.item.sort) }})</span>
                 </span>
                 <el-icon>
-                  <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_right_outlined" />
                 </el-icon>
               </span>
               <template #dropdown>
@@ -305,9 +270,7 @@ onMounted(() => {
                     >
                       {{ t('chart.none') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'none' === item.sort"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'none' === item.sort" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -318,9 +281,7 @@ onMounted(() => {
                     >
                       {{ t('chart.asc') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'asc' === item.sort"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'asc' === item.sort" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -331,9 +292,7 @@ onMounted(() => {
                     >
                       {{ t('chart.desc') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'desc' === item.sort"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'desc' === item.sort" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -348,9 +307,7 @@ onMounted(() => {
                     >
                       {{ t('chart.custom_sort') }}{{ t('chart.sort') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'custom_sort' === item.sort"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'custom_sort' === item.sort" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -364,8 +321,7 @@ onMounted(() => {
             v-if="item.deType === 1"
             :divided="
               !chart.type.includes('chart-mix') ||
-              (chart.type.includes('chart-mix') &&
-                (type === 'dimension' || type === 'dimensionStack' || type === 'dimensionExt'))
+              (chart.type.includes('chart-mix') && type === 'dimension')
             "
           >
             <el-dropdown
@@ -382,7 +338,7 @@ onMounted(() => {
                   <span class="summary-span-item">({{ t('chart.' + item.dateStyle) }})</span>
                 </span>
                 <el-icon>
-                  <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_right_outlined" />
                 </el-icon>
               </span>
               <template #dropdown>
@@ -398,9 +354,7 @@ onMounted(() => {
                     >
                       {{ t('chart.y') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -415,9 +369,7 @@ onMounted(() => {
                     >
                       {{ t('chart.y_Q') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y_Q' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y_Q' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -428,9 +380,7 @@ onMounted(() => {
                     >
                       {{ t('chart.y_M') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y_M' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y_M' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -445,9 +395,7 @@ onMounted(() => {
                     >
                       {{ t('chart.y_W') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y_W' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y_W' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -458,15 +406,12 @@ onMounted(() => {
                     >
                       {{ t('chart.y_M_d') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y_M_d' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y_M_d' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
                   <el-dropdown-item
                     class="menu-item-padding"
-                    v-if="!chart.type.includes('bar-range')"
                     :command="beforeDateStyle('H_m_s')"
                     divided
                   >
@@ -476,16 +421,13 @@ onMounted(() => {
                     >
                       {{ t('chart.H_m_s') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'H_m_s' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'H_m_s' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
                   <el-dropdown-item
                     class="menu-item-padding"
                     :command="beforeDateStyle('y_M_d_H_m')"
-                    :divided="chart.type.includes('bar-range')"
                   >
                     <span
                       class="sub-menu-content"
@@ -493,9 +435,7 @@ onMounted(() => {
                     >
                       {{ t('chart.y_M_d_H_m') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y_M_d_H_m' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y_M_d_H_m' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -509,9 +449,7 @@ onMounted(() => {
                     >
                       {{ t('chart.y_M_d_H_m_s') }}
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'y_M_d_H_m_s' === item.dateStyle"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'y_M_d_H_m_s' === item.dateStyle" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -534,7 +472,7 @@ onMounted(() => {
                   <span class="summary-span-item">({{ t('chart.' + item.datePattern) }})</span>
                 </span>
                 <el-icon>
-                  <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_right_outlined" />
                 </el-icon>
               </span>
               <template #dropdown>
@@ -553,9 +491,7 @@ onMounted(() => {
                     >
                       {{ t('chart.date_sub') }}(1990-01-01)
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'date_sub' === item.datePattern"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'date_sub' === item.datePattern" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -569,9 +505,7 @@ onMounted(() => {
                     >
                       {{ t('chart.date_split') }}(1990/01/01)
                       <el-icon class="sub-menu-content--icon">
-                        <Icon name="icon_done_outlined" v-if="'date_split' === item.datePattern"
-                          ><icon_done_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_done_outlined" v-if="'date_split' === item.datePattern" />
                       </el-icon>
                     </span>
                   </el-dropdown-item>
@@ -583,13 +517,12 @@ onMounted(() => {
             class="menu-item-padding"
             :divided="
               !chart.type.includes('chart-mix') ||
-              (chart.type.includes('chart-mix') &&
-                (type === 'dimension' || type === 'dimensionStack' || type === 'dimensionExt'))
+              (chart.type.includes('chart-mix') && type === 'dimension')
             "
             :command="beforeClickItem('rename')"
           >
             <el-icon>
-              <icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></icon>
+              <icon name="icon_edit_outlined"></icon>
             </el-icon>
             <span>{{ t('chart.show_name_set') }}</span>
           </el-dropdown-item>
@@ -604,9 +537,7 @@ onMounted(() => {
           </el-dropdown-item>
           <el-dropdown-item class="menu-item-padding" divided :command="beforeClickItem('remove')">
             <el-icon>
-              <icon name="icon_delete-trash_outlined"
-                ><icon_deleteTrash_outlined class="svg-icon"
-              /></icon>
+              <icon name="icon_delete-trash_outlined"></icon>
             </el-icon>
             <span>{{ t('chart.delete') }}</span>
           </el-dropdown-item>

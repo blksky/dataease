@@ -1,28 +1,5 @@
 <script lang="tsx" setup>
-import referencePlay from '@/assets/svg/reference-play.svg'
-import referenceSetting1 from '@/assets/svg/reference-setting.svg'
-import icon_close_outlined from '@/assets/svg/icon_close_outlined.svg'
-import icon_right_outlined from '@/assets/svg/icon_right_outlined.svg'
-import icon_left_outlined from '@/assets/svg/icon_left_outlined.svg'
-import referenceTable from '@/assets/svg/reference-table.svg'
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
-import icon_form_outlined from '@/assets/svg/icon_form_outlined.svg'
-import icon_copy_outlined from '@/assets/svg/icon_copy_outlined.svg'
-import icon_info_outlined from '@/assets/svg/icon_info_outlined.svg'
-import icon_textBox_outlined from '@/assets/svg/icon_text-box_outlined.svg'
-import icon_info_colorful from '@/assets/svg/icon_info_colorful.svg'
-import icon_playRound_outlined from '@/assets/svg/icon_play-round_outlined.svg'
-import {
-  ref,
-  reactive,
-  onMounted,
-  PropType,
-  toRefs,
-  watch,
-  onBeforeUnmount,
-  shallowRef,
-  h
-} from 'vue'
+import { ref, reactive, onMounted, PropType, toRefs, watch, onBeforeUnmount, shallowRef } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Base64 } from 'js-base64'
 import FixedSizeList from 'element-plus-secondary/es/components/virtual-list/src/components/fixed-size-list.mjs'
@@ -38,7 +15,6 @@ import GridTable from '@/components/grid-table/src/GridTable.vue'
 import { EmptyBackground } from '@/components/empty-background'
 import { timestampFormatDate, defaultValueScopeList, fieldOptions } from './util'
 import { fieldType } from '@/utils/attr'
-import { iconFieldMap } from '@/components/icon-group/field-list'
 export interface SqlNode {
   sql: string
   tableName: string
@@ -115,11 +91,10 @@ const generateColumns = (arr: Field[]) =>
     headerCellRenderer: ({ column }) => (
       <div class="flex-align-center">
         <ElIcon style={{ marginRight: '6px' }}>
-          <Icon>
-            {h(iconFieldMap[fieldType[column.deType]], {
-              class: `svg-icon field-icon-${fieldType[column.deType]}`
-            })}
-          </Icon>
+          <Icon
+            name={`field_${fieldType[column.deType]}`}
+            className={`field-icon-${fieldType[column.deType]}`}
+          ></Icon>
         </ElIcon>
         <span class="ellipsis" title={column.title} style={{ width: '120px' }}>
           {column.title}
@@ -249,7 +224,7 @@ let sql = ''
 
 const save = (cb?: () => void) => {
   if (!sqlNode.value.tableName.trim()) {
-    ElMessage.error(t('data_set.cannot_be_empty'))
+    ElMessage.error('SQL名字不能为空')
     return
   }
 
@@ -257,7 +232,7 @@ const save = (cb?: () => void) => {
   sql = codeCom.value.state.doc.toString()
   sqlNode.value.changeFlag = true
   if (!sql.trim()) {
-    ElMessage.error(t('data_set.cannot_be_empty_de'))
+    ElMessage.error('SQL不能为空')
     return
   }
   sqlNode.value.sql = Base64.encode(sql)
@@ -289,7 +264,7 @@ const handleClose = () => {
   if (changeFlag || sql !== sqlNew || !sqlNew.trim()) {
     ElMessageBox.confirm(t('chart.tips'), {
       confirmButtonType: 'primary',
-      tip: t('data_set.sure_to_exit'),
+      tip: '你填写的信息未保存，确认退出吗？',
       type: 'warning',
       autofocus: false,
       showClose: false
@@ -367,9 +342,9 @@ const dsChange = (val: string) => {
 const copyInfo = async (value: string) => {
   try {
     await toClipboard(value)
-    ElMessage.success(t('data_set.copied_successfully'))
+    ElMessage.success('复制成功')
   } catch (e) {
-    ElMessage.warning(t('data_set.not_support_copying'), e)
+    ElMessage.warning('您的浏览器不支持复制：', e)
   }
 }
 
@@ -422,7 +397,7 @@ const saveVariable = () => {
   state.variables = JSON.parse(JSON.stringify(state.variablesTmp))
   showVariableMgm.value = false
   changeFlagCode.value = true
-  ElMessage.success(t('data_set.parameters_set_successfully'))
+  ElMessage.success('参数设置成功')
 }
 const mousedownDrag = () => {
   document.querySelector('.sql-eidtor').addEventListener('mousemove', calculateWidth)
@@ -436,25 +411,25 @@ const mousedownDrag = () => {
       <el-button @click="getSQLPreview" text style="color: #1f2329">
         <template #icon>
           <el-icon>
-            <Icon name="reference-play"><referencePlay class="svg-icon" /></Icon>
+            <Icon name="reference-play"></Icon>
           </el-icon>
         </template>
-        {{ t('data_set.run') }}
+        运行
       </el-button>
       <el-button @click="referenceSetting()" style="color: #1f2329" text>
         <template #icon>
           <el-icon>
-            <Icon name="reference-setting"><referenceSetting1 class="svg-icon" /></Icon>
+            <Icon name="reference-setting"></Icon>
           </el-icon>
         </template>
-        {{ t('data_set.parameter_settings') }}
+        参数设置
       </el-button>
       <el-button :disabled="!changeFlagCode" @click="save(() => {})" type="primary">
-        {{ t('data_set.save') }}</el-button
+        保存</el-button
       >
       <el-divider direction="vertical" />
       <el-icon class="hover-icon" @click="handleClose">
-        <Icon name="icon_close_outlined"><icon_close_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_close_outlined"></Icon>
       </el-icon>
     </div>
   </div>
@@ -462,7 +437,7 @@ const mousedownDrag = () => {
   <div class="sql-eidtor" @mouseup="mouseupDrag">
     <p v-show="!showLeft" class="arrow-right" @click="handleShowLeft">
       <el-icon>
-        <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_right_outlined"></Icon>
       </el-icon>
     </p>
     <div
@@ -479,10 +454,10 @@ const mousedownDrag = () => {
     >
       <div class="table-list-top">
         <p class="select-ds">
-          {{ t('data_set.current_data_source') }}
+          当前数据源
           <span class="left-outlined">
             <el-icon style="color: #1f2329" @click="showLeft = false">
-              <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_left_outlined" />
             </el-icon>
           </span>
         </p>
@@ -502,7 +477,7 @@ const mousedownDrag = () => {
           {{ t('datasource.data_table')
           }}<span class="num">
             <el-icon class="icon-color">
-              <Icon name="reference-table"><referenceTable class="svg-icon" /></Icon>
+              <Icon name="reference-table"></Icon>
             </el-icon>
             {{ datasourceTableData.length }}
           </span>
@@ -515,9 +490,7 @@ const mousedownDrag = () => {
         >
           <template #prefix>
             <el-icon>
-              <Icon name="icon_search-outline_outlined"
-                ><icon_searchOutline_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_search-outline_outlined"></Icon>
             </el-icon>
           </template>
         </el-input>
@@ -527,7 +500,7 @@ const mousedownDrag = () => {
           class="el-empty__description"
           style="margin-top: 80px; color: #5e6d82; text-align: center"
         >
-          {{ t('data_set.relevant_content_found') }}
+          没有找到相关内容
         </div>
       </div>
       <div v-else class="table-checkbox-list">
@@ -535,7 +508,7 @@ const mousedownDrag = () => {
           :itemSize="40"
           :data="datasourceTableData"
           :total="datasourceTableData.length"
-          :width="LeftWidth - 17"
+          :width="LeftWidth - 7"
           :height="windowHeight - 350"
           :scrollbarAlwaysOn="false"
           class-name="el-select-dropdown__list"
@@ -550,7 +523,7 @@ const mousedownDrag = () => {
               @click="setActiveName(datasourceTableData[index])"
             >
               <el-icon class="icon-color">
-                <Icon name="icon_form_outlined"><icon_form_outlined class="svg-icon" /></Icon>
+                <Icon name="icon_form_outlined"></Icon>
               </el-icon>
               <span class="label">{{ datasourceTableData[index].tableName }}</span>
               <span class="name-copy">
@@ -559,7 +532,7 @@ const mousedownDrag = () => {
                     class="hover-icon"
                     @click="copyInfo(datasourceTableData[index].tableName)"
                   >
-                    <Icon name="icon_copy_outlined"><icon_copy_outlined class="svg-icon" /></Icon>
+                    <Icon name="icon_copy_outlined"></Icon>
                   </el-icon>
                 </el-tooltip>
 
@@ -573,7 +546,7 @@ const mousedownDrag = () => {
                 >
                   <template #reference>
                     <el-icon class="hover-icon">
-                      <Icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></Icon>
+                      <Icon name="icon_info_outlined"></Icon>
                     </el-icon>
                   </template>
                   <div class="table-filed" v-loading="gridDataLoading">
@@ -591,15 +564,11 @@ const mousedownDrag = () => {
                           )
                         "
                       >
-                        <Icon name="icon_copy_outlined"
-                          ><icon_copy_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_copy_outlined"></Icon>
                       </el-icon>
                       <div class="num flex-align-center">
                         <el-icon>
-                          <Icon name="icon_text-box_outlined"
-                            ><icon_textBox_outlined class="svg-icon"
-                          /></Icon>
+                          <Icon name="icon_text-box_outlined"></Icon>
                         </el-icon>
                         {{ gridData.length }}
                       </div>
@@ -611,16 +580,13 @@ const mousedownDrag = () => {
                         header-cell-class-name="header-cell"
                         :data="gridData"
                       >
-                        <el-table-column :label="t('data_set.physical_field_name')">
+                        <el-table-column label="物理字段名">
                           <template #default="scope">
                             <div class="flex-align-center icon">
                               <el-icon>
                                 <Icon
-                                  ><component
-                                    class="svg-icon"
-                                    :class="`field-icon-${fieldType[scope.row.deType]}`"
-                                    :is="iconFieldMap[fieldType[scope.row.deType]]"
-                                  ></component
+                                  :className="`field-icon-${fieldType[scope.row.deType]}`"
+                                  :name="`field_${fieldType[scope.row.deType]}`"
                                 ></Icon>
                               </el-icon>
                               {{ scope.row.originName }}
@@ -638,9 +604,7 @@ const mousedownDrag = () => {
                               class="hover-icon de-hover-icon-primary"
                               @click.stop="copyInfo(scope.row.originName)"
                             >
-                              <Icon name="icon_copy_outlined"
-                                ><icon_copy_outlined class="svg-icon"
-                              /></Icon>
+                              <Icon name="icon_copy_outlined"></Icon>
                             </el-icon>
                           </template>
                         </el-table-column>
@@ -683,10 +647,7 @@ const mousedownDrag = () => {
                   :height="height"
                   fixed
                   ><template #empty>
-                    <empty-background
-                      :description="t('data_set.no_data')"
-                      img-type="noneWhite"
-                    /> </template
+                    <empty-background description="暂无数据" img-type="noneWhite" /> </template
                 ></el-table-v2>
               </template>
             </el-auto-resizer>
@@ -694,13 +655,11 @@ const mousedownDrag = () => {
           <template v-else>
             <empty-background description=" " img-type="noneWhite">
               <div class="sql-tips flex-align-center">
-                {{ t('data_set.click_above') }}
+                点击上方
                 <el-icon>
-                  <icon name="icon_play-round_outlined"
-                    ><icon_playRound_outlined class="svg-icon"
-                  /></icon>
+                  <icon name="icon_play-round_outlined"></icon>
                 </el-icon>
-                {{ t('data_set.see_the_results') }}
+                运行，即可查看运行结果
               </div>
             </empty-background>
           </template>
@@ -765,7 +724,7 @@ const mousedownDrag = () => {
   >
     <div class="content">
       <el-icon style="font-size: 16px">
-        <Icon name="icon_info_colorful"><icon_info_colorful class="svg-icon" /></Icon>
+        <Icon name="icon_info_colorful"></Icon>
       </el-icon>
       {{ t('dataset.sql_variable_limit_1') }}<br />
       {{ t('dataset.sql_variable_limit_2') }}<br />
@@ -784,11 +743,8 @@ const mousedownDrag = () => {
             <template v-slot="{ data }">
               <el-icon>
                 <Icon
-                  ><component
-                    class="svg-icon"
-                    :class="`field-icon-${getIconName(data.value)}`"
-                    :is="iconFieldMap[getIconName(data.value)]"
-                  ></component
+                  :className="`field-icon-${getIconName(data.value)}`"
+                  :name="`field_${getIconName(data.value)}`"
                 ></Icon>
               </el-icon>
               <span>{{ data.label }}</span>
@@ -797,11 +753,8 @@ const mousedownDrag = () => {
           <span class="select-svg-icon">
             <el-icon>
               <Icon
-                ><component
-                  class="svg-icon"
-                  :class="`field-icon-${getIconName(scope.row.type[0])}`"
-                  :is="iconFieldMap[getIconName(scope.row.type[0])]"
-                ></component
+                :className="`field-icon-${getIconName(scope.row.type[0])}`"
+                :name="`field_${getIconName(scope.row.type[0])}`"
               ></Icon>
             </el-icon>
           </span>
@@ -899,7 +852,7 @@ const mousedownDrag = () => {
         </template>
       </el-table-column>
       <template #empty>
-        <empty-background :description="t('data_set.no_data')" img-type="noneWhite" />
+        <empty-background description="暂无数据" img-type="noneWhite" />
       </template>
     </el-table>
     <template #footer>
@@ -957,7 +910,7 @@ const mousedownDrag = () => {
     height: 100%;
     width: 240px;
     float: left;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     border-right: 1px solid rgba(31, 35, 41, 0.15);
 
     .list-item_primary {
@@ -1073,7 +1026,7 @@ const mousedownDrag = () => {
     float: right;
     height: calc(100vh - 156px);
     .sql-result {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       overflow-y: auto;
       box-sizing: border-box;
@@ -1243,7 +1196,7 @@ const mousedownDrag = () => {
 .sql-tips {
   color: #646a73;
   text-align: center;
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -1267,7 +1220,7 @@ const mousedownDrag = () => {
       .num {
         margin-left: auto;
         color: #646a73;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 14px;
         font-style: normal;
         font-weight: 400;
@@ -1348,7 +1301,7 @@ const mousedownDrag = () => {
     background: #e1eaff;
     position: relative;
     padding: 9px 0 9px 40px;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-size: 14px;
     font-weight: 400;
 

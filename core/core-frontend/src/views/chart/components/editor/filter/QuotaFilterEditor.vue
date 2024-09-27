@@ -1,6 +1,4 @@
 <script lang="tsx" setup>
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import { reactive, toRefs } from 'vue'
 
@@ -143,9 +141,7 @@ init()
         </div>
         <el-button class="m-del-icon-btn" text @click="removeFilter(index)">
           <el-icon size="20px">
-            <Icon name="icon_delete-trash_outlined"
-              ><icon_deleteTrash_outlined class="svg-icon"
-            /></Icon>
+            <Icon name="icon_delete-trash_outlined" />
           </el-icon>
         </el-button>
       </div>
@@ -156,9 +152,7 @@ init()
       @click="addFilter"
       :style="{ marginTop: item.filter && item.filter.length > 0 ? '10px' : 0 }"
     >
-      <Icon name="icon_add_outlined"
-        ><icon_add_outlined class="svg-icon" style="width: 14px"
-      /></Icon>
+      <Icon name="icon_add_outlined" style="width: 14px" />
       {{ t('chart.add_addition') }}
     </el-button>
   </div>
@@ -208,7 +202,7 @@ span {
     :deep(span) {
       color: var(--N900, #1f2329);
       /* 中文/桌面端/正文 14 22 Regular */
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       font-style: normal;
       font-weight: 400;

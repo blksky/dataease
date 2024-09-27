@@ -21,7 +21,7 @@ const props = defineProps({
     default: 'preview'
   }
 })
-const { themes } = toRefs(props)
+const { themes, componentType } = toRefs(props)
 
 const fullscreenChange = () => {
   if (screenfull.isEnabled) {

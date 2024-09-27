@@ -1,6 +1,6 @@
 package io.dataease.api.visualization.vo;
 
-import lombok.Data;
+import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
 
@@ -12,7 +12,6 @@ import java.io.Serializable;
  * @author fit2cloud
  * @since 2024-03-08
  */
-@Data
 public class VisualizationOuterParamsTargetViewInfoVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -33,11 +32,6 @@ public class VisualizationOuterParamsTargetViewInfoVO implements Serializable {
     private String targetViewId;
 
     /**
-     * 联动数据集id/联动过滤组件id
-     */
-    private String targetDsId;
-
-    /**
      * 联动字段ID
      */
     private String targetFieldId;
@@ -51,4 +45,64 @@ public class VisualizationOuterParamsTargetViewInfoVO implements Serializable {
      * 复制来源ID
      */
     private String copyId;
+
+    public String getTargetId() {
+        return targetId;
+    }
+
+    public void setTargetId(String targetId) {
+        this.targetId = targetId;
+    }
+
+    public String getParamsInfoId() {
+        return paramsInfoId;
+    }
+
+    public void setParamsInfoId(String paramsInfoId) {
+        this.paramsInfoId = paramsInfoId;
+    }
+
+    public String getTargetViewId() {
+        return targetViewId;
+    }
+
+    public void setTargetViewId(String targetViewId) {
+        this.targetViewId = targetViewId;
+    }
+
+    public String getTargetFieldId() {
+        return targetFieldId;
+    }
+
+    public void setTargetFieldId(String targetFieldId) {
+        this.targetFieldId = targetFieldId;
+    }
+
+    public String getCopyFrom() {
+        return copyFrom;
+    }
+
+    public void setCopyFrom(String copyFrom) {
+        this.copyFrom = copyFrom;
+    }
+
+    public String getCopyId() {
+        return copyId;
+    }
+
+    public void setCopyId(String copyId) {
+        this.copyId = copyId;
+    }
+
+    @Override
+    public String toString() {
+        return "VisualizationOuterParamsTargetViewInfo{" +
+        "targetId = " + targetId +
+        ", paramsInfoId = " + paramsInfoId +
+        ", targetViewId = " + targetViewId +
+        ", targetFieldId = " + targetFieldId +
+        ", copyFrom = " + copyFrom +
+        ", copyId = " + copyId +
+        "}";
+    }
 }

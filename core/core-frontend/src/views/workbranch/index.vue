@@ -1,13 +1,7 @@
 <script lang="ts" setup>
-import icon_app_outlined from '@/assets/svg/icon_app_outlined.svg'
-import icon_dashboard_outlined from '@/assets/svg/icon_dashboard_outlined.svg'
-import icon_database_outlined from '@/assets/svg/icon_database_outlined.svg'
-import icon_operationAnalysis_outlined from '@/assets/svg/icon_operation-analysis_outlined.svg'
-import userImg from '@/assets/svg/user-img.svg'
-import icon_template_colorful from '@/assets/svg/icon_template_colorful.svg'
-import no_result from '@/assets/svg/no_result.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ref, shallowRef, computed, reactive, watch } from 'vue'
+
 import { usePermissionStoreWithOut } from '@/store/modules/permission'
 import { useRequestStoreWithOut } from '@/store/modules/request'
 import { interactiveStoreWithOut } from '@/store/modules/interactive'
@@ -38,22 +32,22 @@ const appStore = useAppStoreWithOut()
 
 const quickCreationList = shallowRef([
   {
-    icon: icon_dashboard_outlined,
+    icon: 'icon_dashboard_outlined',
     name: 'panel',
     color: '#3370ff'
   },
   {
-    icon: icon_operationAnalysis_outlined,
+    icon: 'icon_operation-analysis_outlined',
     name: 'screen',
     color: '#00d6b9'
   },
   {
-    icon: icon_app_outlined,
+    icon: 'icon_app_outlined',
     name: 'dataset',
     color: '#16c0ff'
   },
   {
-    icon: icon_database_outlined,
+    icon: 'icon_database_outlined',
     name: 'datasource',
     color: '#7f3bf6'
   }
@@ -85,7 +79,7 @@ const activeTabChange = value => {
 
 const tabBtnList = [
   {
-    name: t('work_branch.recommended_dashboard'),
+    name: '推荐仪表板',
     value: 'PANEL'
   },
   {
@@ -160,10 +154,8 @@ const fillCardInfo = () => {
     if (key !== '3') {
       busiCountCardList.value.push(busiDataMap.value[key])
     }
-    if (quickCreationList.value[key]) {
-      quickCreationList.value[key]['menuAuth'] = busiDataMap.value[key]['menuAuth']
-      quickCreationList.value[key]['anyManage'] = busiDataMap.value[key]['anyManage']
-    }
+    quickCreationList.value[key]['menuAuth'] = busiDataMap.value[key]['menuAuth']
+    quickCreationList.value[key]['anyManage'] = busiDataMap.value[key]['anyManage']
   }
 }
 const quickCreate = (flag: number, hasAuth: boolean) => {
@@ -229,7 +221,7 @@ const isDataEaseBi = computed(() => appStore.getIsDataEaseBi)
 
 const apply = () => {
   if (state.dvCreateForm.newFrom === 'new_market_template' && !state.dvCreateForm.templateUrl) {
-    ElMessage.warning(t('work_branch.template_market_official'))
+    ElMessage.warning('未获取模板下载链接请联系模板市场官方')
     return false
   }
   const templateTemplate = {
@@ -290,7 +282,7 @@ initMarketTemplate()
     <div class="info-quick-creation">
       <div class="user-info">
         <el-icon class="main-color user-icon-container">
-          <Icon name="user-img"><userImg class="svg-icon" /></Icon>
+          <Icon name="user-img" />
         </el-icon>
         <div class="info">
           <div class="name-role flex-align-center">
@@ -313,7 +305,7 @@ initMarketTemplate()
       </div>
 
       <div class="quick-creation">
-        <span class="label"> {{ t('work_branch.create_quickly') }} </span>
+        <span class="label"> 快速创建 </span>
         <div class="item-creation">
           <div
             :key="ele.name"
@@ -328,13 +320,13 @@ initMarketTemplate()
               v-if="!ele['menuAuth'] || !ele['anyManage']"
               class="box-item"
               effect="dark"
-              :content="t('work_branch.template_market_official')"
+              content="缺少创建权限"
               placement="top"
             >
               <div class="empty-tooltip-container" />
             </el-tooltip>
             <el-icon class="main-color" :style="{ backgroundColor: ele.color }">
-              <Icon><component class="svg-icon" :is="ele.icon"></component></Icon>
+              <Icon :name="ele.icon" />
             </el-icon>
             <span class="name">
               {{ t(`auth.${ele.name}`) }}
@@ -351,15 +343,15 @@ initMarketTemplate()
               v-if="!(havePanelAuth || haveScreenAuth)"
               class="box-item"
               effect="dark"
-              :content="t('work_branch.permission_to_create')"
+              content="缺少创建权限"
               placement="top"
             >
               <div class="empty-tooltip-container-template" />
             </el-tooltip>
             <el-icon class="main-color-quick template-create">
-              <Icon name="icon_template_colorful"><icon_template_colorful class="svg-icon" /></Icon>
+              <Icon name="icon_template_colorful" />
             </el-icon>
-            <span class="name">{{ t('work_branch.new_using_template') }}</span>
+            <span class="name">使用模板新建</span>
           </div>
         </div>
       </div>
@@ -367,11 +359,9 @@ initMarketTemplate()
     <div class="template-market-dashboard">
       <div class="template-market">
         <div class="label">
-          {{ t('work_branch.template_center') }}
+          模板中心
           <div class="expand-all">
-            <button class="all flex-center" @click="toTemplateMarket">
-              {{ t('work_branch.view_all') }}
-            </button>
+            <button class="all flex-center" @click="toTemplateMarket">查看全部</button>
             <el-divider direction="vertical" />
             <button @click="handleExpandFold" class="expand flex-center">
               {{ t(`visualization.${expandFold}`) }}
@@ -405,11 +395,9 @@ initMarketTemplate()
           </div>
           <el-row v-show="state.networkStatus && !state.hasResult" class="template-empty">
             <div style="text-align: center">
-              <Icon name="no_result" class="no-result"
-                ><no_result class="svg-icon no-result"
-              /></Icon>
+              <Icon name="no_result" class="no-result"></Icon>
               <br />
-              <span class="no-result-tips">{{ t('work_branch.relevant_templates_found') }}</span>
+              <span class="no-result-tips">没有找到相关模板</span>
             </div>
           </el-row>
           <el-row v-show="!state.networkStatus" class="template-empty">
@@ -473,7 +461,7 @@ initMarketTemplate()
         .name-role {
           margin-bottom: 4px;
           color: #1f2329;
-          font-family: var(--de-custom_font, 'PingFang');
+          font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
           font-style: normal;
           .name {
             font-size: 16px;
@@ -503,7 +491,7 @@ initMarketTemplate()
       }
 
       .item {
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-style: normal;
         display: flex;
         flex-direction: column;
@@ -540,7 +528,7 @@ initMarketTemplate()
       .label {
         color: #1f2329;
         font-feature-settings: 'clig' off, 'liga' off;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 16px;
         font-style: normal;
         font-weight: 500;
@@ -574,7 +562,7 @@ initMarketTemplate()
 
           .name {
             color: #1f2329;
-            font-family: var(--de-custom_font, 'PingFang');
+            font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
             font-size: 14px;
             font-style: normal;
             font-weight: 400;
@@ -632,7 +620,7 @@ initMarketTemplate()
       .label {
         color: #1f2329;
         font-feature-settings: 'clig' off, 'liga' off;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 16px;
         font-style: normal;
         font-weight: 500;
@@ -681,7 +669,7 @@ initMarketTemplate()
           display: inline-flex;
           align-items: center;
           padding: 0 8px;
-          font-family: var(--de-custom_font, 'PingFang');
+          font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
           font-size: 12px;
           font-style: normal;
           font-weight: 400;

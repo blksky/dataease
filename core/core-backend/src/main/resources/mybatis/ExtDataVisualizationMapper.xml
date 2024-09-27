@@ -38,10 +38,7 @@
                                        `linkage_active`,
                                        `jump_active`,
                                        `copy_from`,
-                                       `copy_id`,
-                                       `flow_map_start_name`,
-                                       `flow_map_end_name`,
-                                       `ext_color`)
+                                       `copy_id`)
         SELECT core_chart_view.`id` + #{copyId} as id,
                `title`,
                #{newDvId}                       as scene_id,
@@ -78,10 +75,7 @@
                `linkage_active`,
                `jump_active`,
                core_chart_view.`id`             as copy_from,
-               #{copyId}                        as copy_id,
-               `flow_map_start_name`,
-               `flow_map_end_name`,
-               `ext_color`
+               #{copyId}                        as copy_id
         FROM core_chart_view
         WHERE core_chart_view.scene_id = #{sourceDvId}
     </insert>
@@ -166,9 +160,7 @@
         FROM data_visualization_info
         where data_visualization_info.delete_flag = 0
           and data_visualization_info.id = #{dvId}
-          <if test="dvType">
-            and data_visualization_info.type = #{dvType}
-          </if>
+          and data_visualization_info.type = #{dvType}
     </select>
 
     <select id="findRecent" resultType="io.dataease.visualization.dao.ext.po.VisualizationResourcePO">

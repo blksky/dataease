@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
 import DeResourceTree from '@/views/common/DeResourceTree.vue'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
-import { reactive, nextTick, ref, toRefs, onBeforeMount, computed, onMounted } from 'vue'
+import { reactive, nextTick, ref, toRefs, onBeforeMount, computed } from 'vue'
 import DePreview from '@/components/data-visualization/canvas/DePreview.vue'
 import PreviewHead from '@/views/data-visualization/PreviewHead.vue'
 import EmptyBackground from '@/components/empty-background/src/EmptyBackground.vue'
@@ -18,7 +17,6 @@ import { storeToRefs } from 'pinia'
 import { ElMessage } from 'element-plus-secondary'
 import { personInfoApi } from '@/api/user'
 import AppExportForm from '@/components/de-app/AppExportForm.vue'
-import { useEmitt } from '@/hooks/web/useEmitt'
 const appExportFormRef = ref(null)
 
 const dvMainStore = dvMainStoreWithOut()
@@ -70,15 +68,6 @@ const rootManage = computed(() => {
 })
 const mounted = computed(() => {
   return resourceTreeRef.value?.mounted
-})
-
-onMounted(() => {
-  useEmitt({
-    name: 'canvasDownload',
-    callback: function () {
-      downloadH2('img')
-    }
-  })
 })
 
 function createNew() {
@@ -134,7 +123,7 @@ const downloadAsAppTemplate = downloadType => {
 const downLoadToAppPre = () => {
   const result = checkTemplate()
   if (result && result.length > 0) {
-    ElMessage.warning(`当前仪表板中[${result}]属于模版图表，无法导出，请先设置数据集！`)
+    ElMessage.warning(`当前仪表板中[${result}]属于模版视图，无法导出，请先设置数据集！`)
   } else {
     appExportFormRef.value.init({
       appName: state.dvInfo.name,
@@ -151,7 +140,7 @@ const checkTemplate = () => {
   let templateViewNames = ','
   Object.keys(canvasViewDataInfo.value).forEach(key => {
     const viewInfo = canvasViewDataInfo.value[key]
-    if (viewInfo && viewInfo?.dataFrom === 'template') {
+    if (viewInfo.dataFrom === 'template') {
       templateViewNames = templateViewNames + viewInfo.title + ','
     }
   })
@@ -300,7 +289,7 @@ defineExpose({
         <empty-background description="暂无仪表板" img-type="none">
           <el-button v-if="rootManage && !isDataEaseBi" @click="createNew" type="primary">
             <template #icon>
-              <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_add_outlined" />
             </template>
             {{ $t('commons.create') }}{{ $t('chart.dashboard') }}
           </el-button>

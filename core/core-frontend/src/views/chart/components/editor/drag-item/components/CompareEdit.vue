@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import { useI18n } from '@/hooks/web/useI18n'
-import { computed, reactive, toRefs, watch } from 'vue'
+import { reactive, toRefs, watch } from 'vue'
 import {
   compareYearList,
   compareMonthList,
@@ -17,14 +17,6 @@ const props = defineProps({
   chart: {
     type: Object,
     required: true
-  },
-  dimensionData: {
-    type: Array,
-    required: false
-  },
-  quotaData: {
-    type: Array,
-    required: false
   }
 })
 
@@ -32,49 +24,17 @@ const { compareItem, chart } = toRefs(props)
 
 const state = reactive({
   fieldList: [],
-  compareList: [],
-  dateFormatter: 'y_M_d'
+  compareList: []
 })
-
-const dateFormatterList = [
-  { name: '年', value: 'y' },
-  { name: '年月', value: 'y_M' },
-  { name: '年月日', value: 'y_M_d' }
-]
-
-const changeDateFormatter = () => {
-  const checkedField = state.fieldList.filter(ele => ele.id === compareItem.value.compareCalc.field)
-  if (checkedField && checkedField.length > 0) {
-    checkedField[0].dateStyle = state.dateFormatter
-    if (!compareItem.value.compareCalc.custom) {
-      compareItem.value.compareCalc.custom = { timeType: 'y_M_d' }
-    }
-    compareItem.value.compareCalc.custom.timeType = state.dateFormatter
-  }
-  initCompareType()
-}
-
-const initDateFormatter = () => {
-  const timeType = compareItem.value.compareCalc.custom?.timeType
-  if (isIndicator.value && timeType) {
-    state.dateFormatter = timeType
-    changeDateFormatter()
-  }
-}
 
 watch(
   () => props.chart,
   () => {
     initFieldList()
     initCompareType()
-    initDateFormatter()
   },
   { deep: true }
 )
-
-const isIndicator = computed(() => {
-  return chart.value.type === 'indicator'
-})
 
 // 过滤xaxis，extStack所有日期字段
 const initFieldList = () => {
@@ -100,11 +60,6 @@ const initFieldList = () => {
     })
 
     t1.push(...t2)
-  }
-  if (isIndicator.value) {
-    t1.length = 0
-    t1.push(...props.dimensionData.filter(ele => ele.deType === 1))
-    t1.push(...props.quotaData.filter(ele => ele.deType === 1))
   }
 
   state.fieldList = t1
@@ -148,16 +103,8 @@ const initCompareType = () => {
   }
 }
 
-const fieldFormatter = field => {
-  if (isIndicator.value) {
-    return field.name
-  } else {
-    return field.name + '(' + t('chart.' + field.dateStyle) + ')'
-  }
-}
 initFieldList()
 initCompareType()
-initDateFormatter()
 </script>
 
 <template>
@@ -172,43 +119,28 @@ initDateFormatter()
           <el-option
             v-for="field in state.fieldList"
             :key="field.id"
-            :label="fieldFormatter(field)"
+            :label="field.name + '(' + t('chart.' + field.dateStyle) + ')'"
             :value="field.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item v-if="isIndicator" :label="t('chart.datePattern')">
-        <el-select
-          v-model="state.dateFormatter"
-          :placeholder="t('chart.date_format')"
-          @change="changeDateFormatter"
-        >
-          <el-option
-            v-for="field in dateFormatterList"
-            :key="field.value"
-            :label="field.name"
-            :value="field.value"
-          />
-        </el-select>
-      </el-form-item>
+
       <el-form-item :label="t('chart.compare_type')">
         <el-radio-group v-model="compareItem.compareCalc.type">
-          <el-radio v-for="radio in state.compareList" :key="radio.value" :label="radio.value"
-            >{{ t('chart.' + radio.value) }}
-          </el-radio>
+          <el-radio v-for="radio in state.compareList" :key="radio.value" :label="radio.value">{{
+            t('chart.' + radio.value)
+          }}</el-radio>
         </el-radio-group>
       </el-form-item>
 
       <el-form-item :label="t('chart.compare_data')">
         <el-radio-group v-model="compareItem.compareCalc.resultData">
-          <el-radio label="pre">{{ t('chart.data_pre') }}</el-radio>
           <el-radio label="sub">{{ t('chart.data_sub') }}</el-radio>
           <el-radio label="percent">{{ t('chart.data_percent') }}</el-radio>
         </el-radio-group>
       </el-form-item>
 
       <el-form-item :label="t('chart.compare_calc_expression')">
-        <span v-if="compareItem.compareCalc.resultData === 'pre'" class="exp-style">上期数据</span>
         <span v-if="compareItem.compareCalc.resultData === 'sub'" class="exp-style"
           >本期数据 - 上期数据</span
         >
@@ -218,8 +150,8 @@ initDateFormatter()
       </el-form-item>
 
       <el-form-item :label="t('chart.tip')">
-        <span class="exp-style" style="padding-top: 2px">
-          当对比日期需要过滤时，请使用过滤组件实现过滤；使用图表过滤器，仪表板下钻和联动等功能，会导致结果不一致
+        <span class="exp-style">
+          当对比日期需要过滤时，请使用过滤组件实现过滤；使用视图过滤器，仪表板下钻和联动等功能，会导致结果不一致
         </span>
       </el-form-item>
     </el-form>
@@ -227,25 +159,20 @@ initDateFormatter()
 </template>
 
 <style lang="less" scoped>
-.ed-form-item {
+.el-form-item {
   margin-bottom: 10px !important;
 }
-
-.compare-form :deep(.ed-form-item__label) {
-  font-size: 12px !important;
-  font-weight: 400 !important;
-  padding-top: 8px !important;
-}
-
-.compare-form :deep(.ed-radio__label) {
+.compare-form :deep(.el-form-item__label) {
   font-size: 12px !important;
   font-weight: 400 !important;
 }
-
+.compare-form :deep(.el-radio__label) {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
 .el-select-dropdown__item :deep(span) {
   font-size: 12px !important;
 }
-
 .exp-style {
   color: #c0c4cc;
   font-size: 12px;

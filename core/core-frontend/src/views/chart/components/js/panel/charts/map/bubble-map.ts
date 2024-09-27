@@ -4,7 +4,8 @@ import {
   L7PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/l7plot'
 import { Choropleth, ChoroplethOptions } from '@antv/l7plot/dist/esm/plots/choropleth'
-import { Dot, DotOptions, IPlotLayer } from '@antv/l7plot'
+import { DotLayer, IPlotLayer } from '@antv/l7plot'
+import { DotLayerOptions } from '@antv/l7plot/dist/esm/layers/dot-layer/types'
 import {
   MAP_AXIS_TYPE,
   MAP_EDITOR_PROPERTY,
@@ -20,8 +21,6 @@ import {
   mapRendering
 } from '@/views/chart/components/js/panel/common/common_antv'
 import { valueFormatter } from '@/views/chart/components/js/formatter'
-import { deepCopy } from '@/utils/utils'
-import { configCarouselTooltip } from '@/views/chart/components/js/panel/charts/map/tooltip-carousel'
 
 const { t } = useI18n()
 
@@ -30,10 +29,7 @@ const { t } = useI18n()
  */
 export class BubbleMap extends L7PlotChartView<ChoroplethOptions, Choropleth> {
   properties: EditorProperty[] = [...MAP_EDITOR_PROPERTY, 'bubble-animate']
-  propertyInner = {
-    ...MAP_EDITOR_PROPERTY_INNER,
-    'tooltip-selector': [...MAP_EDITOR_PROPERTY_INNER['tooltip-selector'], 'carousel']
-  }
+  propertyInner = MAP_EDITOR_PROPERTY_INNER
   axis = MAP_AXIS_TYPE
   axisConfig: AxisConfig = {
     xAxis: {
@@ -95,6 +91,9 @@ export class BubbleMap extends L7PlotChartView<ChoroplethOptions, Choropleth> {
           textAnchor: 'center'
         }
       },
+      state: {
+        active: { stroke: 'green', lineWidth: 1 }
+      },
       tooltip: {},
       legend: false,
       // 禁用线上地图数据
@@ -102,39 +101,26 @@ export class BubbleMap extends L7PlotChartView<ChoroplethOptions, Choropleth> {
     }
     const context = { drawOption, geoJson }
     options = this.setupOptions(chart, options, context)
-
-    const tooltip = deepCopy(options.tooltip)
-    options = { ...options, tooltip: { ...tooltip, showComponent: false } }
     const view = new Choropleth(container, options)
     const dotLayer = this.getDotLayer(chart, geoJson, drawOption)
-    dotLayer.options = { ...dotLayer.options, tooltip }
     this.configZoomButton(chart, view)
     mapRendering(container)
     view.once('loaded', () => {
-      // 修改地图鼠标样式为默认
-      view.scene.map._canvasContainer.lastElementChild.style.cursor = 'default'
-      dotLayer.addToScene(view.scene)
+      view.addLayer(dotLayer)
       dotLayer.once('add', () => {
         mapRendered(container)
       })
       view.scene.map['keyboard'].disable()
-      dotLayer.on('dotLayer:click', (ev: MapMouseEvent) => {
+      view.on('fillAreaLayer:click', (ev: MapMouseEvent) => {
         const data = ev.feature.properties
-        const adcode = view.currentDistrictData.features.find(
-          i => i.properties.name === ev.feature.properties.name
-        )?.properties.adcode
         action({
           x: ev.x,
           y: ev.y,
           data: {
             data,
-            extra: { adcode: adcode }
+            extra: { adcode: data.adcode }
           }
         })
-      })
-      dotLayer.once('loaded', () => {
-        chart.container = container
-        configCarouselTooltip(chart, view, chart.data?.data || [], null)
       })
     })
     return view
@@ -146,26 +132,24 @@ export class BubbleMap extends L7PlotChartView<ChoroplethOptions, Choropleth> {
     drawOption: L7PlotDrawOptions<Choropleth>
   ): IPlotLayer {
     const areaMap = chart.data?.data?.reduce((obj, value) => {
-      obj[value['field']] = { value: value.value, data: value }
+      obj[value['field']] = value.value
       return obj
     }, {})
     const dotData = []
     geoJson.features.forEach(item => {
       const name = item.properties['name']
-      if (areaMap?.[name]?.value) {
+      if (areaMap?.[name]) {
         dotData.push({
           x: item.properties['centroid'][0],
           y: item.properties['centroid'][1],
-          size: areaMap[name].value,
-          properties: areaMap[name].data,
-          name: name
+          size: areaMap[name]
         })
       }
     })
     const { basicStyle } = parseJson(chart.customAttr)
     const { bubbleCfg } = parseJson(chart.senior)
     const { offsetHeight, offsetWidth } = document.getElementById(drawOption.container)
-    const options: DotOptions = {
+    const options: DotLayerOptions = {
       source: {
         data: dotData,
         parser: {
@@ -187,12 +171,11 @@ export class BubbleMap extends L7PlotChartView<ChoroplethOptions, Choropleth> {
         opacity: 1
       },
       state: {
-        active: { color: 'rgba(30,90,255,1)' }
-      },
-      tooltip: {}
+        active: true
+      }
     }
     if (bubbleCfg && bubbleCfg.enable) {
-      return new Dot({
+      return new DotLayer({
         ...options,
         size: {
           field: 'size',
@@ -205,7 +188,7 @@ export class BubbleMap extends L7PlotChartView<ChoroplethOptions, Choropleth> {
         }
       })
     }
-    return new Dot(options)
+    return new DotLayer(options)
   }
 
   private configBasicStyle(

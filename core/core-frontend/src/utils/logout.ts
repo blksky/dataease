@@ -3,7 +3,6 @@ import router from '@/router'
 import { usePermissionStoreWithOut } from '@/store/modules/permission'
 import { interactiveStoreWithOut } from '@/store/modules/interactive'
 import { useCache } from '@/hooks/web/useCache'
-
 const { wsCache } = useCache()
 const permissionStore = usePermissionStoreWithOut()
 const userStore = useUserStoreWithOut()
@@ -51,8 +50,7 @@ const removeCache = () => {
     if (
       key.startsWith('de-plugin-') ||
       key === 'de-platform-client' ||
-      key === 'pwd-validity-period' ||
-      key === 'xpack-model-distributed'
+      key === 'pwd-validity-period'
     ) {
       wsCache.delete(key)
     }

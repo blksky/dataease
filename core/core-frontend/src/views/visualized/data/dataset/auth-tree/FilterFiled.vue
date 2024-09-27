@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
 import { ref, inject, computed, watch, onBeforeMount, toRefs } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { multFieldValuesForPermissions } from '@/api/dataset'
@@ -12,7 +10,6 @@ import {
   sysParamsIlns,
   fieldEnums
 } from '../options.js'
-import { iconFieldMap } from '@/components/icon-group/field-list.js'
 export interface Item {
   term: string
   fieldId: string
@@ -274,9 +271,7 @@ const emits = defineEmits(['update:item', 'del'])
             >
               <template #prefix>
                 <el-icon>
-                  <Icon name="icon_search-outline_outlined"
-                    ><icon_searchOutline_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_search-outline_outlined"></Icon>
                 </el-icon>
               </template>
             </el-input>
@@ -291,11 +286,8 @@ const emits = defineEmits(['update:item', 'del'])
               >
                 <el-icon>
                   <Icon
-                    ><component
-                      class="svg-icon"
-                      :class="`field-icon-${fieldEnums[ele.deType]}`"
-                      :is="iconFieldMap[fieldEnums[ele.deType]]"
-                    ></component
+                    :name="`field_${fieldEnums[ele.deType]}`"
+                    :className="`field-icon-${fieldEnums[ele.deType]}`"
                   ></Icon>
                 </el-icon>
                 <span>{{ ele.name }}</span>
@@ -448,9 +440,7 @@ const emits = defineEmits(['update:item', 'del'])
                     <label>{{ i }}</label>
                   </el-tooltip>
                   <el-icon @click="delChecks(idx)" style="opacity: 1">
-                    <Icon name="icon_delete-trash_outlined"
-                      ><icon_deleteTrash_outlined class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_delete-trash_outlined"></Icon>
                   </el-icon>
                 </li>
               </ul>
@@ -461,9 +451,7 @@ const emits = defineEmits(['update:item', 'del'])
                 </div>
                 <div class="footer-right">
                   <el-icon @click="clearAll">
-                    <Icon name="icon_delete-trash_outlined"
-                      ><icon_deleteTrash_outlined class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_delete-trash_outlined"></Icon>
                   </el-icon>
                 </div>
               </div>
@@ -472,9 +460,7 @@ const emits = defineEmits(['update:item', 'del'])
         </el-popover>
       </div>
       <el-icon v-if="showDel" class="font12" @click="emits('del')">
-        <Icon name="icon_delete-trash_outlined"
-          ><icon_deleteTrash_outlined class="svg-icon"
-        /></Icon>
+        <Icon name="icon_delete-trash_outlined"></Icon>
       </el-icon>
     </div>
   </div>
@@ -572,7 +558,7 @@ const emits = defineEmits(['update:item', 'del'])
   }
 
   .bottom-line {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, sans-serif;
     font-variant: tabular-nums;
     font-feature-settings: 'tnum';
     word-wrap: break-word;
@@ -620,7 +606,7 @@ const emits = defineEmits(['update:item', 'del'])
     border-radius: 0;
     box-shadow: none;
     height: 26px;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, sans-serif;
     word-wrap: break-word;
     text-align: left;
     color: rgba(0, 0, 0, 0.65);
@@ -733,7 +719,8 @@ const emits = defineEmits(['update:item', 'del'])
   }
 
   .ed-input {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: Alibaba-PuHuiTi-Regular, Helvetica Neue, Helvetica, Arial,
+      '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, sans-serif;
     box-sizing: border-box;
     margin: 0;
     color: rgba(0, 0, 0, 0.65);
@@ -766,7 +753,7 @@ const emits = defineEmits(['update:item', 'del'])
     box-shadow: none;
     border: 1px solid rgba(0, 0, 0, 0.05);
     .mod-left {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, sans-serif;
       color: rgba(0, 0, 0, 0.65);
       font-size: 12px;
       vertical-align: top;
@@ -812,7 +799,7 @@ const emits = defineEmits(['update:item', 'del'])
       border-left: 1px solid hsla(0, 0%, 59%, 0.1);
     }
     .autochecker-list {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, sans-serif;
       color: rgba(0, 0, 0, 0.65);
       box-sizing: border-box;
       width: 100%;
@@ -857,7 +844,8 @@ const emits = defineEmits(['update:item', 'del'])
         }
 
         label {
-          font-family: var(--de-custom_font, 'PingFang');
+          font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei,
+            sans-serif;
           font-size: 12px;
           direction: ltr;
           color: #333;

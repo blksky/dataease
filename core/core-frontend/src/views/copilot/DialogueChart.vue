@@ -1,11 +1,4 @@
 <script lang="ts" setup>
-import icon_chartLineC from '@/assets/svg/icon_chart-line-c.svg'
-import icon_dashboard_outlinedC from '@/assets/svg/icon_dashboard_outlined-c.svg'
-import icon_pie_outlinedC from '@/assets/svg/icon_pie_outlined-c.svg'
-import default_avatar from '@/assets/svg/default_avatar.svg'
-import copilot from '@/assets/svg/copilot.svg'
-import chartTable from '@/assets/svg/chart-table.svg'
-import chartDownload from '@/assets/svg/chart-download.svg'
 import { PropType, computed, onMounted, shallowRef, ref, nextTick, watch } from 'vue'
 import { Column, Line, Pie } from '@antv/g2plot'
 import { useElementSize } from '@vueuse/core'
@@ -220,21 +213,20 @@ const renderTable = computed(() => {
   )
 })
 const activeCommand = ref('')
-
 const curTypeList = [
   {
     label: '折线图',
     value: 'line',
-    icon: icon_chartLineC
+    icon: 'icon_chart-line-c'
   },
   {
     label: '柱状图',
-    icon: icon_dashboard_outlinedC,
+    icon: 'icon_dashboard_outlined-c',
     value: 'bar'
   },
   {
     label: '饼图',
-    icon: icon_pie_outlinedC,
+    icon: 'icon_pie_outlined-c',
     value: 'pie'
   }
 ]
@@ -265,12 +257,7 @@ const tips = computed(() => {
     ]"
   >
     <el-icon style="font-size: 32px" class="dialogue-chart_icon">
-      <Icon
-        ><component
-          class="svg-icon"
-          :is="copilotInfo.msgType === 'api' ? copilot : default_avatar"
-        ></component
-      ></Icon>
+      <Icon :name="copilotInfo.msgType === 'api' ? 'copilot' : 'default_avatar'" />
     </el-icon>
     <div ref="content" class="content">
       <div v-if="isWelcome" class="question-or-title" style="font-size: 16px; font-weight: 500">
@@ -317,12 +304,7 @@ const tips = computed(() => {
           v-if="activeCommand"
           class="select-prefix"
         >
-          <Icon
-            ><component
-              class="svg-icon"
-              :is="curTypeList.find(ele => ele.value === activeCommand).icon"
-            ></component
-          ></Icon>
+          <Icon :name="curTypeList.find(ele => ele.value === activeCommand).icon" />
         </el-icon>
         <el-tooltip effect="dark" content="切换图表类型" placement="top">
           <div
@@ -356,13 +338,13 @@ const tips = computed(() => {
           class="ed-icon_chart"
           @click="switchChartType('table')"
         >
-          <Icon name="chart-table"><chartTable class="svg-icon" /></Icon>
+          <Icon name="chart-table" />
         </el-icon>
       </el-tooltip>
       <el-divider direction="vertical" />
       <el-tooltip effect="dark" content="下载" placement="top">
         <el-icon class="ed-icon_chart" @click="downloadChart">
-          <Icon name="chart-download"><chartDownload class="svg-icon" /></Icon>
+          <Icon name="chart-download" />
         </el-icon>
       </el-tooltip>
     </div>
@@ -494,7 +476,7 @@ const tips = computed(() => {
     margin-left: 8px;
     border-radius: 8px;
     .question-or-title {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       font-weight: 400;
       line-height: 22px;
@@ -528,7 +510,7 @@ const tips = computed(() => {
     }
 
     .is-welcome {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       font-weight: 400;
       line-height: 22px;

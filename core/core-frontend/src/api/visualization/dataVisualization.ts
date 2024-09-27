@@ -41,12 +41,6 @@ export const queryTreeApi = async (data: BusiTreeRequest): Promise<IResponse> =>
   })
 }
 
-export const queryBusiTreeApi = async (data): Promise<IResponse> => {
-  return request.post({ url: '/dataVisualization/interactiveTree', data }).then(res => {
-    return res?.data
-  })
-}
-
 export const findDvType = async dvId =>
   request.get({ url: `/dataVisualization/findDvType/${dvId}` })
 
@@ -111,13 +105,5 @@ export const export2AppCheck = params => {
     url: '/dataVisualization/export2AppCheck',
     data: params,
     loading: true
-  })
-}
-
-export const queryOuterParamsDsInfo = async dvId => {
-  return request.get({
-    url: '/outerParams/queryDsWithVisualizationId/' + dvId,
-    method: 'get',
-    loading: false
   })
 }

@@ -175,7 +175,6 @@ const reUpload = e => {
   const file = e.target.files[0]
   if (file.size > maxImageSize) {
     sizeMessage()
-    return
   }
   uploadFileResult(file, fileUrl => {
     canvasStyleData.value.background = fileUrl

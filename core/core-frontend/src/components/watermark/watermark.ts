@@ -1,12 +1,5 @@
 // 动态创建水印元素的封装函数
-import { storeToRefs } from 'pinia'
-import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
-import { ref } from 'vue'
-import { personInfoApi } from '@/api/user'
-const dvMainStore = dvMainStoreWithOut()
 
-const { dvInfo } = storeToRefs(dvMainStore)
-const userInfo = ref(null)
 export function watermark(settings, domId) {
   const watermarkDom = document.getElementById(domId)
   // 默认设置
@@ -128,7 +121,7 @@ export function watermark(settings, domId) {
       oTemp.appendChild(mask_div)
     }
   }
-  oTemp.setAttribute('id', domId + '-de-watermark-server')
+  oTemp.setAttribute('id', 'de-watermark-server')
   watermarkDom.appendChild(oTemp)
 }
 
@@ -151,41 +144,6 @@ export function getNow() {
   const time = year + '-' + month + '-' + day + ' ' + hour + ':' + minute
   return time
 }
-export function activeWatermarkCheckUser(domId, canvasId, scale = 1) {
-  if (dvInfo.value.watermarkInfo) {
-    if (userInfo.value && userInfo.value.model !== 'lose') {
-      activeWatermark(
-        dvInfo.value.watermarkInfo.settingContent,
-        userInfo.value,
-        domId,
-        canvasId,
-        dvInfo.value.selfWatermarkStatus,
-        scale
-      )
-    } else {
-      personInfoApi().then(res => {
-        userInfo.value = res.data
-        if (userInfo.value && userInfo.value.model !== 'lose') {
-          activeWatermark(
-            dvInfo.value.watermarkInfo.settingContent,
-            userInfo.value,
-            domId,
-            canvasId,
-            dvInfo.value.selfWatermarkStatus,
-            scale
-          )
-        }
-      })
-    }
-  }
-}
-
-export function removeActiveWatermark(domId) {
-  const historyWatermarkDom = document.getElementById(domId + '-de-watermark-server')
-  if (historyWatermarkDom) {
-    historyWatermarkDom.remove()
-  }
-}
 
 export function activeWatermark(
   watermarkForm,
@@ -196,7 +154,10 @@ export function activeWatermark(
   scale = 1
 ) {
   // 清理历史水印
-  removeActiveWatermark(domId)
+  const historyWatermarkDom = document.getElementById('de-watermark-server')
+  if (historyWatermarkDom) {
+    historyWatermarkDom.remove()
+  }
   if (
     !(
       canvasId === 'canvas-main' &&

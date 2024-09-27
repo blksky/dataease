@@ -1,10 +1,9 @@
 <script lang="tsx" setup>
-import { computed, nextTick, onMounted, PropType, reactive, watch } from 'vue'
+import { computed, onMounted, PropType, reactive, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { COLOR_PANEL, DEFAULT_MISC } from '@/views/chart/components/editor/util/chart'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { ElSpace } from 'element-plus-secondary'
-import { cloneDeep } from 'lodash-es'
 
 const { t } = useI18n()
 const dvMainStore = dvMainStoreWithOut()
@@ -64,11 +63,7 @@ const init = () => {
       customAttr = JSON.parse(chart.customAttr)
     }
     if (customAttr.misc.flowMapConfig.lineConfig) {
-      state.pointForm = cloneDeep(customAttr.misc.flowMapConfig.pointConfig)
-      nextTick(() => {
-        state.pointForm.point.color = customAttr.misc.flowMapConfig.pointConfig.point.color
-        state.pointForm.text.color = customAttr.misc.flowMapConfig.pointConfig.text.color
-      })
+      state.pointForm = customAttr.misc.flowMapConfig.pointConfig
     } else {
       // 新增图表
       state.pointForm = {
@@ -89,7 +84,7 @@ onMounted(() => {
   <el-form ref="pointForm" :model="state.pointForm" size="small" label-position="top">
     <div style="padding-bottom: 8px">
       <el-space>
-        <el-form-item class="form-item" :class="'form-item-' + themes" label="标注点文本">
+        <el-form-item class="form-item" :class="'form-item-' + themes" :label="t('chart.text')">
           <el-color-picker
             :effect="themes"
             size="default"

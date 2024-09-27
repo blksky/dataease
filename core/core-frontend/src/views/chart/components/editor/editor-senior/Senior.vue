@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import FunctionCfg from '@/views/chart/components/editor/editor-senior/components/FunctionCfg.vue'
 import ScrollCfg from '@/views/chart/components/editor/editor-senior/components/ScrollCfg.vue'
@@ -13,29 +11,18 @@ import { computed, PropType, ref, toRefs, watch } from 'vue'
 import LinkJumpSet from '@/components/visualization/LinkJumpSet.vue'
 import LinkageSet from '@/components/visualization/LinkageSet.vue'
 import { canvasSave } from '@/utils/canvasUtils'
-import {
-  queryVisualizationJumpInfo,
-  removeJumpSet,
-  updateJumpSetActive
-} from '@/api/visualization/linkJump'
+import { updateJumpSetActive } from '@/api/visualization/linkJump'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
-import {
-  getPanelAllLinkageInfo,
-  removeLinkage,
-  updateLinkageActive
-} from '@/api/visualization/linkage'
+import { updateLinkageActive } from '@/api/visualization/linkage'
 import { includesAny } from '../util/StringUtils'
 import { ElIcon, ElMessage } from 'element-plus-secondary'
 import { storeToRefs } from 'pinia'
 import { BASE_VIEW_CONFIG } from '../util/chart'
 import { cloneDeep, defaultsDeep } from 'lodash-es'
 import BubbleAnimateCfg from '@/views/chart/components/editor/editor-senior/components/BubbleAnimateCfg.vue'
-import { XpackComponent } from '@/components/plugin'
-import CarouselSetting from '@/custom-component/common/CarouselSetting.vue'
 const dvMainStore = dvMainStoreWithOut()
 
-const { nowPanelTrackInfo, nowPanelJumpInfo, dvInfo, componentData, curComponent } =
-  storeToRefs(dvMainStore)
+const { nowPanelTrackInfo, nowPanelJumpInfo, dvInfo, componentData } = storeToRefs(dvMainStore)
 
 const { t } = useI18n()
 const linkJumpRef = ref(null)
@@ -139,6 +126,7 @@ const onMapMappingChange = val => {
 }
 
 const onBubbleAnimateChange = val => {
+  console.log(val)
   emit('onBubbleAnimateChange', val)
 }
 
@@ -177,11 +165,8 @@ const SENIOR_PROP: EditorProperty[] = [
   'linkage',
   'bubble-animate'
 ]
-const excludeTypeList = ['chart-mix', 'chart-mix-stack', 'chart-mix-group']
 const noSenior = computed(() => {
-  return (
-    !includesAny(properties.value, ...SENIOR_PROP) && excludeTypeList.includes(chart.value.type)
-  )
+  return !includesAny(properties.value, ...SENIOR_PROP)
 })
 
 const linkJumpActiveChange = () => {
@@ -207,24 +192,6 @@ const linkageActiveChange = () => {
 }
 const appStore = useAppStoreWithOut()
 const isDataEaseBi = computed(() => appStore.getIsDataEaseBi)
-
-const removeLinkageSenior = () => {
-  removeLinkage({ dvId: dvInfo.value.id, sourceViewId: chart.value.id }).then(rsp => {
-    // 刷新联动信息
-    getPanelAllLinkageInfo(dvInfo.value.id).then(rsp => {
-      dvMainStore.setNowPanelTrackInfo(rsp.data)
-    })
-  })
-}
-
-const removeJumpSenior = () => {
-  removeJumpSet({ sourceDvId: dvInfo.value.id, sourceViewId: chart.value.id }).then(rspCur => {
-    // 刷新跳转信息
-    queryVisualizationJumpInfo(dvInfo.value.id).then(rsp => {
-      dvMainStore.setNowPanelJumpInfo(rsp.data)
-    })
-  })
-}
 </script>
 
 <template>
@@ -315,13 +282,6 @@ const removeJumpSenior = () => {
             />
           </collapse-switch-item>
 
-          <xpack-component
-            v-if="chart.id"
-            :chart="chart"
-            :themes="themes"
-            jsname="L2NvbXBvbmVudC90aHJlc2hvbGQtd2FybmluZy9TZW5pb3JIYW5kbGVy"
-          />
-
           <collapse-switch-item
             v-if="showProperties('linkage')"
             :themes="themes"
@@ -337,31 +297,23 @@ const removeJumpSenior = () => {
                   <span class="set-text-info" :class="{ 'set-text-info-dark': themes === 'dark' }">
                     已设置
                   </span>
-                  <button
-                    class="circle-button_icon"
-                    :title="t('chart.delete')"
-                    :class="'label-' + props.themes"
-                    :style="{ margin: '0 8px' }"
-                    @click="removeLinkageSenior"
-                  >
-                    <el-icon>
-                      <Icon name="icon_delete-trash_outlined"
-                        ><icon_deleteTrash_outlined class="svg-icon"
-                      /></Icon>
-                    </el-icon>
-                  </button>
                 </template>
-                <button
-                  class="circle-button_icon"
+                <el-button
+                  class="circle-button font14"
                   :title="t('chart.edit')"
                   :class="'label-' + props.themes"
+                  text
+                  size="small"
+                  :style="{ width: '24px', marginLeft: '6px' }"
                   @click="linkageSetOpen"
                   :disabled="!chart.linkageActive"
                 >
-                  <el-icon>
-                    <Icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></Icon>
-                  </el-icon>
-                </button>
+                  <template #icon>
+                    <el-icon size="14px">
+                      <Icon name="icon_edit_outlined" />
+                    </el-icon>
+                  </template>
+                </el-button>
               </span>
             </div>
           </collapse-switch-item>
@@ -380,31 +332,38 @@ const removeJumpSenior = () => {
                   <span class="set-text-info" :class="{ 'set-text-info-dark': themes === 'dark' }">
                     已设置
                   </span>
-                  <button
-                    class="circle-button_icon"
+                  <!--                  <el-button
+                    class="circle-button font14"
                     :title="t('chart.delete')"
                     :class="'label-' + props.themes"
-                    :style="{ margin: '0 8px' }"
-                    @click="removeJumpSenior"
+                    text
+                    size="small"
+                    :style="{ width: '24px', marginLeft: '6px' }"
+                    @click="linkJumpSetOpen"
                   >
-                    <el-icon>
-                      <Icon name="icon_delete-trash_outlined"
-                        ><icon_deleteTrash_outlined class="svg-icon"
-                      /></Icon>
-                    </el-icon>
-                  </button>
+                    <template #icon>
+                      <el-icon size="14px">
+                        <Icon name="icon_delete-trash_outlined" />
+                      </el-icon>
+                    </template>
+                  </el-button>-->
                 </template>
-                <button
-                  class="circle-button_icon"
+                <el-button
+                  class="circle-button font14"
                   :title="t('chart.edit')"
                   :class="'label-' + props.themes"
+                  text
+                  size="small"
+                  :style="{ width: '24px', marginLeft: '6px' }"
                   @click="linkJumpSetOpen"
                   :disabled="!chart.jumpActive"
                 >
-                  <el-icon>
-                    <Icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></Icon>
-                  </el-icon>
-                </button>
+                  <template #icon>
+                    <el-icon size="14px">
+                      <Icon name="icon_edit_outlined" />
+                    </el-icon>
+                  </template>
+                </el-button>
               </span>
             </div>
           </collapse-switch-item>
@@ -424,11 +383,6 @@ const removeJumpSenior = () => {
               @onBubbleAnimateChange="onBubbleAnimateChange"
             />
           </collapse-switch-item>
-          <carousel-setting
-            v-if="curComponent?.innerType === 'picture-group'"
-            :element="curComponent"
-            :themes="themes"
-          ></carousel-setting>
         </el-collapse>
       </el-row>
     </div>
@@ -455,9 +409,6 @@ span {
   display: flex;
   height: 100%;
   width: 100%;
-  .attr-style {
-    width: 100%;
-  }
 }
 
 .prop {
@@ -488,11 +439,23 @@ span {
 }
 
 .label-dark {
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
   color: #a6a6a6 !important;
+  &.ed-button {
+    color: var(--ed-color-primary) !important;
+  }
+  &.is-disabled {
+    color: #5f5f5f !important;
+  }
+}
+
+.font14 {
+  :deep(.ed-icon) {
+    font-size: 14px;
+  }
 }
 
 .inner-container {

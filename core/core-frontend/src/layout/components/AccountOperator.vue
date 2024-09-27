@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import userImg from '@/assets/svg/user-img.svg'
-import icon_expandDown_filled from '@/assets/svg/icon_expand-down_filled.svg'
 import { computed, ref, unref } from 'vue'
 import { Icon } from '@/components/icon-custom'
 import { useUserStoreWithOut } from '@/store/modules/user'
@@ -113,11 +111,11 @@ if (uid.value === '1') {
     v-click-outside="openPopover"
   >
     <el-icon class="main-color">
-      <Icon name="user-img"><userImg class="svg-icon" /></Icon>
+      <Icon name="user-img" />
     </el-icon>
     <span class="uname-span">{{ name }}</span>
     <el-icon class="el-icon-animate">
-      <Icon name="icon_expand-down_filled"><icon_expandDown_filled class="svg-icon" /></Icon>
+      <Icon name="icon_expand-down_filled" />
     </el-icon>
   </div>
   <el-popover
@@ -188,7 +186,7 @@ if (uid.value === '1') {
 }
 .is-light-top-info {
   .uname-span {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     color: var(--ed-color-black) !important;
   }
   &:hover {
@@ -212,7 +210,7 @@ if (uid.value === '1') {
     border-radius: 50%;
   }
   .uname-span {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-size: 14px;
     color: rgba(255, 255, 255, 0.8);
   }

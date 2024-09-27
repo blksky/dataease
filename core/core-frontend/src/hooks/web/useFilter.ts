@@ -1,7 +1,6 @@
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { storeToRefs } from 'pinia'
 import { getDynamicRange, getCustomTime } from '@/custom-component/v-query/time-format'
-import { getCustomRange } from '@/custom-component/v-query/time-format-dayjs'
 const dvMainStore = dvMainStoreWithOut()
 const { componentData } = storeToRefs(dvMainStore)
 
@@ -267,7 +266,6 @@ export const searchQuery = (queryComponentList, filter, curComponentId, firstLoa
                   timeNum,
                   relativeToCurrentType,
                   around,
-                  relativeToCurrentRange,
                   arbitraryTime,
                   timeGranularity,
                   timeNumRange,
@@ -277,7 +275,7 @@ export const searchQuery = (queryComponentList, filter, curComponentId, firstLoa
                   arbitraryTimeRange
                 } = item
 
-                let startTime = getCustomTime(
+                const startTime = getCustomTime(
                   timeNum,
                   relativeToCurrentType,
                   timeGranularity,
@@ -286,7 +284,7 @@ export const searchQuery = (queryComponentList, filter, curComponentId, firstLoa
                   timeGranularityMultiple,
                   'start-panel'
                 )
-                let endTime = getCustomTime(
+                const endTime = getCustomTime(
                   timeNumRange,
                   relativeToCurrentTypeRange,
                   timeGranularity,
@@ -295,10 +293,6 @@ export const searchQuery = (queryComponentList, filter, curComponentId, firstLoa
                   timeGranularityMultiple,
                   'end-panel'
                 )
-
-                if (!!relativeToCurrentRange && relativeToCurrentRange !== 'custom') {
-                  ;[startTime, endTime] = getCustomRange(relativeToCurrentRange)
-                }
                 item.defaultValue = [startTime, endTime]
                 item.selectValue = [startTime, endTime]
                 selectValue = [startTime, endTime]
@@ -354,21 +348,14 @@ export const searchQuery = (queryComponentList, filter, curComponentId, firstLoa
                 firstLoad
               )
               if (result?.length) {
-                const fieldId = isTree
-                  ? getFieldId(treeFieldList, result)
-                  : item.checkedFieldsMap[curComponentId]
-                const parametersFilter = parameters.reduce((pre, next) => {
-                  if (next.id === fieldId && !pre.length) {
-                    pre.push(next)
-                  }
-                  return pre
-                }, [])
                 filter.push({
                   componentId: ele.id,
-                  fieldId,
+                  fieldId: isTree
+                    ? getFieldId(treeFieldList, result)
+                    : item.checkedFieldsMap[curComponentId],
                   operator,
                   value: result,
-                  parameters: parametersFilter,
+                  parameters,
                   isTree
                 })
               }

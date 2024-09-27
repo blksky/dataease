@@ -478,13 +478,9 @@ declare interface CalcTotals {
 /**
  * 汇总聚合配置
  */
-declare interface CalcTotalCfg extends Axis {
+declare interface CalcTotalCfg {
   dataeaseName: string
-  aggregation: 'MIN' | 'MAX' | 'AVG' | 'SUM' | 'CUSTOM' | ''
-  /**
-   * 自定义汇总表达式
-   */
-  originName: string
+  aggregation: 'MIN' | 'MAX' | 'AVG' | 'SUM' | ''
 }
 
 /**
@@ -709,28 +705,6 @@ declare interface ChartMiscAttr {
       }
     }
   }
-
-  /**
-   * 词云图轴值配置
-   */
-  wordCloudAxisValueRange: {
-    /**
-     * 自动轴值
-     */
-    auto: boolean
-    /**
-     * 最小值
-     */
-    min: number
-    /**
-     * 最大值
-     */
-    max: number
-    /**
-     * 轴值字段
-     */
-    fieldId: string
-  }
 }
 /**
  * 动态极值配置
@@ -839,27 +813,6 @@ declare interface ChartLabelAttr {
    * 显示极值
    */
   showExtremum?: boolean
-
-  /**
-   * 转化率标签
-   */
-  conversionTag: ConversionTagAtt
-  /**
-   * 堆叠柱状图显示总计
-   */
-  showTotal: boolean
-  /**
-   * 总计标签字体大小
-   */
-  totalFontSize: number
-  /**
-   * 总计标签字体颜色
-   */
-  totalColor: string
-  /**
-   * 总计标签格式化设置
-   */
-  totalFormatter: BaseFormatter
 }
 /**
  * 提示设置
@@ -905,11 +858,6 @@ declare interface ChartTooltipAttr {
    * 自定义显示内容
    */
   customContent?: string
-
-  /**
-   * 轮播设置
-   */
-  carousel: CarouselAttr
 }
 
 /**
@@ -1108,37 +1056,4 @@ declare interface ChartIndicatorNameStyle {
    * 指标/名称间距
    */
   nameValueSpacing: number
-}
-
-/**
- * 轮播属性
- */
-declare interface CarouselAttr {
-  /**
-   * 是否启用
-   */
-  enable: boolean
-  /**
-   * 停留时间 秒
-   */
-  stayTime: number
-  /**
-   * 轮播间隔时间 秒
-   */
-  intervalTime: number
-}
-
-declare interface ConversionTagAtt {
-  /**
-   * 是否显示
-   */
-  show: boolean
-  /**
-   * 文本
-   */
-  text: string
-  /**
-   * 精度
-   */
-  precision: number
 }

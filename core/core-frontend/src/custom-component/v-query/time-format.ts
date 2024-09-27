@@ -233,7 +233,6 @@ interface TimeRange {
   regularOrTrends: string
   regularOrTrendsValue: string
   relativeToCurrent: string
-  relativeToCurrentRange: string
   timeNum: number
   relativeToCurrentType: ManipulateType
   around: string

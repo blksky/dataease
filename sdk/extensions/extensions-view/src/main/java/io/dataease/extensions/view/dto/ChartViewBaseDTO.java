@@ -3,7 +3,6 @@ package io.dataease.extensions.view.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import io.dataease.extensions.datasource.dto.CalParam;
 import io.dataease.extensions.view.filter.FilterTreeObj;
 import lombok.Data;
 
@@ -218,12 +217,5 @@ public class ChartViewBaseDTO implements Serializable {
      * 流向地图终点名称
      */
     private List<ChartViewFieldDTO> flowMapEndName;
-
-    /**
-     * 计算字段参数值
-     */
-    private List<CalParam> calParams;
-
-    private List<ChartViewFieldDTO> extColor;
 
 }

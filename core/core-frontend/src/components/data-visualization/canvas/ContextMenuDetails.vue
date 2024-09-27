@@ -9,9 +9,8 @@ import { storeToRefs } from 'pinia'
 import { computed, toRefs } from 'vue'
 import { ElDivider } from 'element-plus-secondary'
 import eventBus from '@/utils/eventBus'
-import { componentArraySort, getCurInfo } from '@/store/modules/data-visualization/common'
+import { getCurInfo } from '@/store/modules/data-visualization/common'
 import { useEmitt } from '@/hooks/web/useEmitt'
-import { XpackComponent } from '@/components/plugin'
 const dvMainStore = dvMainStoreWithOut()
 const copyStore = copyStoreWithOut()
 const lockStore = lockStoreWithOut()
@@ -119,53 +118,25 @@ const deleteComponent = () => {
 }
 
 const upComponent = () => {
-  if (curComponent.value && !isGroupArea.value) {
-    layerStore.upComponent(curComponent.value.id)
-  } else if (areaData.value.components.length) {
-    componentArraySort(areaData.value.components)
-    areaData.value.components.forEach(component => {
-      layerStore.upComponent(component.id)
-    })
-  }
+  layerStore.upComponent()
   snapshotStore.recordSnapshotCache('upComponent')
   menuOpt('upComponent')
 }
 
 const downComponent = () => {
-  if (curComponent.value && !isGroupArea.value) {
-    layerStore.downComponent(curComponent.value.id)
-  } else if (areaData.value.components.length) {
-    componentArraySort(areaData.value.components, 'top')
-    areaData.value.components.forEach(component => {
-      layerStore.downComponent(component.id)
-    })
-  }
+  layerStore.downComponent()
   snapshotStore.recordSnapshotCache('downComponent')
   menuOpt('downComponent')
 }
 
 const topComponent = () => {
-  if (curComponent.value && !isGroupArea.value) {
-    layerStore.topComponent(curComponent.value.id)
-  } else if (areaData.value.components.length) {
-    componentArraySort(areaData.value.components, 'top')
-    areaData.value.components.forEach(component => {
-      layerStore.topComponent(component.id)
-    })
-  }
+  layerStore.topComponent()
   snapshotStore.recordSnapshotCache('topComponent')
   menuOpt('topComponent')
 }
 
 const bottomComponent = () => {
-  if (curComponent.value && !isGroupArea.value) {
-    layerStore.bottomComponent(curComponent.value.id)
-  } else if (areaData.value.components.length) {
-    componentArraySort(areaData.value.components)
-    areaData.value.components.forEach(component => {
-      layerStore.bottomComponent(component.id)
-    })
-  }
+  layerStore.bottomComponent()
   snapshotStore.recordSnapshotCache('bottomComponent')
   menuOpt('bottomComponent')
 }
@@ -270,14 +241,10 @@ const editQueryCriteria = () => {
         <template v-if="!curComponent['isLock'] && curComponent.category !== 'hidden'">
           <li v-if="curComponent.component === 'VQuery'" @click="editQueryCriteria">编辑</li>
           <li @click="upComponent">上移一层</li>
+          <li @click="upComponent">上移一层</li>
           <li @click="downComponent">下移一层</li>
           <li @click="topComponent">置于顶层</li>
           <li @click="bottomComponent">置于底层</li>
-          <xpack-component
-            :chart="curComponent"
-            is-screen
-            jsname="L2NvbXBvbmVudC90aHJlc2hvbGQtd2FybmluZy9FZGl0QmFySGFuZGxlcg=="
-          />
           <li
             @click="categoryChange('hidden')"
             v-show="

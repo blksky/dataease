@@ -3,8 +3,6 @@ import { reactive, ref, toRefs } from 'vue'
 import { CHART_TYPE_CONFIGS } from '@/views/chart/components/editor/util/chart'
 import Icon from '@/components/icon-custom/src/Icon.vue'
 import { ElScrollbar } from 'element-plus-secondary'
-import { iconChartDarkMap } from '@/components/icon-group/chart-dark-list'
-import { iconChartMap } from '@/components/icon-group/chart-list'
 
 const props = defineProps({
   propValue: {
@@ -101,16 +99,11 @@ const groupActiveChange = category => {
                 v-if="chartInfo['isPlugin']"
                 :static-content="chartInfo.icon"
               />
-              <Icon v-else class-name="item-top-icon"
-                ><component
-                  class="svg-icon item-top-icon"
-                  :is="
-                    props.themes === 'dark'
-                      ? iconChartDarkMap[`${chartInfo.icon}-dark`]
-                      : iconChartMap[chartInfo.icon]
-                  "
-                ></component
-              ></Icon>
+              <Icon
+                v-else
+                class-name="item-top-icon"
+                :name="chartInfo.icon + (props.themes === 'dark' ? '-dark' : '')"
+              />
             </div>
             <div class="item-bottom">
               <span>{{ chartInfo.title }}</span>

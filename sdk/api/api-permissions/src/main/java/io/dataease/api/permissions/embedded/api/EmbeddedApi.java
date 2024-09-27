@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "嵌入式")
 @ApiSupport(order = 883, author = "fit2cloud-someone")
@@ -58,7 +57,4 @@ public interface EmbeddedApi {
     @Hidden
     @PostMapping("/initIframe")
     void initIframe(@RequestBody EmbeddedOrigin origin);
-
-    @GetMapping("/getTokenArgs")
-    Map<String, Object> getTokenArgs();
 }

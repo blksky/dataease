@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import logo from '@/assets/svg/logo.svg'
 import aboutBg from '@/assets/img/about-bg.png'
 import { ref, reactive, onMounted, h } from 'vue'
 import { useUserStoreWithOut } from '@/store/modules/user'
@@ -82,12 +81,8 @@ const setLicense = lic => {
     dynamicCardClass.value = 'about-card-medium'
   }
 }
-const removeDistributeModule = () => {
-  const key = 'xpack-model-distributed'
-  localStorage.removeItem(key)
-}
+
 const importLic = file => {
-  removeDistributeModule()
   const reader = new FileReader()
   reader.onload = function (e) {
     const licKey = e.target.result
@@ -197,7 +192,7 @@ const syncFree = () => {
     <img width="792" height="180" :src="aboutBg" />
     <div class="color-overlay"></div>
     <el-icon class="logo">
-      <icon name="logo"><logo class="svg-icon" /></icon>
+      <icon name="logo"></icon>
     </el-icon>
     <div class="content">
       <div class="item">
@@ -296,7 +291,7 @@ const syncFree = () => {
     margin-top: -7px;
 
     .item {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 16px;
       font-style: normal;
       font-weight: 400;

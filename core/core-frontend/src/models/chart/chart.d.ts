@@ -32,7 +32,6 @@ declare interface Chart {
       fields: ChartViewField[]
       tableRow: []
     }
-    customCalc: any
   }
   xAxis?: Axis[]
   xAxisExt?: Axis[]
@@ -68,9 +67,6 @@ declare interface Chart {
   seriesFieldObjs?: any[]
   flowMapStartName?: Axis[]
   flowMapEndName?: Axis[]
-  showPosition: string
-
-  extColor: Axis[]
 }
 declare type CustomAttr = DeepPartial<ChartAttr> | JSONString<DeepPartial<ChartAttr>>
 declare type CustomStyle = DeepPartial<ChartStyle> | JSONString<DeepPartial<ChartStyle>>

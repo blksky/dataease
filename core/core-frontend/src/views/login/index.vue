@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import DataEase from '@/assets/svg/DataEase.svg'
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { FormRules, FormInstance } from 'element-plus-secondary'
@@ -17,7 +16,7 @@ import { XpackComponent } from '@/components/plugin'
 import { logoutHandler } from '@/utils/logout'
 import DeImage from '@/assets/login-desc-de.png'
 import elementResizeDetectorMaker from 'element-resize-detector'
-import { checkPlatform, cleanPlatformFlag, getQueryString } from '@/utils/utils'
+import { checkPlatform, cleanPlatformFlag } from '@/utils/utils'
 import xss from 'xss'
 const { wsCache } = useCache()
 const appStore = useAppStoreWithOut()
@@ -88,7 +87,7 @@ const getCurLocation = () => {
 }
 
 const formRef = ref<FormInstance | undefined>()
-const duringLogin = ref(true)
+const duringLogin = ref(false)
 const handleLogin = () => {
   if (!formRef.value) return
   formRef.value.validate(async (valid: boolean) => {
@@ -113,7 +112,14 @@ const handleLogin = () => {
           userStore.setExp(exp)
           if (!xpackLoadFail.value && xpackInvalidPwd.value?.invokeMethod) {
             const param = {
-              methodName: 'init'
+              methodName: 'init',
+              args: r => {
+                duringLogin.value = !!r
+                if (r) {
+                  const queryRedirectPath = getCurLocation()
+                  router.push({ path: queryRedirectPath })
+                }
+              }
             }
             xpackInvalidPwd?.value.invokeMethod(param)
             return
@@ -139,13 +145,6 @@ const ldapValidate = callback => {
 const ldapFeedback = () => {
   duringLogin.value = false
 }
-const invalidPwdCb = val => {
-  duringLogin.value = !!val
-  if (val) {
-    const queryRedirectPath = getCurLocation()
-    router.push({ path: queryRedirectPath })
-  }
-}
 const xpackLoadFail = ref(false)
 const loadingText = ref('登录中...')
 const loginContainer = ref()
@@ -164,11 +163,11 @@ const showLoginErrorMsg = () => {
     return
   }
   if (loginErrorMsg.value.startsWith('token is Expired')) {
-    ElMessage.error('登录信息已过期，请重新登录！')
+    ElMessage.error('token已过期，请重新登录！')
     return
   }
   if (loginErrorMsg.value.startsWith('token is destroyed')) {
-    ElMessage.error('登录信息已销毁，请重新登录！')
+    ElMessage.error('token已销毁，请重新登录！')
     return
   }
   if (loginErrorMsg.value.startsWith('user_disable')) {
@@ -226,7 +225,6 @@ const switchTab = (name: string) => {
 }
 onMounted(async () => {
   loadArrearance()
-  duringLogin.value = false
   if (!checkPlatform()) {
     const res = await loginCategoryApi()
     const adminLogin = router.currentRoute?.value?.name === 'admin-login'
@@ -255,8 +253,6 @@ onMounted(async () => {
     } else {
       preheat.value = false
     }
-  } else if (getQueryString('state')?.includes('de-oauth2-')) {
-    preheat.value = true
   }
   if (localStorage.getItem('DE-GATEWAY-FLAG')) {
     const msg = localStorage.getItem('DE-GATEWAY-FLAG')
@@ -312,9 +308,7 @@ onMounted(async () => {
                 v-if="!loginLogoUrl && axiosFinished"
                 className="login-logo-icon"
                 name="DataEase"
-              >
-                <DataEase class="login-logo-icon" />
-              </Icon>
+              ></Icon>
               <img v-if="loginLogoUrl && axiosFinished" :src="loginLogoUrl" alt="" />
             </div>
             <div class="login-welcome">
@@ -377,7 +371,6 @@ onMounted(async () => {
                 ref="xpackInvalidPwd"
                 jsname="L2NvbXBvbmVudC9sb2dpbi9JbnZhbGlkUHdk"
                 @load-fail="() => (xpackLoadFail = true)"
-                @call-back="invalidPwdCb"
               />
             </div>
 
@@ -471,12 +464,11 @@ onMounted(async () => {
     text-align: center;
     margin-top: 8px;
     color: #646a73;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-size: 14px;
     font-style: normal;
     font-weight: 400;
     line-height: 20px;
-    word-wrap: break-word;
   }
 
   .demo-tips {
@@ -510,7 +502,7 @@ onMounted(async () => {
     .login-form-title {
       margin-top: 20px;
       color: #1f2329;
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: PingFang SC;
       font-size: 20px;
       font-weight: 500;
       line-height: 28px;
@@ -520,7 +512,7 @@ onMounted(async () => {
 
   :deep(.ed-divider__text) {
     color: #8f959e;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-size: 12px;
     font-style: normal;
     font-weight: 400;

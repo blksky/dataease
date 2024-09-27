@@ -2,7 +2,7 @@ import { G2PlotChartView, G2PlotDrawOptions } from '../../types/impl/g2plot'
 import { flow, hexColorToRGBA, parseJson } from '../../../util'
 import { setGradientColor } from '../../common/common_antv'
 import { useI18n } from '@/hooks/web/useI18n'
-import type { Bar as G2Progress, BarOptions } from '@antv/g2plot/esm/plots/bar'
+import { Bar as G2Progress, BarOptions } from '@antv/g2plot/esm/plots/bar'
 import {
   BAR_AXIS_TYPE,
   BAR_EDITOR_PROPERTY_INNER
@@ -34,7 +34,6 @@ export class ProgressBar extends G2PlotChartView<BarOptions, G2Progress> {
   }
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'label-selector',
     'tooltip-selector',
@@ -48,8 +47,7 @@ export class ProgressBar extends G2PlotChartView<BarOptions, G2Progress> {
     ...BAR_EDITOR_PROPERTY_INNER,
     'legend-selector': null,
     'background-overall-component': ['all'],
-    'border-style': ['all'],
-    'basic-style-selector': ['colors', 'alpha', 'gradient', 'radiusColumnBar'],
+    'basic-style-selector': ['colors', 'alpha', 'gradient'],
     'label-selector': ['hPosition', 'color', 'fontSize'],
     'tooltip-selector': ['fontSize', 'color', 'backgroundColor', 'tooltipFormatter', 'show'],
     'y-axis-selector': ['name', 'color', 'fontSize', 'axisForm', 'axisLabel', 'position'],
@@ -68,7 +66,7 @@ export class ProgressBar extends G2PlotChartView<BarOptions, G2Progress> {
     appendPadding: [0, 0, 10, 0]
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Progress>): Promise<G2Progress> {
+  drawChart(drawOptions: G2PlotDrawOptions<G2Progress>): G2Progress {
     const { chart, container, action } = drawOptions
     if (!chart.data?.data?.length) {
       return
@@ -130,7 +128,6 @@ export class ProgressBar extends G2PlotChartView<BarOptions, G2Progress> {
     }
     const options = this.setupOptions(chart, initOptions)
 
-    const { Bar: G2Progress } = await import('@antv/g2plot/esm/plots/bar')
     // 开始渲染
     const newChart = new G2Progress(container, options)
 

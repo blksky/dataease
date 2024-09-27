@@ -1,41 +1,11 @@
 <script lang="tsx" setup>
-import icon_copy_filled from '@/assets/svg/icon_copy_filled.svg'
-import icon_dataset from '@/assets/svg/icon_dataset.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_intoItem_outlined from '@/assets/svg/icon_into-item_outlined.svg'
-import icon_rename_outlined from '@/assets/svg/icon_rename_outlined.svg'
-import dvNewFolder from '@/assets/svg/dv-new-folder.svg'
-import icon_fileAdd_outlined from '@/assets/svg/icon_file-add_outlined.svg'
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
-import dvSortAsc from '@/assets/svg/dv-sort-asc.svg'
-import dvSortDesc from '@/assets/svg/dv-sort-desc.svg'
-import dvFolder from '@/assets/svg/dv-folder.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
-import icon_info_outlined from '@/assets/svg/icon_info_outlined.svg'
-import icon_dashboard_outlined from '@/assets/svg/icon_dashboard_outlined.svg'
-import icon_operationAnalysis_outlined from '@/assets/svg/icon_operation-analysis_outlined.svg'
-import icon_download_outlined from '@/assets/svg/icon_download_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
-import {
-  ref,
-  reactive,
-  shallowRef,
-  computed,
-  watch,
-  onBeforeMount,
-  nextTick,
-  unref,
-  h,
-  provide
-} from 'vue'
+import { ref, reactive, shallowRef, computed, watch, onBeforeMount, nextTick, unref } from 'vue'
 import ArrowSide from '@/views/common/DeResourceArrow.vue'
 import { useEmbedded } from '@/store/modules/embedded'
 import { useEmitt } from '@/hooks/web/useEmitt'
-import relationChart from '@/components/relation-chart/index.vue'
 import {
   ElIcon,
-  ElButton,
   ElMessageBox,
   ElMessage,
   type ElMessageBoxOptions,
@@ -48,15 +18,7 @@ import { useMoveLine } from '@/hooks/web/useMoveLine'
 import { useRouter, useRoute } from 'vue-router'
 import CreatDsGroup from './form/CreatDsGroup.vue'
 import type { BusiTreeNode, BusiTreeRequest } from '@/models/tree/TreeNode'
-import {
-  delDatasetTree,
-  getDatasetPreview,
-  barInfoApi,
-  perDelete,
-  exportDatasetData,
-  exportLimit,
-  getDatasetTotal
-} from '@/api/dataset'
+import { delDatasetTree, getDatasetPreview, barInfoApi } from '@/api/dataset'
 import EmptyBackground from '@/components/empty-background/src/EmptyBackground.vue'
 import DeResourceGroupOpt from '@/views/common/DeResourceGroupOpt.vue'
 import DatasetDetail from './DatasetDetail.vue'
@@ -66,7 +28,6 @@ import { cloneDeep } from 'lodash-es'
 import { fieldType } from '@/utils/attr'
 import { useAppStoreWithOut } from '@/store/modules/app'
 import treeSort from '@/utils/treeSortUtils'
-import RowAuth from '@/views/chart/components/editor/filter/auth-tree/RowAuth.vue'
 
 import {
   DEFAULT_CANVAS_STYLE_DATA_LIGHT,
@@ -77,9 +38,6 @@ import { timestampFormatDate } from './form/util'
 import { interactiveStoreWithOut } from '@/store/modules/interactive'
 import { XpackComponent } from '@/components/plugin'
 import { useCache } from '@/hooks/web/useCache'
-import { RefreshLeft } from '@element-plus/icons-vue'
-import { iconFieldMap } from '@/components/icon-group/field-list'
-const { t } = useI18n()
 const interactiveStore = interactiveStoreWithOut()
 const { wsCache } = useCache()
 interface Field {
@@ -101,33 +59,10 @@ interface Node {
 }
 const appStore = useAppStoreWithOut()
 const rootManage = ref(false)
-const showExport = ref(false)
-const rowAuth = ref()
-const exportDatasetLoading = ref(false)
-const limit = ref('10万')
-const exportForm = ref({})
-const table = ref({})
-const exportFormRef = ref()
-const exportFormRules = {
-  name: [
-    {
-      required: true,
-      message: t('commons.input_content'),
-      trigger: 'change'
-    },
-    {
-      max: 50,
-      message: t('commons.char_can_not_more_50'),
-      trigger: 'change'
-    }
-  ]
-}
-const datasetTableFiled = ref([])
-provide('filedList', datasetTableFiled)
-
 const nickName = ref('')
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const state = reactive({
   datasetTree: [] as BusiTreeNode[],
   curSortType: 'time_desc'
@@ -207,22 +142,21 @@ const allFieldsColumns = [
   {
     key: 'name',
     dataKey: 'name',
-    title: t('data_set.field_name'),
+    title: '字段名称',
     width: 250
   },
   {
     key: 'deType',
     dataKey: 'deType',
-    title: t('data_set.field_type'),
+    title: '字段类型',
     width: 250,
     cellRenderer: ({ cellData: deType }) => (
       <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
         <ElIcon style={{ marginRight: '6px' }}>
-          <Icon>
-            {h(iconFieldMap[fieldType[deType]], {
-              class: `svg-icon field-icon-${fieldType[deType]}`
-            })}
-          </Icon>
+          <Icon
+            name={`field_${fieldType[deType]}`}
+            className={`field-icon-${fieldType[deType]}`}
+          ></Icon>
         </ElIcon>
         {t(`dataset.${fieldType[deType]}`) +
           `${deType === 3 ? '(' + t('dataset.float') + ')' : ''}`}
@@ -232,7 +166,7 @@ const allFieldsColumns = [
   {
     key: 'description',
     dataKey: 'description',
-    title: t('data_set.field_notes'),
+    title: '字段备注',
     width: 250
   }
 ]
@@ -257,11 +191,10 @@ const generateColumns = (arr: Field[]) =>
     headerCellRenderer: ({ column }) => (
       <div class="flex-align-center">
         <ElIcon style={{ marginRight: '6px' }}>
-          <Icon>
-            {h(iconFieldMap[fieldType[column.deType]], {
-              class: `svg-icon field-icon-${fieldType[column.deType]}`
-            })}
-          </Icon>
+          <Icon
+            name={`field_${fieldType[column.deType]}`}
+            className={`field-icon-${fieldType[column.deType]}`}
+          ></Icon>
         </ElIcon>
         <span class="ellipsis" title={column.title} style={{ width: '120px' }}>
           {column.title}
@@ -325,15 +258,14 @@ const dfsDatasetTree = (ds, id) => {
 }
 
 onBeforeMount(() => {
-  nodeInfo.id = (route.params.id as string) || (route.query.id as string) || ''
+  nodeInfo.id = (route.params.id as string) || ''
   loadInit()
   getData()
-  getLimit()
 })
 
 const columns = shallowRef([])
 const tableData = shallowRef([])
-const total = ref(null)
+const total = ref(0)
 
 const handleNodeClick = (data: BusiTreeNode) => {
   if (!data.leaf) {
@@ -348,82 +280,6 @@ const handleNodeClick = (data: BusiTreeNode) => {
     dataPreview = []
     activeName.value = 'dataPreview'
     handleClick(activeName.value)
-  })
-}
-
-const exportDataset = () => {
-  showExport.value = true
-  exportForm.value.name = nodeInfo.name
-  exportForm.value.expressionTree = ''
-  nextTick(() => {
-    rowAuth.value.init({})
-    rowAuth.value.relationList = []
-    rowAuth.value.logic = 'or'
-  })
-}
-
-const closeExport = () => {
-  showExport.value = false
-}
-
-const save = ({ logic, items, errorMessage }) => {
-  table.value.id = nodeInfo.id
-  table.value.row = 100000
-  table.value.filename = exportForm.value.name
-  if (errorMessage) {
-    ElMessage.error(errorMessage)
-    return
-  }
-  table.value.expressionTree = JSON.stringify({ items, logic })
-  exportDatasetLoading.value = true
-  exportDatasetData(table.value)
-    .then(res => {
-      openMessageLoading(exportData)
-    })
-    .finally(() => {
-      exportDatasetLoading.value = false
-      showExport.value = false
-    })
-}
-
-const exportDatasetRequest = () => {
-  exportFormRef.value.validate(valid => {
-    if (valid) {
-      rowAuth.value.submit()
-    } else {
-      return false
-    }
-  })
-}
-
-const exportData = () => {
-  useEmitt().emitter.emit('data-export-center', { activeName: 'IN_PROGRESS' })
-}
-
-const openMessageLoading = cb => {
-  const iconClass = `el-icon-loading`
-  const customClass = `de-message-loading de-message-export`
-  ElMessage({
-    message: h('p', null, [
-      '后台导出中,可前往',
-      h(
-        ElButton,
-        {
-          text: true,
-          size: 'small',
-          class: 'btn-text',
-          onClick: () => {
-            cb()
-          }
-        },
-        t('data_export.export_center')
-      ),
-      '查看进度，进行下载'
-    ]),
-    iconClass,
-    icon: h(RefreshLeft),
-    showClose: true,
-    customClass
   })
 }
 
@@ -471,22 +327,18 @@ const handleClick = (tabName: TabPaneName) => {
         break
       }
       dataPreviewLoading.value = true
-      total.value = null
       getDatasetPreview(nodeInfo.id)
         .then(res => {
           allFields = (res?.allFields as unknown as Field[]) || []
-          datasetTableFiled.value = allFields
           columnsPreview = generateColumns((res?.data?.fields as Field[]) || [])
           dataPreview = (res?.data?.data as Array<{}>) || []
           columns.value = columnsPreview
           tableData.value = dataPreview
+          total.value = res.total
         })
         .finally(() => {
           dataPreviewLoading.value = false
         })
-      getDatasetTotal(nodeInfo.id).then(res => {
-        total.value = res
-      })
       break
     case 'structPreview':
       columns.value = allFieldsColumns
@@ -500,7 +352,7 @@ const handleClick = (tabName: TabPaneName) => {
       break
   }
 }
-const relationChartRef = ref()
+
 const operation = (cmd: string, data: BusiTreeNode, nodeType: string) => {
   if (cmd === 'copy') {
     if (isDataEaseBi.value) {
@@ -527,70 +379,20 @@ const operation = (cmd: string, data: BusiTreeNode, nodeType: string) => {
     }
 
     if (!!data.children?.length) {
-      options.tip = t('data_set.operate_with_caution')
+      options.tip = '删除后，此文件夹下的所有资源都会被删除，请谨慎操作。'
     } else {
       delete options.tip
     }
 
-    if (nodeType !== 'folder') {
-      perDelete(data.id).then(res => {
-        if (res === true) {
-          const onClick = () => {
-            relationChartRef.value.getChartData({
-              queryType: 'dataset',
-              num: data.id,
-              label: data.name
-            })
-          }
-
-          ElMessageBox.confirm('', {
-            confirmButtonType: 'danger',
-            type: 'warning',
-            autofocus: false,
-            confirmButtonText: '确定',
-            showClose: false,
-            dangerouslyUseHTMLString: true,
-            message: h('div', null, [
-              h('p', { style: 'margin-bottom: 8px;' }, '确定删除该数据集吗？'),
-              h(
-                'p',
-                { class: 'tip' },
-                '该数据集存在如下血缘关系，删除会造成相关仪表板的图表失效，确定删除？'
-              ),
-              h(
-                ElButton,
-                { text: true, onClick: onClick, style: 'margin-left: -4px;' },
-                '查看血缘关系'
-              )
-            ])
-          }).then(() => {
-            delDatasetTree(data.id).then(() => {
-              getData()
-              ElMessage.success(t('dataset.delete_success'))
-            })
-          })
-        } else {
-          ElMessageBox.confirm(
-            t('datasource.delete_this_dataset'),
-            options as ElMessageBoxOptions
-          ).then(() => {
-            delDatasetTree(data.id).then(() => {
-              getData()
-              ElMessage.success(t('dataset.delete_success'))
-            })
-          })
-        }
+    ElMessageBox.confirm(
+      nodeType === 'folder' ? '确定删除该文件夹吗' : t('datasource.delete_this_dataset'),
+      options as ElMessageBoxOptions
+    ).then(() => {
+      delDatasetTree(data.id).then(() => {
+        getData()
+        ElMessage.success(t('dataset.delete_success'))
       })
-    } else {
-      ElMessageBox.confirm(t('data_set.delete_this_folder'), options as ElMessageBoxOptions).then(
-        () => {
-          delDatasetTree(data.id).then(() => {
-            getData()
-            ElMessage.success(t('dataset.delete_success'))
-          })
-        }
-      )
-    }
+    })
   } else {
     creatDsFolder.value.createInit(nodeType, data, cmd)
   }
@@ -610,18 +412,18 @@ const activeName = ref('dataPreview')
 const menuList = [
   {
     label: t('visualization.move_to'),
-    svgName: icon_intoItem_outlined,
+    svgName: 'icon_into-item_outlined',
     command: 'move'
   },
   {
     label: t('visualization.rename'),
-    svgName: icon_rename_outlined,
+    svgName: 'icon_rename_outlined',
     command: 'rename'
   },
   {
     label: t('common.delete'),
     divided: true,
-    svgName: icon_deleteTrash_outlined,
+    svgName: 'icon_delete-trash_outlined',
     command: 'delete'
   }
 ]
@@ -642,14 +444,14 @@ const nodeCollapse = data => {
 const datasetTypeList = computed(() => {
   return [
     {
-      label: t('data_set.a_new_dataset'),
-      svgName: icon_dataset,
+      label: '新建数据集',
+      svgName: 'icon_dataset',
       command: 'dataset'
     },
     {
       label: t('deDataset.new_folder'),
       divided: true,
-      svgName: dvFolder,
+      svgName: 'dv-folder',
       command: 'folder'
     }
   ]
@@ -666,27 +468,27 @@ const defaultTab = [
     name: 'dataPreview'
   },
   {
-    title: t('data_set.structure_preview'),
+    title: '结构预览',
     name: 'structPreview'
   }
 ]
 
 const sortList = [
   {
-    name: t('data_set.by_creation_time'),
+    name: '按创建时间升序',
     value: 'time_asc'
   },
   {
-    name: t('data_set.by_creation_time_de'),
+    name: '按创建时间降序',
     value: 'time_desc',
     divided: true
   },
   {
-    name: t('data_set.by_name_ascending'),
+    name: '按照名称升序',
     value: 'name_asc'
   },
   {
-    name: t('data_set.order_by_name'),
+    name: '按照名称降序',
     value: 'name_desc'
   }
 ]
@@ -696,12 +498,6 @@ const loadInit = () => {
   if (historyTreeSort) {
     state.curSortType = historyTreeSort
   }
-}
-
-const getLimit = () => {
-  exportLimit().then(res => {
-    limit.value = res
-  })
 }
 
 const sortTypeTip = computed(() => {
@@ -743,7 +539,7 @@ const getMenuList = (val: boolean) => {
     : [
         {
           label: t('common.copy'),
-          svgName: icon_copy_filled,
+          svgName: 'icon_copy_filled',
           command: 'copy'
         }
       ].concat(menuList)
@@ -786,19 +582,12 @@ const getMenuList = (val: boolean) => {
                   style="margin-right: 20px"
                   @click="handleDatasetTree('folder')"
                 >
-                  <Icon name="dv-new-folder"><dvNewFolder class="svg-icon" /></Icon>
+                  <Icon name="dv-new-folder" />
                 </el-icon>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                :content="t('data_set.a_new_dataset')"
-                placement="top"
-              >
+              <el-tooltip class="box-item" effect="dark" content="新建数据集" placement="top">
                 <el-icon class="custom-icon btn" @click="createDataset">
-                  <Icon name="icon_file-add_outlined"
-                    ><icon_fileAdd_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_file-add_outlined" />
                 </el-icon>
               </el-tooltip>
             </div>
@@ -811,26 +600,25 @@ const getMenuList = (val: boolean) => {
           >
             <template #prefix>
               <el-icon>
-                <Icon name="icon_search-outline_outlined"
-                  ><icon_searchOutline_outlined class="svg-icon"
-                /></Icon>
+                <Icon name="icon_search-outline_outlined" />
               </el-icon>
             </template>
           </el-input>
           <el-dropdown @command="sortTypeChange" trigger="click">
             <el-icon class="filter-icon-span">
               <el-tooltip :offset="16" effect="dark" :content="sortTypeTip" placement="top">
-                <Icon v-if="state.curSortType.includes('asc')" name="dv-sort-asc" class="opt-icon"
-                  ><dvSortAsc class="svg-icon opt-icon"
-                /></Icon>
+                <Icon
+                  v-if="state.curSortType.includes('asc')"
+                  name="dv-sort-asc"
+                  class="opt-icon"
+                ></Icon>
               </el-tooltip>
               <el-tooltip :offset="16" effect="dark" :content="sortTypeTip" placement="top">
                 <Icon
                   v-show="state.curSortType.includes('desc')"
                   name="dv-sort-desc"
                   class="opt-icon"
-                  ><dvSortDesc class="svg-icon"
-                /></Icon>
+                ></Icon>
               </el-tooltip>
             </el-icon>
             <template #dropdown>
@@ -868,10 +656,10 @@ const getMenuList = (val: boolean) => {
             <template #default="{ node, data }">
               <span class="custom-tree-node">
                 <el-icon v-if="!data.leaf" style="font-size: 18px">
-                  <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+                  <Icon name="dv-folder"></Icon>
                 </el-icon>
                 <el-icon v-if="data.leaf" style="font-size: 18px">
-                  <Icon name="icon_dataset"><icon_dataset class="svg-icon" /></Icon>
+                  <Icon name="icon_dataset"></Icon>
                 </el-icon>
                 <span :title="node.label" class="label-tooltip ellipsis">{{ node.label }}</span>
                 <div class="icon-more" v-if="data.weight >= 7">
@@ -879,12 +667,12 @@ const getMenuList = (val: boolean) => {
                     icon-size="24px"
                     @handle-command="cmd => handleDatasetTree(cmd, data)"
                     :menu-list="datasetTypeList"
-                    :icon-name="icon_add_outlined"
+                    icon-name="icon_add_outlined"
                     placement="bottom-start"
                     v-if="!data.leaf"
                   ></handle-more>
                   <el-icon v-else class="hover-icon" @click.stop="handleEdit(data.id)">
-                    <icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></icon>
+                    <icon name="icon_edit_outlined"></icon>
                   </el-icon>
                   <handle-more
                     @handle-command="cmd => operation(cmd, data, data.leaf ? 'dataset' : 'folder')"
@@ -905,10 +693,10 @@ const getMenuList = (val: boolean) => {
       }"
     >
       <template v-if="!state.datasetTree.length && mounted">
-        <empty-background :description="t('data_set.data_set_yet')" img-type="none">
+        <empty-background description="暂无数据集" img-type="none">
           <el-button v-if="rootManage" @click="() => createDataset()" type="primary">
             <template #icon>
-              <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_add_outlined"></Icon>
             </template>
             {{ t('deDataset.create') + t('auth.dataset') }}</el-button
           >
@@ -926,7 +714,7 @@ const getMenuList = (val: boolean) => {
             <el-popover show-arrow :offset="8" placement="bottom" width="290" trigger="hover">
               <template #reference>
                 <el-icon size="16px" class="create-user">
-                  <Icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_info_outlined"></Icon>
                 </el-icon>
               </template>
               <dataset-detail
@@ -937,30 +725,17 @@ const getMenuList = (val: boolean) => {
             <div class="right-btn">
               <el-button secondary @click="createPanel('dashboard')" v-permission="['panel']">
                 <template #icon>
-                  <Icon name="icon_dashboard_outlined"
-                    ><icon_dashboard_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_dashboard_outlined"></Icon>
                 </template>
                 {{ t('visualization.panelAdd') }}
               </el-button>
               <el-button secondary @click="createPanel('dvCanvas')" v-permission="['screen']">
-                <template #icon>
-                  <Icon name="icon_operation-analysis_outlined"
-                    ><icon_operationAnalysis_outlined class="svg-icon"
-                  /></Icon> </template
-                >{{ t('data_set.new_data_screen') }}
-              </el-button>
-              <el-button secondary @click="exportDataset">
-                <template #icon>
-                  <Icon name="icon_download_outlined"
-                    ><icon_download_outlined class="svg-icon"
-                  /></Icon>
-                </template>
-                数据集导出
+                <template #icon> <Icon name="icon_operation-analysis_outlined"></Icon> </template
+                >新建数据大屏
               </el-button>
               <el-button type="primary" @click="editorDataset" v-if="nodeInfo.weight >= 7">
                 <template #icon>
-                  <Icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_edit_outlined"></Icon>
                 </template>
                 {{ t('visualization.edit') }}
               </el-button>
@@ -983,7 +758,7 @@ const getMenuList = (val: boolean) => {
         </div>
         <div class="dataset-table-info">
           <div v-if="activeName === 'dataPreview'" class="preview-num">
-            {{ t('data_set.pieces_in_total', { msg: total }) }}
+            显示 100 条数据，共 {{ total }} 条
           </div>
           <template v-if="['dataPreview', 'structPreview'].includes(activeName)">
             <div class="info-table" :class="[{ 'struct-preview': activeName === 'structPreview' }]">
@@ -999,10 +774,7 @@ const getMenuList = (val: boolean) => {
                     :height="height"
                     fixed
                     ><template #empty>
-                      <empty-background
-                        :description="t('data_set.no_data')"
-                        img-type="noneWhite"
-                      /> </template
+                      <empty-background description="暂无数据" img-type="noneWhite" /> </template
                   ></el-table-v2>
                 </template>
               </el-auto-resizer>
@@ -1026,12 +798,9 @@ const getMenuList = (val: boolean) => {
                     <template #header>
                       <div class="flex-align-center">
                         <ElIcon style="margin-right: 6px">
-                          <Icon :className="`field-icon-${fieldType[column.deType]}`"
-                            ><component
-                              class="svg-icon"
-                              :class="`field-icon-${fieldType[column.deType]}`"
-                              :is="iconFieldMap[fieldType[column.deType]]"
-                            ></component
+                          <Icon
+                            :name="`field_${fieldType[column.deType]}`"
+                            :className="`field-icon-${fieldType[column.deType]}`"
                           ></Icon>
                         </ElIcon>
                         <span class="ellipsis" :title="column.title" style="width: 120px">
@@ -1041,7 +810,7 @@ const getMenuList = (val: boolean) => {
                     </template>
                   </el-table-column>
                   <template #empty>
-                    <empty-background :description="t('data_set.no_data')" img-type="noneWhite" />
+                    <empty-background description="暂无数据" img-type="noneWhite" />
                   </template>
                 </el-table>
               </template>
@@ -1067,7 +836,6 @@ const getMenuList = (val: boolean) => {
         <empty-background :description="t('deDataset.on_the_left')" img-type="select" />
       </template>
     </div>
-    <relationChart ref="relationChartRef"></relationChart>
     <de-resource-group-opt
       :cur-canvas-type="curCanvasType"
       @finish="resourceOptFinish"
@@ -1075,44 +843,6 @@ const getMenuList = (val: boolean) => {
     ></de-resource-group-opt>
     <creat-ds-group @finish="getData()" ref="creatDsFolder"></creat-ds-group>
   </div>
-  <!--导出数据集弹框-->
-  <el-dialog
-    v-if="showExport"
-    v-model="showExport"
-    width="800px"
-    class="de-dialog-form form-tree-cont"
-    :title="$t('dataset.export_dataset')"
-    append-to-body
-  >
-    <el-form
-      ref="exportFormRef"
-      class="de-form-item"
-      @submit.prevent
-      :model="exportForm"
-      :rules="exportFormRules"
-      :before-close="closeExport"
-    >
-      <el-form-item :label="$t('dataset.filename')" prop="name">
-        <el-input v-model.trim="exportForm.name" :placeholder="$t('dataset.pls_input_filename')" />
-      </el-form-item>
-      <el-form-item :label="$t('dataset.export_filter')" prop="expressionTree">
-        <div class="tree-cont">
-          <div class="content">
-            <RowAuth @save="save" ref="rowAuth" />
-          </div>
-        </div>
-      </el-form-item>
-    </el-form>
-    <span class="tip">提示：最多支持导出{{ limit }}条数据</span>
-    <template v-slot:footer>
-      <div class="dialog-footer">
-        <el-button secondary @click="closeExport">{{ $t('dataset.cancel') }} </el-button>
-        <el-button v-loading="exportDatasetLoading" type="primary" @click="exportDatasetRequest"
-          >{{ $t('dataset.confirm') }}
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
 </template>
 
 <style lang="less" scoped>
@@ -1121,21 +851,7 @@ const getMenuList = (val: boolean) => {
 .ed-table {
   --ed-table-header-bg-color: #f5f6f7;
 }
-.form-tree-cont {
-  .tree-cont {
-    height: 200px;
-    width: 100%;
-    padding: 16px;
-    border-radius: 4px;
-    border: 1px solid var(--deBorderBase, #dcdfe6);
-    overflow: auto;
 
-    .content {
-      height: 100%;
-      width: 100%;
-    }
-  }
-}
 .filter-icon-span {
   border: 1px solid #bbbfc4;
   width: 32px;
@@ -1259,7 +975,7 @@ const getMenuList = (val: boolean) => {
         width: 100%;
         display: flex;
         align-items: center;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 16px;
         font-weight: 500;
 
@@ -1305,7 +1021,7 @@ const getMenuList = (val: boolean) => {
 
     .preview-num {
       color: var(--deTextSecondary, #606266);
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       font-weight: 400;
       line-height: 22px;

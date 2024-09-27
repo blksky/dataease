@@ -1,6 +1,4 @@
 <script lang="ts">
-import icon_down_outlined from '@/assets/svg/icon_down_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
 export default {
   name: 'logic-relation'
 }
@@ -91,7 +89,7 @@ const del = (index, child) => {
           <span style="color: rgba(0 0 0 / 65%)" class="mrg-title fir">
             {{ logic === 'or' ? 'OR' : 'AND' }}
             <el-icon>
-              <Icon name="icon_down_outlined"><icon_down_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_down_outlined"></Icon>
             </el-icon>
           </span>
           <template #dropdown>
@@ -104,9 +102,7 @@ const del = (index, child) => {
       </div>
       <span class="operate-icon" v-if="x">
         <el-icon @click="emits('removeRelationList')">
-          <Icon name="icon_delete-trash_outlined"
-            ><icon_deleteTrash_outlined class="svg-icon"
-          /></Icon>
+          <Icon name="icon_delete-trash_outlined"></Icon>
         </el-icon>
       </span>
     </div>
@@ -153,7 +149,7 @@ const del = (index, child) => {
     z-index: 10;
 
     .operate-title {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, sans-serif;
       word-wrap: break-word;
       box-sizing: border-box;
       color: rgba(0, 0, 0, 0.65);

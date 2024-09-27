@@ -1,5 +1,5 @@
-import type { PickOptions } from '@antv/g2plot/esm/core/plot'
-import type { Plot } from '@antv/g2plot/esm/core/plot'
+import { PickOptions } from '@antv/g2plot/esm/core/plot'
+import { Plot } from '@antv/g2plot/esm/core/plot'
 import {
   getAnalyse,
   getAnalyseHorizontal,
@@ -18,7 +18,7 @@ import {
   ChartLibraryType,
   ChartWrapper
 } from '@/views/chart/components/js/panel/types'
-
+import { getEngine } from '@antv/g2/esm/core'
 import {
   getColor,
   getGroupColor,
@@ -27,7 +27,6 @@ import {
   handleEmptyDataStrategy,
   setupSeriesColor
 } from '../../../util'
-import { Options } from '@antv/g2plot'
 
 export interface G2PlotDrawOptions<O> extends AntVDrawOptions<O> {
   /**
@@ -80,12 +79,14 @@ export abstract class G2PlotChartView<
   O extends PickOptions = PickOptions,
   P extends Plot<O> = Plot<O>
 > extends AntVAbstractChartView {
+  protected static engine = getEngine('canvas')
+
   /**
    * 根据参数构建图表对象然后返回
    * @param drawOptions 图表配置参数
    * @return 生成的图表对象，类型为 Plot 的子类
    */
-  public abstract drawChart(drawOptions: G2PlotDrawOptions<P>): G2PlotWrapper<O, P> | P | Promise<P>
+  public abstract drawChart(drawOptions: G2PlotDrawOptions<P>): G2PlotWrapper<O, P> | P
 
   protected configTheme(chart: Chart, options: O): O {
     const theme = getTheme(chart)
@@ -128,10 +129,7 @@ export abstract class G2PlotChartView<
 
   protected configAnalyse(chart: Chart, options: O): O {
     const annotations = getAnalyse(chart)
-    return {
-      ...options,
-      annotations: [...annotations, ...((options as unknown as Options).annotations || [])]
-    }
+    return { ...options, annotations }
   }
 
   protected configAnalyseHorizontal(chart: Chart, options: O): O {
@@ -165,10 +163,6 @@ export abstract class G2PlotChartView<
 
   public setupSeriesColor(chart: ChartObj, data?: any[]): ChartBasicStyle['seriesColor'] {
     return setupSeriesColor(chart, data)
-  }
-
-  public setupSubSeriesColor(chart: ChartObj, data?: any[]): ChartBasicStyle['seriesColor'] {
-    return undefined
   }
 
   /**

@@ -8,7 +8,6 @@ import {
   onMounted,
   computed,
   inject,
-  Ref,
   shallowRef
 } from 'vue'
 import { cloneDeep, debounce } from 'lodash-es'
@@ -54,22 +53,9 @@ const props = defineProps({
     default: false
   }
 })
-
-const placeholder: Ref = inject('placeholder')
-const placeholderText = computed(() => {
-  if (placeholder.value.placeholderShow) {
-    return placeholder.value.placeholder
-  }
-  return ' '
-})
 const { config } = toRefs(props)
 
 const multiple = ref(false)
-
-const treeSelectConfirm = val => {
-  treeValue.value = val
-  handleValueChange()
-}
 
 const handleValueChange = () => {
   const value = Array.isArray(treeValue.value) ? [...treeValue.value] : treeValue.value
@@ -236,11 +222,9 @@ const selectStyle = computed(() => {
     :data="treeOptionList"
     clearable
     v-if="multiple && !loading"
-    @treeSelectConfirm="treeSelectConfirm"
+    @change="handleValueChange"
     :render-after-expand="false"
     show-checkbox
-    showBtn
-    :placeholder="placeholderText"
     collapse-tags
     :showWholePath="showWholePath"
     collapse-tags-tooltip
@@ -255,7 +239,6 @@ const selectStyle = computed(() => {
     :data="treeOptionList"
     check-strictly
     clearable
-    :placeholder="placeholderText"
     :render-after-expand="false"
     v-else-if="!multiple && !loading"
     key="singleTree"
@@ -267,7 +250,6 @@ const selectStyle = computed(() => {
     v-model="fakeValue"
     v-loading="loading"
     :data="[]"
-    :placeholder="placeholderText"
     :render-after-expand="false"
     v-else
     key="fakeTree"

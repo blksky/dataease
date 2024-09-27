@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import iconSetting from '@/assets/svg/icon-setting.svg'
 import { reactive, ref, toRaw } from 'vue'
 import { Icon } from '@/components/icon-custom'
 import {
@@ -57,7 +56,7 @@ const handleCheckAllChange = (val: CheckboxValueType) => {
     <el-button secondary>
       <template #icon>
         <el-icon>
-          <Icon name="icon-setting"><iconSetting class="svg-icon" /></Icon>
+          <Icon name="icon-setting"></Icon>
         </el-icon>
       </template>
       {{ $t('component.columnList') }}
@@ -91,7 +90,7 @@ const handleCheckAllChange = (val: CheckboxValueType) => {
 
   .title,
   .ed-checkbox {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-size: 14px;
     font-weight: 400;
     padding: 5px 0;

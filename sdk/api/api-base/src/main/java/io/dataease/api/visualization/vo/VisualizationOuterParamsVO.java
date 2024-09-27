@@ -46,17 +46,6 @@ public class VisualizationOuterParamsVO implements Serializable {
      */
     private String copyId;
 
-    /**
-     * 是否必填
-     */
-    private Boolean required;
-
-    /**
-     * 默认值 JSON格式
-     */
-    private String defaultValue;
-
-
     public String getParamsId() {
         return paramsId;
     }
@@ -108,14 +97,12 @@ public class VisualizationOuterParamsVO implements Serializable {
     @Override
     public String toString() {
         return "VisualizationOuterParams{" +
-                "paramsId = " + paramsId +
-                ", visualizationId = " + visualizationId +
-                ", checked = " + checked +
-                ", required = " + required +
-                ", defaultValue = " + defaultValue +
-                ", remark = " + remark +
-                ", copyFrom = " + copyFrom +
-                ", copyId = " + copyId +
-                "}";
+        "paramsId = " + paramsId +
+        ", visualizationId = " + visualizationId +
+        ", checked = " + checked +
+        ", remark = " + remark +
+        ", copyFrom = " + copyFrom +
+        ", copyId = " + copyId +
+        "}";
     }
 }

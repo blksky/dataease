@@ -55,8 +55,7 @@ public class ShareTicketManage {
                 ticketEntity.setArgs(creator.getArgs());
                 ticketEntity.setExp(creator.getExp());
                 ticketEntity.setUuid(creator.getUuid());
-                coreShareTicketMapper.deleteById(ticketEntity);
-                coreShareTicketMapper.insert(ticketEntity);
+                coreShareTicketMapper.updateById(ticketEntity);
                 return ticketEntity.getTicket();
             }
         }

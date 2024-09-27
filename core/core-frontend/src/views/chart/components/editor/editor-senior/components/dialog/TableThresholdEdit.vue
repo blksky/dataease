@@ -1,12 +1,8 @@
 <script lang="tsx" setup>
-import icon_info_filled from '@/assets/svg/icon_info_filled.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
 import { PropType, reactive } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { COLOR_PANEL } from '../../../util/chart'
 import { fieldType } from '@/utils/attr'
-import { iconFieldMap } from '@/components/icon-group/field-list'
 
 const { t } = useI18n()
 
@@ -30,11 +26,7 @@ const thresholdCondition = {
   color: '#ff0000ff',
   backgroundColor: '#ffffff00',
   min: '0',
-  max: '1',
-  type: 'fixed',
-  dynamicField: { summary: 'value' },
-  dynamicMinField: { summary: 'value' },
-  dynamicMaxField: { summary: 'value' }
+  max: '1'
 }
 const textOptions = [
   {
@@ -186,7 +178,7 @@ const init = () => {
 }
 const initOptions = item => {
   if (item.field) {
-    if ([0, 5, 7].includes(item.field.deType)) {
+    if (item.field.deType === 0 || item.field.deType === 5) {
       item.options = JSON.parse(JSON.stringify(textOptions))
     } else if (item.field.deType === 1) {
       item.options = JSON.parse(JSON.stringify(dateOptions))
@@ -245,106 +237,9 @@ const addField = item => {
         item.field = JSON.parse(JSON.stringify(ele))
         initOptions(item)
       }
-      if (item.dynamicField?.fieldId === ele.id) {
-        item.dynamicField.field = JSON.parse(JSON.stringify(ele))
-        initOptions(item)
-      }
-      if (item.dynamicMinField?.fieldId === ele.id) {
-        item.dynamicMinField.field = JSON.parse(JSON.stringify(ele))
-        initOptions(item)
-      }
-      if (item.dynamicMaxField?.fieldId === ele.id) {
-        item.dynamicMaxField.field = JSON.parse(JSON.stringify(ele))
-        initOptions(item)
-      }
     })
   }
   changeThreshold()
-}
-
-const fieldOptions = [
-  { label: t('chart.field_fixed'), value: 'fixed' },
-  { label: t('chart.field_dynamic'), value: 'dynamic' }
-]
-const dynamicSummaryOptions = [
-  {
-    id: 'value',
-    name: t('chart.field') + t('chart.drag_block_label_value')
-  },
-  {
-    id: 'avg',
-    name: t('chart.avg') + t('chart.drag_block_label_value')
-  },
-  {
-    id: 'max',
-    name: t('chart.max')
-  },
-  {
-    id: 'min',
-    name: t('chart.min')
-  }
-]
-
-const getConditionsFields = (fieldItem, conditionItem, conditionItemField) => {
-  const fieldItemDeType = state.fields.filter(ele => ele.id === fieldItem.fieldId)?.[0]?.deType
-  if (!fieldItemDeType) {
-    fieldItem.fieldId = null
-    conditionItem.fieldId = null
-    conditionItemField.fieldId = null
-    changeThreshold()
-    return state.fields
-  }
-  const result = state.fields.filter(item => item.deType === fieldItemDeType) ?? []
-  if (!result.find(ele => ele.id === conditionItemField.fieldId)) {
-    conditionItemField.fieldId = result[0]?.id
-    addField(conditionItem)
-  }
-  return result
-}
-
-const getDynamicSummaryOptions = itemId => {
-  const deType = state.fields.filter(ele => ele.id === itemId)?.[0]?.deType
-  if (deType === 1) {
-    // 时间
-    return dynamicSummaryOptions.filter(ele => {
-      return ele.id !== 'avg'
-    })
-  } else if (deType === 0 || deType === 5) {
-    // 文本、地理位置
-    return dynamicSummaryOptions.filter(ele => {
-      return ele.id === 'value'
-    })
-  } else {
-    return dynamicSummaryOptions
-  }
-}
-
-const isNotEmptyAndNull = item => {
-  return !item.term.includes('null') && !item.term.includes('empty')
-}
-
-const isBetween = item => {
-  return item.term === 'between'
-}
-
-const isDynamic = item => {
-  return item.type === 'dynamic'
-}
-const changeConditionItemType = item => {
-  if (item.type === 'dynamic') {
-    item.dynamicField.summary = 'value'
-    item.dynamicMinField.summary = 'value'
-    item.dynamicMaxField.summary = 'value'
-  }
-  changeThreshold()
-}
-const getFieldOptions = fieldItem => {
-  const deType = state.fields.filter(ele => ele.id === fieldItem.fieldId)?.[0]?.deType
-  if (deType === 1) {
-    return fieldOptions.filter(ele => ele.value === 'fixed')
-  } else {
-    return fieldOptions
-  }
 }
 
 init()
@@ -353,9 +248,7 @@ init()
 <template>
   <el-col>
     <div class="tip">
-      <Icon name="icon_info_filled" class="icon-style"
-        ><icon_info_filled class="svg-icon icon-style"
-      /></Icon>
+      <Icon name="icon_info_filled" class="icon-style"></Icon>
       <span style="padding-left: 10px">{{ t('chart.table_threshold_tip') }}</span>
     </div>
 
@@ -374,18 +267,12 @@ init()
                 :key="fieldOption.id"
                 :label="fieldOption.name"
                 :value="fieldOption.id"
-                :disabled="chart.type === 'table-info' && fieldOption.deType === 7"
               >
                 <el-icon style="margin-right: 8px">
                   <Icon
-                    ><component
-                      :class="`field-icon-${
-                        fieldType[[2, 3].includes(fieldOption.deType) ? 2 : 0]
-                      }`"
-                      class="svg-icon"
-                      :is="iconFieldMap[fieldType[fieldOption.deType]]"
-                    ></component
-                  ></Icon>
+                    :className="`field-icon-${fieldType[fieldOption.deType]}`"
+                    :name="`field_${fieldType[fieldOption.deType]}`"
+                  />
                 </el-icon>
                 {{ fieldOption.name }}
               </el-option>
@@ -399,9 +286,7 @@ init()
             @click="removeThreshold(fieldIndex)"
           >
             <el-icon size="20px" style="color: #646a73">
-              <Icon name="icon_delete-trash_outlined"
-                ><icon_deleteTrash_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_delete-trash_outlined" />
             </el-icon>
           </el-button>
         </el-row>
@@ -411,9 +296,9 @@ init()
             v-for="(item, index) in fieldItem.conditions"
             :key="index"
             class="line-item"
-            :gutter="12"
+            :gutter="10"
           >
-            <el-col :span="3">
+            <el-col :span="4">
               <el-form-item class="form-item">
                 <el-select v-model="item.term" @change="changeThreshold">
                   <el-option-group
@@ -431,27 +316,13 @@ init()
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="2" v-if="isNotEmptyAndNull(item)" style="padding-left: 0 !important">
-              <el-form-item class="form-item">
-                <el-select
-                  v-model="item.type"
-                  class="select-item"
-                  @change="changeConditionItemType(item)"
-                  style="width: 100%"
-                >
-                  <el-option
-                    v-for="opt in getFieldOptions(fieldItem)"
-                    :key="opt.value"
-                    :label="opt.label"
-                    :value="opt.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <!--不是between 不是动态值-->
             <el-col
-              v-if="isNotEmptyAndNull(item) && !isBetween(item) && !isDynamic(item)"
-              :span="12"
+              v-if="
+                !item.term.includes('null') &&
+                !item.term.includes('empty') &&
+                item.term !== 'between'
+              "
+              :span="10"
               style="text-align: center"
             >
               <el-form-item class="form-item">
@@ -474,72 +345,8 @@ init()
                 />
               </el-form-item>
             </el-col>
-            <!--不是between 是动态值-->
-            <!--动态值 字段-->
-            <el-col v-if="isNotEmptyAndNull(item) && !isBetween(item) && isDynamic(item)" :span="6">
-              <el-form-item class="form-item">
-                <el-select
-                  v-model="item.dynamicField.fieldId"
-                  @change="addField(item)"
-                  style="width: 100%"
-                >
-                  <el-option
-                    class="series-select-option"
-                    v-for="itemFieldOption in getConditionsFields(
-                      fieldItem,
-                      item,
-                      item.dynamicField
-                    )"
-                    :key="itemFieldOption.id"
-                    :label="itemFieldOption.name"
-                    :value="itemFieldOption.id"
-                    :disabled="chart.type === 'table-info' && itemFieldOption.deType === 7"
-                  >
-                    <el-icon style="margin-right: 8px">
-                      <Icon
-                        ><component
-                          :class="`field-icon-${
-                            fieldType[[2, 3].includes(itemFieldOption.deType) ? 2 : 0]
-                          }`"
-                          class="svg-icon"
-                          :is="iconFieldMap[fieldType[itemFieldOption.deType]]"
-                        ></component
-                      ></Icon>
-                    </el-icon>
-                    {{ itemFieldOption.name }}
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <!--动态值聚合方式-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && !isBetween(item) && isDynamic(item)"
-              :span="6"
-              style="text-align: center"
-            >
-              <el-form-item class="form-item">
-                <el-select
-                  :placeholder="t('chart.aggregation')"
-                  v-model="item.dynamicField.summary"
-                  @change="changeThreshold"
-                  style="width: 100%"
-                >
-                  <el-option
-                    v-for="opt in getDynamicSummaryOptions(item.dynamicField.fieldId)"
-                    :key="opt.id"
-                    :label="opt.name"
-                    :value="opt.id"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <!--是between 不是动态值-->
-            <!--between 开始值-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && isBetween(item) && !isDynamic(item)"
-              :span="5"
-              style="text-align: center"
-            >
+
+            <el-col v-if="item.term === 'between'" :span="4" style="text-align: center">
               <el-form-item class="form-item">
                 <el-input-number
                   v-model="item.min"
@@ -551,21 +358,14 @@ init()
                 />
               </el-form-item>
             </el-col>
-            <el-col
-              v-if="isBetween(item) && !isDynamic(item)"
-              :span="2"
-              style="margin-top: 4px; text-align: center"
-            >
-              <span style="margin: 0 -5px">
-                ≤&nbsp;{{ t('chart.drag_block_label_value') }}&nbsp;≤
+
+            <el-col v-if="item.term === 'between'" :span="2" style="text-align: center">
+              <span style="margin: 0 4px">
+                ≤&nbsp;&nbsp;{{ t('chart.drag_block_label_value') }}&nbsp;&nbsp;≤
               </span>
             </el-col>
-            <!--between 结束值-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && isBetween(item) && !isDynamic(item)"
-              :span="5"
-              style="text-align: center"
-            >
+
+            <el-col v-if="item.term === 'between'" :span="4" style="text-align: center">
               <el-form-item class="form-item">
                 <el-input-number
                   v-model="item.max"
@@ -578,127 +378,11 @@ init()
               </el-form-item>
             </el-col>
 
-            <!--是between 动态值-->
-            <!--开始值 动态值字段-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && isBetween(item) && isDynamic(item)"
-              class="minField"
-              :span="3"
+            <div
+              style="display: flex; align-items: center; justify-content: center; margin-left: 8px"
             >
+              <div class="color-title">{{ t('chart.textColor') }}</div>
               <el-form-item class="form-item">
-                <el-select v-model="item.dynamicMinField.fieldId" @change="addField(item)">
-                  <el-option
-                    class="series-select-option"
-                    v-for="itemFieldOption in getConditionsFields(
-                      fieldItem,
-                      item,
-                      item.dynamicMinField
-                    )"
-                    :key="itemFieldOption.id"
-                    :label="itemFieldOption.name"
-                    :value="itemFieldOption.id"
-                    :disabled="chart.type === 'table-info' && itemFieldOption.deType === 7"
-                  >
-                    <el-icon style="margin-right: 8px">
-                      <Icon
-                        ><component
-                          :class="`field-icon-${
-                            fieldType[[2, 3].includes(itemFieldOption.deType) ? 2 : 0]
-                          }`"
-                          class="svg-icon"
-                          :is="iconFieldMap[fieldType[itemFieldOption.deType]]"
-                        ></component
-                      ></Icon>
-                    </el-icon>
-                    {{ itemFieldOption.name }}
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <!--开始值 动态值聚合方式-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && isBetween(item) && isDynamic(item)"
-              class="minValue"
-              :span="2"
-              style="padding-left: 0 !important"
-            >
-              <el-form-item class="form-item">
-                <el-select v-model="item.dynamicMinField.summary" @change="changeThreshold">
-                  <el-option
-                    v-for="opt in getDynamicSummaryOptions(item.dynamicMinField.fieldId)"
-                    :key="opt.id"
-                    :label="opt.name"
-                    :value="opt.id"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col
-              v-if="isBetween(item) && isDynamic(item)"
-              class="term"
-              :span="2"
-              style="margin-top: 4px; text-align: center"
-            >
-              <span style="margin: 0 -5px">
-                ≤&nbsp;{{ t('chart.drag_block_label_value') }}&nbsp;≤
-              </span>
-            </el-col>
-            <!--结束值 动态值字段-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && isBetween(item) && isDynamic(item)"
-              class="maxField"
-              :span="3"
-            >
-              <el-form-item class="form-item">
-                <el-select v-model="item.dynamicMaxField.fieldId" @change="addField(item)">
-                  <el-option
-                    class="series-select-option"
-                    v-for="itemFieldOption in getConditionsFields(
-                      fieldItem,
-                      item,
-                      item.dynamicMaxField
-                    )"
-                    :key="itemFieldOption.id"
-                    :label="itemFieldOption.name"
-                    :value="itemFieldOption.id"
-                    :disabled="chart.type === 'table-info' && itemFieldOption.deType === 7"
-                  >
-                    <el-icon style="margin-right: 8px">
-                      <Icon
-                        ><component
-                          :class="`field-icon-${
-                            fieldType[[2, 3].includes(itemFieldOption.deType) ? 2 : 0]
-                          }`"
-                          class="svg-icon"
-                          :is="iconFieldMap[fieldType[itemFieldOption.deType]]"
-                        ></component
-                      ></Icon>
-                    </el-icon>
-                    {{ itemFieldOption.name }}
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <!--结束值 动态值聚合方式-->
-            <el-col
-              v-if="isNotEmptyAndNull(item) && isBetween(item) && isDynamic(item)"
-              class="maxValue"
-              :span="2"
-              style="padding-left: 0 !important"
-            >
-              <el-form-item class="form-item">
-                <el-select v-model="item.dynamicMaxField.summary" @change="changeThreshold">
-                  <el-option
-                    v-for="opt in getDynamicSummaryOptions(item.dynamicMaxField.fieldId)"
-                    :key="opt.id"
-                    :label="opt.name"
-                    :value="opt.id"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item class="form-item" :label="t('chart.textColor')">
                 <el-color-picker
                   is-custom
                   size="large"
@@ -709,9 +393,12 @@ init()
                   @change="changeThreshold"
                 />
               </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item class="form-item" :label="t('chart.backgroundColor')">
+            </div>
+            <div
+              style="display: flex; align-items: center; justify-content: center; margin-left: 8px"
+            >
+              <div class="color-title">{{ t('chart.backgroundColor') }}</div>
+              <el-form-item class="form-item">
                 <el-color-picker
                   is-custom
                   size="large"
@@ -722,22 +409,20 @@ init()
                   @change="changeThreshold"
                 />
               </el-form-item>
-            </el-col>
-            <el-col :span="1">
-              <div style="display: flex; align-items: center; justify-content: center">
-                <el-button
-                  class="circle-button m-icon-btn"
-                  text
-                  @click="removeCondition(fieldItem, index)"
-                >
-                  <el-icon size="20px" style="color: #646a73">
-                    <Icon name="icon_delete-trash_outlined"
-                      ><icon_deleteTrash_outlined class="svg-icon"
-                    /></Icon>
-                  </el-icon>
-                </el-button>
-              </div>
-            </el-col>
+            </div>
+            <div
+              style="display: flex; align-items: center; justify-content: center; margin-left: 8px"
+            >
+              <el-button
+                class="circle-button m-icon-btn"
+                text
+                @click="removeCondition(fieldItem, index)"
+              >
+                <el-icon size="20px" style="color: #646a73">
+                  <Icon name="icon_delete-trash_outlined" />
+                </el-icon>
+              </el-button>
+            </div>
           </el-row>
         </el-row>
 
@@ -749,7 +434,7 @@ init()
           @click="addConditions(fieldItem)"
         >
           <template #icon>
-            <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+            <Icon name="icon_add_outlined" />
           </template>
           {{ t('chart.add_style') }}
         </el-button>
@@ -764,7 +449,7 @@ init()
       @click="addThreshold"
     >
       <template #icon>
-        <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_add_outlined" />
       </template>
       {{ t('chart.add_condition') }}
     </el-button>

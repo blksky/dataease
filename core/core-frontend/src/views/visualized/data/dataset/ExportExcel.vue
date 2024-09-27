@@ -1,8 +1,4 @@
 <script lang="ts" setup>
-import dvPreviewDownload from '@/assets/svg/dv-preview-download.svg'
-import deDelete from '@/assets/svg/de-delete.svg'
-import icon_fileExcel_colorful from '@/assets/svg/icon_file-excel_colorful.svg'
-import icon_refresh_outlined from '@/assets/svg/icon_refresh_outlined.svg'
 import { ref, h, onUnmounted, computed } from 'vue'
 import { EmptyBackground } from '@/components/empty-background'
 import { ElButton, ElMessage, ElMessageBox, ElTabPane, ElTabs } from 'element-plus-secondary'
@@ -31,26 +27,26 @@ const msg = ref('')
 const exportDatasetLoading = ref(false)
 const activeName = ref('ALL')
 const multipleSelection = ref([])
-const description = ref(t('data_set.no_tasks_yet'))
+const description = ref('暂无任务')
 const tabList = ref([
   {
-    label: t('data_set.exporting') + '(0)',
+    label: '导出中(0)',
     name: 'IN_PROGRESS'
   },
   {
-    label: t('data_set.success') + '(0)',
+    label: '成功(0)',
     name: 'SUCCESS'
   },
   {
-    label: t('data_set.fail') + '(0)',
+    label: '失败(0)',
     name: 'FAILED'
   },
   {
-    label: t('data_set.waiting') + '(0)',
+    label: '等待中(0)',
     name: 'PENDING'
   },
   {
-    label: t('data_set.all') + '(0)',
+    label: '全部(0)',
     name: 'ALL'
   }
 ])
@@ -81,35 +77,26 @@ const handleClick = tab => {
     .then(res => {
       tabList.value.forEach(item => {
         if (item.name === 'ALL') {
-          item.label = t('data_set.all') + '(' + res.data.length + ')'
+          item.label = '全部' + '(' + res.data.length + ')'
         }
         if (item.name === 'IN_PROGRESS') {
           item.label =
-            t('data_set.exporting') +
+            '导出中' +
             '(' +
             res.data.filter(task => task.exportStatus === 'IN_PROGRESS').length +
             ')'
         }
         if (item.name === 'SUCCESS') {
           item.label =
-            t('data_set.success') +
-            '(' +
-            res.data.filter(task => task.exportStatus === 'SUCCESS').length +
-            ')'
+            '成功' + '(' + res.data.filter(task => task.exportStatus === 'SUCCESS').length + ')'
         }
         if (item.name === 'FAILED') {
           item.label =
-            t('data_set.fail') +
-            '(' +
-            res.data.filter(task => task.exportStatus === 'FAILED').length +
-            ')'
+            '失败' + '(' + res.data.filter(task => task.exportStatus === 'FAILED').length + ')'
         }
         if (item.name === 'PENDING') {
           item.label =
-            t('data_set.waiting') +
-            '(' +
-            res.data.filter(task => task.exportStatus === 'PENDING').length +
-            ')'
+            '等待中' + '(' + res.data.filter(task => task.exportStatus === 'PENDING').length + ')'
         }
       })
       if (activeName.value === 'ALL') {
@@ -134,35 +121,26 @@ const init = params => {
       exportTasks(activeName.value).then(res => {
         tabList.value.forEach(item => {
           if (item.name === 'ALL') {
-            item.label = t('data_set.all') + '(' + res.data.length + ')'
+            item.label = '全部' + '(' + res.data.length + ')'
           }
           if (item.name === 'IN_PROGRESS') {
             item.label =
-              t('data_set.exporting') +
+              '导出中' +
               '(' +
               res.data.filter(task => task.exportStatus === 'IN_PROGRESS').length +
               ')'
           }
           if (item.name === 'SUCCESS') {
             item.label =
-              t('data_set.success') +
-              '(' +
-              res.data.filter(task => task.exportStatus === 'SUCCESS').length +
-              ')'
+              '成功' + '(' + res.data.filter(task => task.exportStatus === 'SUCCESS').length + ')'
           }
           if (item.name === 'FAILED') {
             item.label =
-              t('data_set.fail') +
-              '(' +
-              res.data.filter(task => task.exportStatus === 'FAILED').length +
-              ')'
+              '失败' + '(' + res.data.filter(task => task.exportStatus === 'FAILED').length + ')'
           }
           if (item.name === 'PENDING') {
             item.label =
-              t('data_set.waiting') +
-              '(' +
-              res.data.filter(task => task.exportStatus === 'PENDING').length +
-              ')'
+              '等待中' + '(' + res.data.filter(task => task.exportStatus === 'PENDING').length + ')'
           }
         })
         if (activeName.value === 'ALL') {
@@ -182,7 +160,7 @@ const taskExportTopicCall = task => {
   if (!linkStore.getLinkToken && !isDataEaseBi.value && !appStore.getIsIframe) {
     if (JSON.parse(task).exportStatus === 'SUCCESS') {
       openMessageLoading(
-        JSON.parse(task).exportFromName + ` ${t('data_set.successful_go_to')}`,
+        JSON.parse(task).exportFromName + ' 导出成功，前往',
         'success',
         callbackExportSuc
       )
@@ -190,7 +168,7 @@ const taskExportTopicCall = task => {
     }
     if (JSON.parse(task).exportStatus === 'FAILED') {
       openMessageLoading(
-        JSON.parse(task).exportFromName + ` ${t('data_set.failed_go_to')}`,
+        JSON.parse(task).exportFromName + ' 导出失败，前往',
         'error',
         callbackExportError
       )
@@ -252,7 +230,6 @@ const downLoadAll = () => {
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)
-          URL.revokeObjectURL(link.href)
         })
         .finally(() => {
           exportDatasetLoading.value = false
@@ -299,7 +276,6 @@ const downloadClick = item => {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      URL.revokeObjectURL(link.href)
     })
     .finally(() => {
       exportDatasetLoading.value = false
@@ -332,6 +308,15 @@ const deleteField = item => {
 
 const handleSelectionChange = val => {
   multipleSelection.value = val
+}
+
+const confirmDelete = () => {
+  const options = {
+    title: '确定删除该任务吗？',
+    type: 'primary',
+    cb: deleteField
+  }
+  //   handlerConfirm(options)
 }
 
 const delAll = () => {
@@ -401,7 +386,7 @@ defineExpose({
       @click="downLoadAll"
     >
       <template #icon>
-        <Icon name="dv-preview-download"><dvPreviewDownload class="svg-icon" /></Icon>
+        <Icon name="dv-preview-download"></Icon>
       </template>
       {{ $t('data_export.download_all') }}
     </el-button>
@@ -409,21 +394,13 @@ defineExpose({
       v-if="activeName === 'SUCCESS' && multipleSelection.length !== 0"
       secondary
       @click="downLoadAll"
-    >
-      <template #icon>
-        <Icon name="dv-preview-download"><dvPreviewDownload class="svg-icon" /></Icon>
-      </template>
-      {{ $t('data_export.download') }}
+      ><template #icon> <Icon name="de-delete"></Icon> </template>{{ $t('data_export.download') }}
     </el-button>
     <el-button v-if="multipleSelection.length === 0" secondary @click="delAll"
-      ><template #icon>
-        <Icon name="de-delete"><deDelete class="svg-icon" /></Icon> </template
-      >{{ $t('data_export.del_all') }}
+      ><template #icon> <Icon name="de-delete"></Icon> </template>{{ $t('data_export.del_all') }}
     </el-button>
     <el-button v-if="multipleSelection.length !== 0" secondary @click="delAll"
-      ><template #icon>
-        <Icon name="de-delete"><deDelete class="svg-icon" /></Icon> </template
-      >{{ $t('commons.delete') }}
+      ><template #icon> <Icon name="de-delete"></Icon> </template>{{ $t('commons.delete') }}
     </el-button>
     <div class="table-container" :class="!tableData.length && 'hidden-bottom'">
       <el-table
@@ -438,9 +415,7 @@ defineExpose({
           <template #default="scope">
             <div class="name-excel">
               <el-icon style="font-size: 24px">
-                <Icon name="icon_file-excel_colorful"
-                  ><icon_fileExcel_colorful class="svg-icon"
-                /></Icon>
+                <Icon name="icon_file-excel_colorful"></Icon>
               </el-icon>
               <div class="name-content">
                 <div class="fileName">{{ scope.row.fileName }}</div>
@@ -464,29 +439,21 @@ defineExpose({
           </template>
         </el-table-column>
         <el-table-column prop="exportFromName" :label="$t('data_export.export_obj')" width="200" />
+        <el-table-column prop="exportFromType" width="120" :label="$t('data_export.export_from')">
+          <template #default="scope">
+            <span v-if="scope.row.exportFromType === 'dataset'">数据集</span>
+            <span v-if="scope.row.exportFromType === 'chart'">视图</span>
+          </template>
+        </el-table-column>
+        <el-table-column v-show="xpack" prop="orgName" label="所属组织" width="200" />
         <el-table-column prop="exportTime" width="180" :label="$t('data_export.export_time')">
           <template #default="scope">
             <span>{{ timestampFormatDate(scope.row.exportTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="exportFromType" width="120" :label="$t('data_export.export_from')">
-          <template #default="scope">
-            <span v-if="scope.row.exportFromType === 'dataset'">{{ t('data_set.data_set') }}</span>
-            <span v-if="scope.row.exportFromType === 'chart'">{{ t('data_set.view') }}</span>
-            <span v-if="scope.row.exportFromType === 'data_filling'">{{
-              t('data_fill.data_fill')
-            }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          v-show="xpack"
-          prop="orgName"
-          :label="t('data_set.organization')"
-          width="200"
-        />
         <el-table-column fixed="right" prop="operate" width="90" :label="$t('commons.operating')">
           <template #default="scope">
-            <el-tooltip effect="dark" :content="t('data_set.download')" placement="top">
+            <el-tooltip effect="dark" content="下载" placement="top">
               <el-button
                 v-if="scope.row.exportStatus === 'SUCCESS'"
                 text
@@ -494,26 +461,24 @@ defineExpose({
               >
                 <template #icon>
                   <el-icon>
-                    <Icon name="dv-preview-download"><dvPreviewDownload class="svg-icon" /></Icon>
+                    <Icon name="dv-preview-download"></Icon>
                   </el-icon>
                 </template>
               </el-button>
             </el-tooltip>
 
-            <el-tooltip effect="dark" :content="t('data_set.re_export')" placement="top">
+            <el-tooltip effect="dark" content="重新导出" placement="top">
               <el-button v-if="scope.row.exportStatus === 'FAILED'" text @click="retry(scope.row)">
                 <template #icon>
-                  <Icon name="icon_refresh_outlined"
-                    ><icon_refresh_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_refresh_outlined"></Icon>
                 </template>
               </el-button>
             </el-tooltip>
 
-            <el-tooltip effect="dark" :content="t('data_set.delete')" placement="top">
+            <el-tooltip effect="dark" content="删除" placement="top">
               <el-button text @click="deleteField(scope.row)">
                 <template #icon>
-                  <Icon name="de-delete"><deDelete class="svg-icon" /></Icon>
+                  <Icon name="de-delete"></Icon>
                 </template>
               </el-button>
             </el-tooltip>
@@ -526,13 +491,11 @@ defineExpose({
     </div>
   </el-drawer>
 
-  <el-dialog :title="t('data_set.reason_for_failure')" v-model="msgDialogVisible" width="30%">
+  <el-dialog title="失败原因" v-model="msgDialogVisible" width="30%">
     <span>{{ msg }}</span>
     <template v-slot:footer>
       <span class="dialog-footer">
-        <el-button type="primary" @click="msgDialogVisible = false">{{
-          t('data_set.closure')
-        }}</el-button>
+        <el-button type="primary" @click="msgDialogVisible = false">关闭</el-button>
       </span>
     </template>
   </el-dialog>

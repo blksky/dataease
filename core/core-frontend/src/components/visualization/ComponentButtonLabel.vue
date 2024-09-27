@@ -20,7 +20,7 @@ const emits = defineEmits(['customClick'])
   <div class="flex-align-center">
     <el-row class="group_icon" :title="tips" @click="emits('customClick')">
       <el-col :span="24" class="group_inner" :class="{ 'inner-active': active }">
-        <Icon><component class="svg-icon toolbar-icon" :is="iconName"></component></Icon>
+        <Icon class="toolbar-icon" :name="iconName" />
         <span>{{ title }}</span>
       </el-col>
     </el-row>

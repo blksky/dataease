@@ -1,11 +1,4 @@
-import {
-  copyString,
-  hexColorToRGBA,
-  isAlphaColor,
-  isTransparent,
-  parseJson,
-  resetRgbOpacity
-} from '../..//util'
+import { copyString, hexColorToRGBA, isAlphaColor, parseJson, resetRgbOpacity } from '../..//util'
 import {
   DEFAULT_BASIC_STYLE,
   DEFAULT_TABLE_CELL,
@@ -260,8 +253,7 @@ export function getCustomTheme(chart: Chart): S2Theme {
         }
       }
       merge(theme, tmpTheme)
-      // 这边设置为 0 的话就会显示表头背景颜色，所以要判断一下表头是否关闭
-      if (tableHeader.showHorizonBorder === false && tableHeader.showTableHeader !== false) {
+      if (tableHeader.showHorizonBorder === false) {
         const tmpTheme = {
           splitLine: {
             horizontalBorderColor: tableHeaderBgColor,
@@ -412,6 +404,7 @@ export function getStyle(chart: Chart): Style {
     }
     switch (basicStyle.tableColumnMode) {
       case 'adapt': {
+        delete style.cellCfg.width
         style.layoutWidthType = 'compact'
         break
       }
@@ -512,14 +505,9 @@ export function getConditions(chart: Chart) {
     const valueColor = tableCell.tableFontColor
     const valueBgColor = enableTableCrossBG
       ? null
-      : isAlphaColor(tableCell.tableItemBgColor)
-      ? tableCell.tableItemBgColor
       : hexColorToRGBA(tableCell.tableItemBgColor, basicStyle.alpha)
     const headerValueColor = tableHeader.tableHeaderFontColor
-    const headerValueBgColor = isAlphaColor(tableHeader.tableHeaderBgColor)
-      ? tableHeader.tableHeaderBgColor
-      : hexColorToRGBA(tableHeader.tableHeaderBgColor, basicStyle.alpha)
-    const filedValueMap = getFieldValueMap(chart)
+    const headerValueBgColor = hexColorToRGBA(tableHeader.tableHeaderBgColor, basicStyle.alpha)
     for (let i = 0; i < conditions.length; i++) {
       const field = conditions[i]
       let defaultValueColor = valueColor
@@ -541,7 +529,7 @@ export function getConditions(chart: Chart) {
             return null
           }
           return {
-            fill: mappingColor(value, defaultValueColor, field, 'color', filedValueMap, rowData)
+            fill: mappingColor(value, defaultValueColor, field, 'color')
           }
         }
       })
@@ -554,18 +542,8 @@ export function getConditions(chart: Chart) {
           if (rowData?.id && rowData?.field === rowData.id) {
             return null
           }
-          const fill = mappingColor(
-            value,
-            defaultBgColor,
-            field,
-            'backgroundColor',
-            filedValueMap,
-            rowData
-          )
-          if (isTransparent(fill)) {
-            return null
-          }
-          return { fill }
+          const fill = mappingColor(value, defaultBgColor, field, 'backgroundColor')
+          return fill ? { fill } : null
         }
       })
     }
@@ -573,28 +551,13 @@ export function getConditions(chart: Chart) {
   return res
 }
 
-export function mappingColor(value, defaultColor, field, type, filedValueMap?, rowData?) {
+export function mappingColor(value, defaultColor, field, type) {
   let color
   for (let i = 0; i < field.conditions.length; i++) {
     let flag = false
     const t = field.conditions[i]
     if (field.field.deType === 2 || field.field.deType === 3 || field.field.deType === 4) {
-      let tv, max, min
-      if (t.type === 'dynamic') {
-        if (t.term === 'between') {
-          max = parseFloat(getValue(t.dynamicMaxField, filedValueMap, rowData))
-          min = parseFloat(getValue(t.dynamicMinField, filedValueMap, rowData))
-        } else {
-          tv = parseFloat(getValue(t.dynamicField, filedValueMap, rowData))
-        }
-      } else {
-        if (t.term === 'between') {
-          min = parseFloat(t.min)
-          max = parseFloat(t.max)
-        } else {
-          tv = parseFloat(t.value)
-        }
-      }
+      const tv = parseFloat(t.value)
       if (t.term === 'eq') {
         if (value === tv) {
           color = t[type]
@@ -626,13 +589,12 @@ export function mappingColor(value, defaultColor, field, type, filedValueMap?, r
           flag = true
         }
       } else if (t.term === 'between') {
+        const min = parseFloat(t.min)
+        const max = parseFloat(t.max)
         if (min <= value && value <= max) {
           color = t[type]
           flag = true
         }
-      } else if (t.term === 'default') {
-        color = t[type]
-        flag = true
       }
       if (flag) {
         break
@@ -671,9 +633,6 @@ export function mappingColor(value, defaultColor, field, type, filedValueMap?, r
           color = t[type]
           flag = true
         }
-      } else if (t.term === 'default') {
-        color = t[type]
-        flag = true
       }
       if (flag) {
         break
@@ -714,9 +673,6 @@ export function mappingColor(value, defaultColor, field, type, filedValueMap?, r
           color = t[type]
           flag = true
         }
-      } else if (t.term === 'default') {
-        color = t[type]
-        flag = true
       }
       if (flag) {
         break
@@ -726,24 +682,6 @@ export function mappingColor(value, defaultColor, field, type, filedValueMap?, r
     }
   }
   return color
-}
-
-function getFieldValueMap(view) {
-  const fieldValueMap = {}
-  if (view.data && view.data.dynamicAssistLines && view.data.dynamicAssistLines.length > 0) {
-    view.data.dynamicAssistLines.forEach(ele => {
-      fieldValueMap[ele.summary + '-' + ele.fieldId] = ele.value
-    })
-  }
-  return fieldValueMap
-}
-
-function getValue(field, filedValueMap, rowData) {
-  if (field.summary === 'value') {
-    return rowData ? rowData[field.field?.dataeaseName] : undefined
-  } else {
-    return filedValueMap[field.summary + '-' + field.fieldId]
-  }
 }
 
 export function handleTableEmptyStrategy(chart: Chart) {
@@ -901,19 +839,6 @@ export function configHeaderInteraction(chart: Chart, option: S2Options) {
           event,
           ...props
         })
-        const parent = document.getElementById(chart.container)
-        if (parent?.childNodes?.length) {
-          const child = Array.from(parent.childNodes)
-            .filter(node => node.nodeType === Node.ELEMENT_NODE)
-            .find(node => node.classList.contains('antv-s2-tooltip-container'))
-          if (child) {
-            const left = child.offsetLeft + child.clientWidth
-            if (left > parent.offsetWidth) {
-              const newLeft = parent.offsetWidth - child.clientWidth - 10
-              child.style.left = `${newLeft}px`
-            }
-          }
-        }
       }
     }
   ]

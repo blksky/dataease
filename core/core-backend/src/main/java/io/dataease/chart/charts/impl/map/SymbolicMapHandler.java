@@ -38,16 +38,21 @@ public class SymbolicMapHandler extends GroupChartHandler {
     @Override
     public AxisFormatResult formatAxis(ChartViewDTO view) {
         var result = super.formatAxis(view);
-        result.getAxisMap().put(ChartAxis.extBubble, view.getExtBubble());
+        var yAxis = result.getAxisMap().get(ChartAxis.yAxis);
+        yAxis.addAll(view.getExtBubble());
         return result;
     }
 
 
     private Map<String, Object> customBuildResult(ChartViewDTO view, AxisFormatResult formatResult, CustomFilterResult filterResult, List<String[]> data, List<ChartViewFieldDTO> detailFields, List<String[]> detailData) {
+        boolean isDrill = filterResult
+                .getFilterList()
+                .stream()
+                .anyMatch(ele -> ele.getFilterType() == 1);
         var xAxis = formatResult.getAxisMap().get(ChartAxis.xAxis);
-        var extBubble = formatResult.getAxisMap().get(ChartAxis.extBubble);
         var yAxis = formatResult.getAxisMap().get(ChartAxis.yAxis);
-        return ChartDataBuild.transSymbolicMapNormalWithDetail(view, xAxis, yAxis, extBubble, data, detailFields, detailData);
+        Map<String, Object> result = ChartDataBuild.transSymbolicMapNormalWithDetail(xAxis, yAxis, data, detailFields, detailData);
+        return result;
     }
 
     @Override
@@ -62,25 +67,19 @@ public class SymbolicMapHandler extends GroupChartHandler {
         DatasourceRequest datasourceRequest = new DatasourceRequest();
         datasourceRequest.setDsList(dsMap);
         var xAxis = formatResult.getAxisMap().get(ChartAxis.xAxis);
-        var extBubble = formatResult.getAxisMap().get(ChartAxis.extBubble);
+        var yAxis = formatResult.getAxisMap().get(ChartAxis.yAxis);
         var allFields = (List<ChartViewFieldDTO>) filterResult.getContext().get("allFields");
-        List<ChartViewFieldDTO> countField =chartViewManege.transFieldDTO(Collections.singletonList(chartViewManege.createCountField(view.getTableId())));
-        List<DatasetTableFieldDTO> datasetTableFieldDTOList = FieldUtil.transFields(allFields);
         SQLMeta sqlMeta1 = new SQLMeta();
         BeanUtils.copyBean(sqlMeta1, sqlMeta);
-        Dimension2SQLObj.dimension2sqlObj(sqlMeta, xAxis, datasetTableFieldDTOList, crossDs, dsMap, Utils.getParams(datasetTableFieldDTOList), view.getCalParams(), pluginManage);
-        List<ChartViewFieldDTO> yAxis = new ArrayList<>();
-        if(!extBubble.isEmpty() && !"*".equals(extBubble.get(0).getDataeaseName())){
-            yAxis.addAll(extBubble);
-        }
-        yAxis.addAll(countField);
-        datasetTableFieldDTOList.addAll(FieldUtil.transFields(countField));
-        formatResult.getAxisMap().put(ChartAxis.yAxis,countField);
-        Quota2SQLObj.quota2sqlObj(sqlMeta, yAxis, datasetTableFieldDTOList, crossDs, dsMap, Utils.getParams(datasetTableFieldDTOList), view.getCalParams(), pluginManage);
+        Dimension2SQLObj.dimension2sqlObj(sqlMeta, xAxis, FieldUtil.transFields(allFields), crossDs, dsMap);
+        List<ChartViewFieldDTO> yFields = new ArrayList<>();
+        yFields.addAll(chartViewManege.transFieldDTO(Collections.singletonList(chartViewManege.createCountField(view.getTableId()))));
+        yAxis.addAll(yFields);
+        Quota2SQLObj.quota2sqlObj(sqlMeta, yAxis, FieldUtil.transFields(allFields), crossDs, dsMap);
         String querySql = SQLProvider.createQuerySQL(sqlMeta, true, needOrder, view);
         querySql = provider.rebuildSQL(querySql, sqlMeta, crossDs, dsMap);
         datasourceRequest.setQuery(querySql);
-        logger.debug("calcite chart sql: " + querySql);
+        logger.info("calcite chart sql: " + querySql);
         List<String[]> data = (List<String[]>) provider.fetchResultField(datasourceRequest).get("data");
         // 获取所有字段数据作为数据详情返回
         List<String[]> detailData = new ArrayList<>();
@@ -94,12 +93,12 @@ public class SymbolicMapHandler extends GroupChartHandler {
             String sql = (String) sqlMap.get("sql");
             sql = Utils.replaceSchemaAlias(sql, dsMap);
             SQLMeta sqlMeta2 = new SQLMeta();
-            Table2SQLObj.table2sqlobj(sqlMeta2, null, "(" + sql + ")", crossDs);
-            Field2SQLObj.field2sqlObj(sqlMeta2, allFieldsTmp, allFieldsTmp, crossDs, dsMap, Utils.getParams(allFieldsTmp), null, pluginManage);// todo chartParam从视图里取
+            Table2SQLObj.table2sqlobj(sqlMeta2, null, "(" +  sql + ")", crossDs);
+            Field2SQLObj.field2sqlObj(sqlMeta2, allFieldsTmp, allFieldsTmp, crossDs, dsMap);
             String querySQL;
             querySQL = SQLProvider.createQuerySQL(sqlMeta2, false, needOrder, false);
             querySQL = provider.rebuildSQL(querySQL, sqlMeta2, crossDs, dsMap);
-            logger.debug("calcite data preview sql: " + querySQL);
+            logger.info("calcite data preview sql: " + querySQL);
             // 调用数据源的calcite获得data
             DatasourceRequest datasourceRequest1 = new DatasourceRequest();
             datasourceRequest1.setQuery(querySQL);
@@ -108,6 +107,8 @@ public class SymbolicMapHandler extends GroupChartHandler {
         }
         //自定义排序
         data = ChartDataUtil.resultCustomSort(xAxis, data);
+        //快速计算
+        quickCalc(xAxis, yAxis, data);
         //数据重组逻辑可重载
         var result = customBuildResult(view, formatResult, filterResult, data, detailFields, detailData);
         T calcResult = (T) new ChartCalcDataResult();
@@ -115,7 +116,6 @@ public class SymbolicMapHandler extends GroupChartHandler {
         calcResult.setContext(filterResult.getContext());
         calcResult.setQuerySql(querySql);
         calcResult.setOriginData(data);
-        formatResult.getAxisMap().put(ChartAxis.yAxis,new ArrayList<>());
         return calcResult;
     }
 
@@ -124,11 +124,11 @@ public class SymbolicMapHandler extends GroupChartHandler {
         var desensitizationList = (Map<String, ColumnPermissionItem>) filterResult.getContext().get("desensitizationList");
         var allFields = (List<ChartViewFieldDTO>) filterResult.getContext().get("allFields");
         var xAxis = formatResult.getAxisMap().get(ChartAxis.xAxis);
-        var extBubble = formatResult.getAxisMap().get(ChartAxis.extBubble);
+        var yAxis = formatResult.getAxisMap().get(ChartAxis.yAxis);
         // 如果是表格导出查询 则在此处直接就可以返回
         var extStack = formatResult.getAxisMap().get(ChartAxis.extStack);
         if (view.getIsExcelExport()) {
-            Map<String, Object> sourceInfo = ChartDataBuild.transTableNormal(xAxis, extBubble, view, calcResult.getOriginData(), extStack, desensitizationList);
+            Map<String, Object> sourceInfo = ChartDataBuild.transTableNormal(xAxis, yAxis, view, calcResult.getOriginData(), extStack, desensitizationList);
             sourceInfo.put("sourceData", calcResult.getOriginData());
             view.setData(sourceInfo);
             return view;

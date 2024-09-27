@@ -19,23 +19,14 @@ import { valueFormatter } from '@/views/chart/components/js/formatter'
 import { Datum } from '@antv/g2plot/esm/types/common'
 import { add } from 'mathjs'
 import isEmpty from 'lodash-es/isEmpty'
-import { useI18n } from '@/hooks/web/useI18n'
-const { t } = useI18n()
 
 export class Rose extends G2PlotChartView<RoseOptions, G2Rose> {
   axis: AxisType[] = PIE_AXIS_TYPE
   properties: EditorProperty[] = PIE_EDITOR_PROPERTY
   propertyInner: EditorPropertyInner = PIE_EDITOR_PROPERTY_INNER
-  axisConfig: AxisConfig = {
-    ...PIE_AXIS_CONFIG,
-    yAxis: {
-      name: `${t('chart.drag_block_pie_radius')} / ${t('chart.quota')}`,
-      type: 'q',
-      limit: 1
-    }
-  }
+  axisConfig = PIE_AXIS_CONFIG
 
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Rose>): Promise<G2Rose> {
+  drawChart(drawOptions: G2PlotDrawOptions<G2Rose>): G2Rose {
     const { chart, container, action } = drawOptions
     if (!chart?.data?.data?.length) {
       return
@@ -88,8 +79,9 @@ export class Rose extends G2PlotChartView<RoseOptions, G2Rose> {
       }
     }
     const options = this.setupOptions(chart, baseOptions)
+    // custom color
+    // options.color = antVCustomColor(chart)
 
-    const { Rose: G2Rose } = await import('@antv/g2plot/esm/plots/rose')
     // 开始渲染
     const plot = new G2Rose(container, options)
 

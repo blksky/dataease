@@ -6,14 +6,13 @@ import {
   L7Wrapper
 } from '@/views/chart/components/js/panel/types/impl/l7'
 import { MAP_EDITOR_PROPERTY_INNER } from '@/views/chart/components/js/panel/charts/map/common'
-import { hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
+import { flow, hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
 import { deepCopy } from '@/utils/utils'
 import { GaodeMap } from '@antv/l7-maps'
 import { Scene } from '@antv/l7-scene'
 import { PointLayer } from '@antv/l7-layers'
 import { LayerPopup } from '@antv/l7'
 import { mapRendered, mapRendering } from '@/views/chart/components/js/panel/common/common_antv'
-import { configCarouselTooltip } from '@/views/chart/components/js/panel/charts/map/tooltip-carousel'
 const { t } = useI18n()
 
 /**
@@ -22,7 +21,6 @@ const { t } = useI18n()
 export class SymbolicMap extends L7ChartView<Scene, L7Config> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'title-selector',
     'label-selector',
@@ -38,8 +36,7 @@ export class SymbolicMap extends L7ChartView<Scene, L7Config> {
       'showFields',
       'customContent',
       'show',
-      'backgroundColor',
-      'carousel'
+      'backgroundColor'
     ]
   }
   axis: AxisType[] = ['xAxis', 'xAxisExt', 'extBubble', 'filter', 'extLabel', 'extTooltip']
@@ -105,10 +102,6 @@ export class SymbolicMap extends L7ChartView<Scene, L7Config> {
     }
     this.buildLabel(chart, configList)
     this.configZoomButton(chart, scene)
-    symbolicLayer.on('inited', ev => {
-      chart.container = container
-      configCarouselTooltip(chart, symbolicLayer, symbolicLayer.sourceOption.data, scene)
-    })
     symbolicLayer.on('click', ev => {
       const data = ev.feature
       const dimensionList = []
@@ -258,19 +251,10 @@ export class SymbolicMap extends L7ChartView<Scene, L7Config> {
         ]
       }
       // 修改背景色
-      const styleId = 'tooltip-' + container
-      const styleElement = document.getElementById(styleId)
-      if (styleElement) {
-        styleElement.remove()
-        styleElement.parentNode?.removeChild(styleElement)
-      }
       const style = document.createElement('style')
-      style.id = styleId
       style.innerHTML = `
           #${container} .l7-popup-content {
             background-color: ${tooltip.backgroundColor} !important;
-            padding: 6px 10px 6px;
-            line-height: 1.6;
           }
           #${container} .l7-popup-tip {
            border-top-color: ${tooltip.backgroundColor} !important;
@@ -307,7 +291,7 @@ export class SymbolicMap extends L7ChartView<Scene, L7Config> {
    * @returns {string}
    */
   buildTooltipContent = (tooltip, fieldData, showFields) => {
-    let content = ``
+    let content = ''
     if (tooltip.customContent) {
       content = tooltip.customContent
       showFields.forEach(field => {
@@ -315,12 +299,11 @@ export class SymbolicMap extends L7ChartView<Scene, L7Config> {
       })
     } else {
       showFields.forEach(field => {
-        content += `<span style="margin-bottom: 4px">${field.split('@')[1]}: ${
-          fieldData[field.split('@')[0]]
-        }</span><br>`
+        //const value = ${fieldData[field.split('@')[0]] as string
+        content += `${field.split('@')[1]}: ${fieldData[field.split('@')[0]]}<br>`
       })
     }
-    return content.replace(/\n/g, '<br>')
+    return content
   }
 
   /**
@@ -393,5 +376,9 @@ export class SymbolicMap extends L7ChartView<Scene, L7Config> {
       mapStyle: 'normal'
     }
     return chart
+  }
+
+  protected setupOptions(chart: Chart, config: L7Config): L7Config {
+    return flow(this.configEmptyDataStrategy, this.configLabel)(chart, config)
   }
 }

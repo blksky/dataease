@@ -22,6 +22,4 @@ public class XpackLdapVO implements Serializable {
 
     private String mapping;
 
-    private boolean enable;
-
 }

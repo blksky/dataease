@@ -6,7 +6,7 @@ import {
   L7Wrapper
 } from '@/views/chart/components/js/panel/types/impl/l7'
 import { MAP_EDITOR_PROPERTY_INNER } from '@/views/chart/components/js/panel/charts/map/common'
-import { hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
+import { flow, hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
 import { deepCopy } from '@/utils/utils'
 import { GaodeMap } from '@antv/l7-maps'
 import { Scene } from '@antv/l7-scene'
@@ -21,7 +21,6 @@ const { t } = useI18n()
 export class FlowMap extends L7ChartView<Scene, L7Config> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'title-selector',
     'flow-map-line-selector',
@@ -57,8 +56,7 @@ export class FlowMap extends L7ChartView<Scene, L7Config> {
     yAxis: {
       name: `线条粗细 / ${t('chart.quota')}`,
       type: 'q',
-      limit: 1,
-      tooltip: '该指标生效时，样式中线条配置的线条宽度属性将失效'
+      limit: 1
     }
   }
   constructor() {
@@ -309,5 +307,9 @@ export class FlowMap extends L7ChartView<Scene, L7Config> {
   setupDefaultOptions(chart: ChartObj): ChartObj {
     chart.customAttr.misc.flowMapConfig.lineConfig.mapLineAnimate = true
     return chart
+  }
+
+  protected setupOptions(chart: Chart, config: L7Config): L7Config {
+    return flow(this.configEmptyDataStrategy)(chart, config)
   }
 }

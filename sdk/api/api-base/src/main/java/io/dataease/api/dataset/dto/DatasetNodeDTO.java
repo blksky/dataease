@@ -14,7 +14,7 @@ public class DatasetNodeDTO implements Serializable {
     /**
      * ID
      */
-    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "ID")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 

@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import icon_left_outlined from '@/assets/svg/icon_left_outlined.svg'
-import icon_right_outlined from '@/assets/svg/icon_right_outlined.svg'
 import { useAppStoreWithOut } from '@/store/modules/app'
 const appStore = useAppStoreWithOut()
 defineProps({
@@ -23,7 +21,7 @@ const handleClick = val => {
     class="arrow-side-tree arrow-side-tree-left"
   >
     <el-icon>
-      <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+      <Icon name="icon_left_outlined" />
     </el-icon>
   </div>
   <div
@@ -32,7 +30,7 @@ const handleClick = val => {
     class="arrow-side-tree arrow-side-tree-right"
   >
     <el-icon>
-      <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+      <Icon name="icon_right_outlined" />
     </el-icon>
   </div>
 </template>

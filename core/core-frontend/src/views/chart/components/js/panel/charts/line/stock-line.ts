@@ -2,13 +2,12 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { Mix, MixOptions } from '@antv/g2plot/esm/plots/mix'
+import { Mix, MixOptions } from '@antv/g2plot/esm/plots/mix'
 import { flow, hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
 import { LINE_EDITOR_PROPERTY_INNER } from '@/views/chart/components/js/panel/charts/line/common'
 import { useI18n } from '@/hooks/web/useI18n'
 import { valueFormatter } from '@/views/chart/components/js/formatter'
-import type { Options } from '@antv/g2plot/esm'
-import { MixOptions } from '@antv/g2plot'
+import { Options } from '@antv/g2plot/esm'
 
 const { t } = useI18n()
 const DEFAULT_DATA = []
@@ -18,9 +17,7 @@ const DEFAULT_DATA = []
 export class StockLine extends G2PlotChartView<MixOptions, Mix> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
-    'legend-selector',
     'x-axis-selector',
     'y-axis-selector',
     'title-selector',
@@ -41,8 +38,7 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
       'axisLine',
       'splitLine',
       'axisLabelFormatter'
-    ],
-    'legend-selector': ['fontSize', 'color', 'show']
+    ]
   }
   axis: AxisType[] = ['xAxis', 'yAxis', 'filter', 'extLabel', 'extTooltip']
   axisConfig = {
@@ -85,7 +81,7 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
           .reduce((sum, item) => sum + item[yAxisDataeaseName], 0)
         result.push({
           [xAxisDataeaseName]: data[i][xAxisDataeaseName],
-          value: parseFloat((sum / dayCount).toFixed(3))
+          value: parseFloat((sum / dayCount).toFixed(2))
         })
       }
     }
@@ -210,9 +206,9 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
     })
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<Mix>): Promise<Mix> {
+  drawChart(drawOptions: G2PlotDrawOptions<Mix>): Mix {
     const { chart, action, container } = drawOptions
-    if (!chart.data?.data?.length) {
+    if (!chart.data.data?.length) {
       return
     }
     const xAxis = chart.xAxis
@@ -247,8 +243,8 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
               ['L', x - width - 1 / 2, y + height / 2],
               ['Z'],
               // 中线
-              ['M', x, y + 10 / 2],
-              ['L', x, y - 10 / 2]
+              ['M', x, y + width + 2],
+              ['L', x, x - width - 1]
             ]
           },
           style: { fill: 'red', stroke: 'red', lineWidth: 2 }
@@ -306,34 +302,6 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
         marker: { symbol: 'hyphen', style: { stroke: colors[index - 1], lineWidth: 2 } }
       })
     }
-    const axis = chart.xAxis ?? []
-    let dateFormat: string
-    const dateSplit = axis[0]?.datePattern === 'date_split' ? '/' : '-'
-    switch (axis[0]?.dateStyle) {
-      case 'y':
-        dateFormat = 'YYYY'
-        break
-      case 'y_M':
-        dateFormat = 'YYYY' + dateSplit + 'MM'
-        break
-      case 'y_M_d':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD'
-        break
-      // case 'H_m_s':
-      //   dateFormat = 'HH:mm:ss'
-      //   break
-      case 'y_M_d_H':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD' + ' HH'
-        break
-      case 'y_M_d_H_m':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD' + ' HH:mm'
-        break
-      case 'y_M_d_H_m_s':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD' + ' HH:mm:ss'
-        break
-      default:
-        dateFormat = 'YYYY-MM-dd HH:mm:ss'
-    }
     const option = this.setupOptions(chart, {
       data,
       slider: {
@@ -346,11 +314,6 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
           top: true,
 
           options: {
-            meta: {
-              [xAxisDataeaseName]: {
-                mask: dateFormat
-              }
-            },
             stockStyle: {
               stroke: 'black',
               lineWidth: 0.5
@@ -378,8 +341,7 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
         ...averageLines
       ]
     })
-    const { Mix: MixClass } = await import('@antv/g2plot/esm/plots/mix')
-    const plot = new MixClass(container, option)
+    const plot = new Mix(container, option)
     this.registerEvent(data, plot, averagesLineData)
     plot.on('schema:click', evt => {
       const selectSchema = evt.data.data[xAxisDataeaseName]
@@ -438,7 +400,6 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
 
   protected configTooltip(chart: Chart, options: MixOptions): MixOptions {
     const tooltipAttr = parseJson(chart.customAttr).tooltip
-    const xAxis = chart.xAxis
     const newPlots = []
     const linePlotList = options.plots.filter(item => item.type === 'line')
     linePlotList.forEach(item => {
@@ -465,7 +426,6 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
         const fieldObj = showFiled.find(q => q.dataeaseName === item.name)
         const displayName = fieldObj?.chartShowName || fieldObj?.name || item.name
         const formattedName = displayName.startsWith('ma') ? displayName.toUpperCase() : displayName
-        tooltipAttr.tooltipFormatter.decimalCount = 3
         const formattedValue = valueFormatter(item.value, tooltipAttr.tooltipFormatter)
 
         return {
@@ -528,13 +488,7 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
         showCrosshairs: true,
         showNil: true,
         crosshairs: {
-          follow: true,
-          text: (axisType, value, data) => {
-            if (axisType === 'y') {
-              return { content: value ? value.toFixed(0) : value }
-            }
-            return { content: data[0].title, position: 'end' }
-          }
+          follow: false
         },
         showContent: true,
         customItems: customTooltipItems,
@@ -646,7 +600,7 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
     const updateValues = (strategy: 'breakLine' | 'setZero', data: any[]) => {
       data.forEach(obj => {
         Object.keys(obj).forEach(key => {
-          if (key.startsWith('f_') && obj[key] === null) {
+          if (obj[key] === null) {
             obj[key] = strategy === 'breakLine' ? null : 0
           }
         })
@@ -657,45 +611,6 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
     }
     return options
   }
-  protected configLegend(chart: Chart, options: MixOptions): MixOptions {
-    let legend = {}
-    let customStyle: CustomStyle
-    const stockPlot = options.plots.filter(item => item.type === 'stock')[0]
-    if (chart.customStyle) {
-      customStyle = parseJson(chart.customStyle)
-      // legend
-      if (customStyle.legend) {
-        const l = JSON.parse(JSON.stringify(customStyle.legend))
-        if (l.show) {
-          legend = {
-            ...stockPlot.options.legend,
-            itemName: {
-              style: {
-                fill: l.color,
-                fontSize: l.fontSize
-              }
-            }
-          }
-        } else {
-          legend = false
-        }
-      }
-    }
-    const newPlots = []
-    const stockOption = {
-      ...stockPlot.options,
-      legend: legend
-    }
-    const linePlotList = options.plots.filter(item => item.type === 'line')
-    linePlotList.forEach(item => {
-      newPlots.push(item)
-    })
-    newPlots.push({ ...stockPlot, options: stockOption })
-    return {
-      ...options,
-      plots: newPlots
-    }
-  }
 
   protected setupOptions(chart: Chart, options: MixOptions): MixOptions {
     return flow(
@@ -704,7 +619,6 @@ export class StockLine extends G2PlotChartView<MixOptions, Mix> {
       this.configXAxis,
       this.configYAxis,
       this.configTooltip,
-      this.configLegend,
       this.customConfigEmptyDataStrategy
     )(chart, options)
   }

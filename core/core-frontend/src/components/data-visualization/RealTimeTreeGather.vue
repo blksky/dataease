@@ -1,7 +1,5 @@
 <script setup lang="ts"></script>
 
-<template>
-  <div>ts</div>
-</template>
+<template></template>
 
 <style scoped lang="less"></style>

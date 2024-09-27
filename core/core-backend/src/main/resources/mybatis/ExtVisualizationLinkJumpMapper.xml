@@ -16,7 +16,6 @@
         <result column="link_jump_id" jdbcType="BIGINT" property="linkJumpId"/>
         <result column="link_type" jdbcType="VARCHAR" property="linkType"/>
         <result column="jump_type" jdbcType="VARCHAR" property="jumpType"/>
-        <result column="window_size" jdbcType="VARCHAR" property="windowSize"/>
         <result column="target_dv_id" jdbcType="BIGINT" property="targetDvId"/>
         <result column="source_field_id" jdbcType="BIGINT" property="sourceFieldId"/>
         <result column="content" jdbcType="VARCHAR" property="content"/>
@@ -79,7 +78,6 @@
             visualization_link_jump_info.link_jump_id,
             visualization_link_jump_info.link_type,
             visualization_link_jump_info.jump_type,
-            visualization_link_jump_info.window_size,
             visualization_link_jump_info.target_dv_id,
             visualization_link_jump_info.content,
             xpack_share.uuid AS publicJumpId,
@@ -119,28 +117,16 @@
     </select>
 
     <select id="getViewTableDetails" resultMap="ViewTableFieldDetailsMap">
-        SELECT
-        	core_chart_view.id,
-        	core_chart_view.title,
-        	core_chart_view.type,
-        	core_chart_view.scene_id AS dv_id,
-        	core_dataset_table_field.id AS field_id,
-        	core_dataset_table_field.origin_name,
-        	core_dataset_table_field.`name` AS field_name,
-        	core_dataset_table_field.type AS field_type,
-        	core_dataset_table_field.de_type
-        FROM
-        	core_chart_view
-        	LEFT JOIN core_dataset_table_field ON core_chart_view.table_id = core_dataset_table_field.dataset_group_id
-        	INNER JOIN data_visualization_info dvi ON core_chart_view.scene_id = dvi.id
-        WHERE
-        	core_chart_view.scene_id = #{dvId}
-        	AND core_chart_view.type != 'VQuery'
-        	AND core_chart_view.table_id IS NOT NULL
-        	AND dvi.id = #{dvId}
-        	AND LOCATE(
-        	core_chart_view.id,
-        	dvi.component_data)
+        SELECT core_chart_view.id,
+               core_chart_view.title,
+               core_chart_view.type,
+               core_chart_view.scene_id as dv_id, core_dataset_table_field.id AS field_id, core_dataset_table_field.origin_name,
+               core_dataset_table_field.`name` AS field_name, core_dataset_table_field.type AS field_type, core_dataset_table_field.de_type
+        FROM core_chart_view
+                 LEFT JOIN core_dataset_table_field
+                           ON core_chart_view.table_id = core_dataset_table_field.dataset_group_id
+        WHERE core_chart_view.scene_id = #{dvId}
+          and core_chart_view.type != 'VQuery'
     </select>
 
     <select id="queryWithViewId" resultMap="BaseResultMapDTO">
@@ -306,7 +292,6 @@
                                                   link_jump_id,
                                                   link_type,
                                                   jump_type,
-                                                  window_size,
                                                   target_dv_id,
                                                   source_field_id,
                                                   content,
@@ -318,7 +303,6 @@
                plj_copy.t_id,
                link_type,
                jump_type,
-               window_size,
                target_dv_id,
                source_field_id,
                content,

@@ -3,15 +3,15 @@ import { store } from '../../index'
 import { dvMainStoreWithOut } from './dvMain'
 import { swap } from '@/utils/utils'
 import { useEmitt } from '@/hooks/web/useEmitt'
-import { getComponentById, getCurInfo } from '@/store/modules/data-visualization/common'
+import { getCurInfo } from '@/store/modules/data-visualization/common'
 
 const dvMainStore = dvMainStoreWithOut()
 const { curComponentIndex, curComponent } = storeToRefs(dvMainStore)
 
 export const layerStore = defineStore('layer', {
   actions: {
-    upComponent(componentId?) {
-      const curInfo = getCurInfo(componentId)
+    upComponent() {
+      const curInfo = getCurInfo()
       if (curInfo) {
         const { index, componentData } = curInfo
         // 上移图层 index，表示元素在数组中越往后
@@ -22,8 +22,8 @@ export const layerStore = defineStore('layer', {
       }
     },
 
-    downComponent(componentId?) {
-      const curInfo = getCurInfo(componentId)
+    downComponent() {
+      const curInfo = getCurInfo()
       if (curInfo) {
         const { index, componentData } = curInfo
         // 下移图层 index，表示元素在数组中越往前
@@ -34,53 +34,51 @@ export const layerStore = defineStore('layer', {
       }
     },
 
-    topComponent(componentId?) {
+    topComponent() {
       // 置顶
-      const curInfo = getCurInfo(componentId)
+      const curInfo = getCurInfo()
       if (curInfo) {
-        const { index, componentData, targetComponent } = curInfo
+        const { index, componentData } = curInfo
         if (index < componentData.length - 1) {
-          componentData.splice(targetComponent, 1)
-          componentData.push(targetComponent)
+          componentData.splice(curComponentIndex.value, 1)
+          componentData.push(curComponent.value)
           curComponentIndex.value = componentData.length - 1
         }
       }
     },
 
-    bottomComponent(componentId?) {
+    bottomComponent() {
       // 置底
-      const curInfo = getCurInfo(componentId)
+      const curInfo = getCurInfo()
       if (curInfo) {
-        const { index, componentData, targetComponent } = curInfo
+        const { index, componentData } = curInfo
         if (index > 0) {
           componentData.splice(index, 1)
-          componentData.unshift(targetComponent)
+          componentData.unshift(curComponent.value)
           curComponentIndex.value = 0
         }
       }
     },
 
-    hideComponent(componentId?) {
-      const targetComponent = getComponentById(componentId)
+    hideComponent() {
       // 隐藏
-      if (targetComponent) {
-        targetComponent.isShow = false
+      if (curComponent && curComponent.value) {
+        curComponent.value.isShow = false
       }
     },
-    showComponent(componentId?) {
+    showComponent() {
       // 显示
-      const targetComponent = getComponentById(componentId)
-      if (targetComponent) {
-        targetComponent.isShow = true
-        if (targetComponent.component == 'Group') {
-          targetComponent.propValue.forEach(item => {
+      if (curComponent && curComponent.value) {
+        curComponent.value.isShow = true
+        if (curComponent.value.component == 'Group') {
+          curComponent.value.propValue.forEach(item => {
             if (item.innerType?.indexOf('table') !== -1) {
               setTimeout(() => {
                 useEmitt().emitter.emit('renderChart-' + item.id)
               }, 400)
             }
           })
-        } else if (targetComponent?.innerType?.indexOf('table') !== -1) {
+        } else if (curComponent.value?.innerType?.indexOf('table') !== -1) {
           setTimeout(() => {
             useEmitt().emitter.emit('renderChart-' + curComponent.value.id)
           }, 400)

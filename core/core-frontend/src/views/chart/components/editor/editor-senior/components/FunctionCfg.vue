@@ -60,10 +60,6 @@ const showIgnoreOption = computed(() => {
   )
 })
 
-const isRichText = computed(() => {
-  return equalsAny(props.chart.type, 'rich-text')
-})
-
 const showEmptyDataFieldCtrl = computed(() => {
   return (
     showProperty('emptyDataStrategy') &&
@@ -100,7 +96,7 @@ onMounted(() => {
 
 <template>
   <div @keydown.stop @keyup.stop style="width: 100%">
-    <el-form ref="functionForm" :model="state.functionForm" label-position="top" @submit.prevent>
+    <el-form ref="functionForm" :model="state.functionForm" label-position="top">
       <div v-if="showProperty('slider')">
         <el-form-item class="form-item form-item-checkbox" :class="'form-item-' + themes">
           <el-checkbox
@@ -192,27 +188,13 @@ onMounted(() => {
           @change="changeFunctionCfg"
         >
           <el-radio :effect="themes" :label="'breakLine'">
-            {{ isRichText ? '置为"-"' : t('chart.break_line') }}
+            {{ t('chart.break_line') }}
           </el-radio>
-          <el-radio v-if="isRichText" :effect="themes" :label="'custom'"> 自定义 </el-radio>
-          <template v-if="!isRichText">
-            <el-radio :effect="themes" :label="'setZero'">{{ t('chart.set_zero') }}</el-radio>
-            <el-radio v-if="showIgnoreOption" :effect="themes" :label="'ignoreData'">
-              {{ t('chart.ignore_data') }}
-            </el-radio>
-          </template>
+          <el-radio :effect="themes" :label="'setZero'">{{ t('chart.set_zero') }}</el-radio>
+          <el-radio v-if="showIgnoreOption" :effect="themes" :label="'ignoreData'">
+            {{ t('chart.ignore_data') }}
+          </el-radio>
         </el-radio-group>
-      </el-form-item>
-      <el-form-item>
-        <el-input
-          :effect="themes"
-          v-if="state.functionForm.emptyDataStrategy === 'custom'"
-          v-model="state.functionForm['emptyDataCustomValue']"
-          class="value-item"
-          @change="changeFunctionCfg"
-          placeholder="请输入自定义值"
-          clearable
-        />
       </el-form-item>
       <el-form-item
         v-if="showEmptyDataFieldCtrl"

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import icon_admin_outlined from '@/assets/svg/icon_admin_outlined.svg'
 import { ElColorPicker, ElPopover } from 'element-plus-secondary'
 import { computed, nextTick, onMounted, reactive, ref, toRefs, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -25,11 +24,9 @@ const props = withDefaults(
     }
     propertyInner: Array<string>
     chart: ChartObj
-    sub?: boolean
   }>(),
   {
-    themes: 'light',
-    sub: false
+    themes: 'light'
   }
 )
 const dvMainStore = dvMainStoreWithOut()
@@ -37,7 +34,7 @@ const { batchOptStatus } = storeToRefs(dvMainStore)
 const emits = defineEmits(['update:modelValue', 'changeBasicStyle'])
 const changeChartType = () => {
   if (isColorGradient.value) {
-    state.value.basicStyleForm[colorSchemeName.value] = 'default'
+    state.value.basicStyleForm.colorScheme = 'default'
     changeColorOption({ value: 'default' })
   }
 }
@@ -53,79 +50,28 @@ const seriesColorState = reactive({
   curColorIndex: 0,
   seriesColorPickerId: 'body'
 })
-
-const instance = ref<G2PlotChartView | undefined>()
-
-const colorsName = computed(() => {
-  return props.sub ? 'subColors' : 'colors'
-})
-const colorSchemeName = computed(() => {
-  return props.sub ? 'subColorScheme' : 'colorScheme'
-})
-const seriesColorName = computed(() => {
-  return props.sub ? 'subSeriesColor' : 'seriesColor'
-})
-
-const needSetSeriesColor = computed(() => {
-  return (
-    instance.value?.propertyInner?.['basic-style-selector']?.includes('seriesColor') ||
-    instance.value?.propertyInner?.['dual-basic-style-selector']?.includes('seriesColor')
-  )
-})
-
-const needSetSubSeriesColor = computed(() => {
-  return instance.value?.propertyInner?.['dual-basic-style-selector']?.includes('subSeriesColor')
-})
-
 const setupSeriesColor = () => {
   if (batchOptStatus.value || !props.chart) {
     return
   }
-
-  instance.value = chartViewManager.getChartView(
+  const instance = chartViewManager.getChartView(
     props.chart.render,
     props.chart.type
   ) as G2PlotChartView
-
-  if (!props.sub) {
-    if (!needSetSeriesColor.value) {
-      return
-    }
-  } else {
-    if (!needSetSubSeriesColor.value) {
-      return
-    }
+  if (!instance?.propertyInner?.['basic-style-selector'].includes('seriesColor')) {
+    return
   }
 
-  let viewData = dvMainStore.getViewOriginData(props.chart.id)
+  const viewData = dvMainStore.getViewOriginData(props.chart.id)
   if (!viewData) {
     return
   }
-
-  if (props.chart.type.includes('chart-mix')) {
-    if (props.sub) {
-      viewData = viewData.right?.data?.[0]
-    } else {
-      viewData = viewData.left?.data?.[0]
-    }
-  }
-  if (!viewData) {
-    return
-  }
-
-  const sFunction = props.sub
-    ? instance.value?.setupSubSeriesColor
-    : instance.value.setupSeriesColor
-  if (!sFunction) {
-    return
-  }
-  const newSeriesColor = sFunction(props.chart, viewData.data)
+  const newSeriesColor = instance.setupSeriesColor(props.chart, viewData.data)
   const oldSeriesColor =
-    props.chart.customAttr.basicStyle[seriesColorName.value]?.reduce((p, n) => {
+    props.chart.customAttr.basicStyle.seriesColor?.reduce((p, n) => {
       p[n.id] = n
       return p
     }, {}) || {}
-
   newSeriesColor?.forEach(item => {
     const oldColorItem = oldSeriesColor[item.id]
     if (oldColorItem) {
@@ -139,23 +85,22 @@ const setupSeriesColor = () => {
     }
     seriesColorState.curSeriesColor = seriesColorState.seriesColor[seriesColorState.curColorIndex]
     nextTick(() => {
-      customColorPickerRef.value?.hide()
-      // 防止 teleport 失效还有选框飘到左上角
-      seriesColorState.seriesColorPickerId = `#seriesr-picker-slot-${props.sub ? 1 : 0}`
+      const targetId = 'series-color-picker-' + seriesColorState.curColorIndex
+      const target = document.getElementById(targetId)
+      if (target) {
+        seriesColorState.seriesColorPickerId = `#${targetId}`
+      }
     })
   }
 }
+
 const switchSeriesColor = (seriesColor, index) => {
   seriesColorPickerRef.value?.hide()
   seriesColorState.curSeriesColor = cloneDeep(seriesColor)
   seriesColorState.curColorIndex = index
-  const id = `series-color-picker-${props.sub ? 1 : 0}-${index}`
-  seriesColorState.seriesColorPickerId = `#${id}`
+  seriesColorState.seriesColorPickerId = '#series-color-picker-' + index
   nextTick(() => {
-    const dom = document.getElementById(id)
-    if (dom) {
-      seriesColorPickerRef.value?.show()
-    }
+    seriesColorPickerRef.value?.show()
   })
 }
 
@@ -171,7 +116,7 @@ const changeSeriesColor = () => {
     }
   })
   if (changed) {
-    state.value.basicStyleForm[seriesColorName.value] = cloneDeep(seriesColorState.seriesColor)
+    state.value.basicStyleForm.seriesColor = seriesColorState.seriesColor
     changeBasicStyle('seriesColor')
   }
 }
@@ -209,7 +154,7 @@ const colorCaseSelectorRef = ref<InstanceType<typeof ElPopover>>()
 const customColorPickerRef = ref<InstanceType<typeof ElColorPicker>>()
 
 function selectColorCase(option) {
-  state.value.basicStyleForm[colorSchemeName.value] = option.value
+  state.value.basicStyleForm.colorScheme = option.value
   colorCaseSelectorRef.value?.hide()
   changeColorOption(option)
 }
@@ -217,14 +162,13 @@ function selectColorCase(option) {
 const changeColorOption = (option?) => {
   let isGradient = option?.value?.endsWith('_split_gradient') || isColorGradient.value
   const getColorItems = isGradient ? getMapColorCases(colorCases) : colorCases
-  const items = getColorItems.filter(
-    ele => ele.value === state.value.basicStyleForm[colorSchemeName.value]
-  )
+  const items = getColorItems.filter(ele => ele.value === state.value.basicStyleForm.colorScheme)
+
   if (items.length > 0) {
-    state.value.basicStyleForm[colorsName.value] = [...items[0].colors]
-    state.value.customColor = state.value.basicStyleForm[colorsName.value][0]
+    state.value.basicStyleForm.colors = [...items[0].colors]
+    state.value.customColor = state.value.basicStyleForm.colors[0]
     state.value.colorIndex = 0
-    state.value.basicStyleForm[seriesColorName.value]?.forEach((c, i) => {
+    state.value.basicStyleForm.seriesColor?.forEach((c, i) => {
       const length = items[0].colors.length
       c.color = items[0].colors[i % length]
     })
@@ -237,22 +181,22 @@ const resetCustomColor = () => {
 
 const switchColorCase = () => {
   const { colorIndex, customColor, basicStyleForm } = state.value
-  const colors = basicStyleForm[colorsName.value]
+  const colors = basicStyleForm.colors
 
   if (isColorGradient.value) {
     let startColor = colorIndex === 0 ? customColor : colors[0]
     let endColor = colorIndex === 0 ? colors[8] : customColor
-    basicStyleForm[colorsName.value] = stepsColor(startColor, endColor, 9, 1)
+    basicStyleForm.colors = stepsColor(startColor, endColor, 9, 1)
   } else {
     colors[colorIndex] = customColor
   }
   changeBasicStyle()
 }
 const isColorGradient = computed(() =>
-  state.value.basicStyleForm[colorSchemeName.value].endsWith('_split_gradient')
+  state.value.basicStyleForm.colorScheme.endsWith('_split_gradient')
 )
 const showColorGradientIndex = index => {
-  return index === 0 || index === state.value.basicStyleForm[colorsName.value].length - 1
+  return index === 0 || index === state.value.basicStyleForm.colors.length - 1
 }
 const switchColor = (index, c) => {
   if (isColorGradient.value && !showColorGradientIndex(index)) {
@@ -335,7 +279,7 @@ const colorItemBorderColor = (index, state) => {
               <template #prefix>
                 <div class="custom-color-selector-container">
                   <div
-                    v-for="(c, index) in state.basicStyleForm[colorsName]"
+                    v-for="(c, index) in state.basicStyleForm.colors"
                     :key="index"
                     :style="{
                       flex: 1,
@@ -362,7 +306,7 @@ const colorItemBorderColor = (index, state) => {
                 v-for="option in colorCases"
                 :key="option.value"
                 class="select-color-item"
-                :class="{ active: state.basicStyleForm[colorSchemeName] === option.value }"
+                :class="{ active: state.basicStyleForm.colorScheme === option.value }"
                 @click="selectColorCase(option)"
               >
                 <div style="float: left">
@@ -390,7 +334,7 @@ const colorItemBorderColor = (index, state) => {
           @click="customColorExtendSettingOpened = !customColorExtendSettingOpened"
         >
           <el-icon style="font-size: 12px">
-            <Icon name="icon_admin_outlined"><icon_admin_outlined class="svg-icon" /></Icon>
+            <Icon name="icon_admin_outlined" />
           </el-icon>
         </div>
       </div>
@@ -403,12 +347,9 @@ const colorItemBorderColor = (index, state) => {
         </span>
       </div>
 
-      <div
-        v-if="!((!sub && showProperty('seriesColor')) || (sub && showProperty('subSeriesColor')))"
-        class="custom-color-extend-setting colors"
-      >
+      <div v-if="!showProperty('seriesColor')" class="custom-color-extend-setting colors">
         <div
-          v-for="(c, index) in state.basicStyleForm[colorsName]"
+          v-for="(c, index) in state.basicStyleForm.colors"
           :key="index"
           :class="{
             active: state.colorIndex === index,
@@ -452,16 +393,9 @@ const colorItemBorderColor = (index, state) => {
         </div>
       </div>
       <div
-        v-if="
-          ((!sub && showProperty('seriesColor')) || (sub && showProperty('subSeriesColor'))) &&
-          !batchOptStatus
-        "
+        v-if="showProperty('seriesColor') && !batchOptStatus"
         class="series-color-setting colors"
       >
-        <div
-          :id="`seriesr-picker-slot-${sub ? 1 : 0}`"
-          style="overflow: hidden; transform: translateX(0)"
-        ></div>
         <div
           v-for="(item, index) in seriesColorState.seriesColor"
           :key="item.id"
@@ -481,24 +415,22 @@ const colorItemBorderColor = (index, state) => {
               }"
             ></div>
           </div>
-          <div :id="`series-color-picker-${sub ? 1 : 0}-${index}`"></div>
           <span
             :title="item.name"
             class="color-item-name"
             :class="themes === 'dark' ? 'dark' : ''"
             >{{ item.name }}</span
           >
+          <div :id="'series-color-picker-' + index"></div>
         </div>
       </div>
     </template>
-    <teleport defer :to="seriesColorState.seriesColorPickerId">
-      <div class="series-color-picker-wrapper">
+    <teleport :to="seriesColorState.seriesColorPickerId">
+      <div style="position: absolute; width: 0; height: 0; overflow: hidden">
         <el-color-picker
           ref="seriesColorPickerRef"
           v-model="seriesColorState.curSeriesColor.color"
           size="small"
-          popper-class="series-color-picker"
-          :teleported="false"
           :predefine="predefineColors"
           @change="changeSeriesColor"
         />
@@ -589,6 +521,7 @@ const colorItemBorderColor = (index, state) => {
       cursor: pointer;
       padding: 2px;
       border: solid 1px transparent;
+
       .color-item__inner {
         width: 14px;
         height: 14px;
@@ -717,20 +650,6 @@ const colorItemBorderColor = (index, state) => {
 
   .cases-list__text {
     margin-left: 4px;
-  }
-}
-.series-color-picker-wrapper {
-  width: 0px;
-  height: 0px;
-  position: absolute;
-  :deep(.ed-tooltip__trigger) {
-    width: 0px;
-    height: 0px;
-    overflow: hidden;
-  }
-  :deep(.series-color-picker) {
-    position: fixed !important;
-    margin-top: 16px !important;
   }
 }
 </style>

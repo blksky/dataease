@@ -1,8 +1,6 @@
 declare type EditorProperty =
   | 'background-overall-component'
-  | 'border-style'
   | 'basic-style-selector'
-  | 'dual-basic-style-selector'
   | 'label-selector'
   | 'tooltip-selector'
   | 'x-axis-selector'
@@ -57,7 +55,7 @@ declare type AxisType =
   | 'area'
   | 'flowMapStartName'
   | 'flowMapEndName'
-  | 'extColor'
+  | 'flowMapColor'
 /**
  * 轴配置
  */

@@ -1,9 +1,9 @@
 package io.dataease.home;
 
-import io.dataease.home.manage.DeIndexManage;
+import io.dataease.license.utils.LicenseUtil;
 import io.dataease.utils.ModelUtils;
 import io.dataease.utils.RsaUtils;
-import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping
 public class RestIndexController {
 
-
-    @Resource
-    private DeIndexManage deIndexManage;
+    @Value("${dataease.xpack-front-distributed:false}")
+    private boolean xpackFrontDistributed;
 
     @GetMapping("/dekey")
     @ResponseBody
@@ -32,8 +31,8 @@ public class RestIndexController {
 
     @GetMapping("/xpackModel")
     @ResponseBody
-    public Boolean xpackModel() {
-        return deIndexManage.xpackModel();
+    public boolean xpackModel() {
+        return xpackFrontDistributed && LicenseUtil.licenseValid();
     }
 
 }

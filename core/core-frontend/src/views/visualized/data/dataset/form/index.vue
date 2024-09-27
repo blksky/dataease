@@ -1,18 +1,4 @@
 <script lang="tsx" setup>
-import dvFolder from '@/assets/svg/dv-folder.svg'
-import icon_left_outlined from '@/assets/svg/icon_left_outlined.svg'
-import icon_right_outlined from '@/assets/svg/icon_right_outlined.svg'
-import referenceTable from '@/assets/svg/reference-table.svg'
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
-import icon_sql_outlined_1 from '@/assets/svg/icon_sql_outlined_1.svg'
-import icon_warning_colorful from '@/assets/svg/icon_warning_colorful.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
-import icon_refresh_outlined from '@/assets/svg/icon_refresh_outlined.svg'
-import icon_expandRight_filled from '@/assets/svg/icon_expand-right_filled.svg'
-import icon_switch_outlined from '@/assets/svg/icon_switch_outlined.svg'
-import icon_copy_outlined from '@/assets/svg/icon_copy_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
 import {
   ref,
   toRaw,
@@ -23,7 +9,6 @@ import {
   computed,
   watch,
   provide,
-  h,
   onMounted,
   onBeforeUnmount
 } from 'vue'
@@ -59,8 +44,6 @@ import type { Table } from '@/api/dataset'
 import DatasetUnion from './DatasetUnion.vue'
 import { cloneDeep, debounce } from 'lodash-es'
 import { XpackComponent } from '@/components/plugin'
-import { iconFieldMap } from '@/components/icon-group/field-list'
-import { iconDatasourceMap } from '@/components/icon-group/datasource-list'
 interface DragEvent extends MouseEvent {
   dataTransfer: DataTransfer
 }
@@ -83,7 +66,7 @@ const editCalcField = ref(false)
 const calcEdit = ref()
 const editUnion = ref(false)
 const datasetDrag = ref()
-const datasetName = ref(t('data_set.unnamed_dataset'))
+const datasetName = ref('未命名数据集')
 const tabActive = ref('preview')
 const activeName = ref('')
 const dataSource = ref('')
@@ -155,8 +138,7 @@ const fieldOptions = [
   {
     label: t('dataset.value') + '(' + t('dataset.float') + ')',
     value: 3
-  },
-  { label: 'URL', value: 7 }
+  }
 ]
 
 const fieldOptionsText = [
@@ -170,15 +152,14 @@ const fieldOptionsText = [
   {
     label: t('dataset.value') + '(' + t('dataset.float') + ')',
     value: 3
-  },
-  { label: 'URL', value: 7 }
+  }
 ]
 
 const ruleFormRef = ref<FormInstance>()
 const ruleFormFieldRef = ref<FormInstance>()
 
 const rules = {
-  name: [{ required: true, message: t('data_set.cannot_be_empty_time'), trigger: 'blur' }]
+  name: [{ required: true, message: '自定义时间格式不能为空', trigger: 'blur' }]
 }
 
 const fieldRules = {
@@ -188,7 +169,7 @@ const fieldRules = {
 const sqlNode = reactive<Table>({
   datasourceId: '',
   name: '',
-  tableName: t('data_set.custom_sql'),
+  tableName: '自定义SQL',
   type: 'sql'
 })
 
@@ -258,7 +239,7 @@ const pushDataset = () => {
 
 const backToMain = () => {
   if (isUpdate) {
-    ElMessageBox.confirm(t('data_set.want_to_exit'), {
+    ElMessageBox.confirm('当前的更改尚未保存,确定退出吗?', {
       confirmButtonText: t('dataset.confirm'),
       cancelButtonText: t('common.cancel'),
       showCancelButton: true,
@@ -351,7 +332,7 @@ const editeSave = () => {
   })
     .then(() => {
       isUpdate = false
-      ElMessage.success(t('data_set.saved_successfully'))
+      ElMessage.success('保存成功')
       if (willBack) {
         pushDataset()
       }
@@ -367,7 +348,7 @@ const handleFieldMore = (ele, type) => {
     dimensionsSelection.value = dimensionsTable.value.getSelectionRows().map(ele => ele.id)
     quotaSelection.value = quotaTable.value.getSelectionRows().map(ele => ele.id)
   }
-  const arr = ['text', 'time', 'value', 'float', 'value', 'location', 'binary', 'url']
+  const arr = ['text', 'time', 'value', 'float', 'value', 'location']
   if (arr.includes(type as string)) {
     ele.deType = arr.indexOf(type)
     ele.dateFormat = ''
@@ -443,13 +424,7 @@ const delFieldById = arr => {
     const [targetId] = delId
     delId.shift()
     allfields.value = allfields.value.filter(ele => ele.id !== targetId)
-    const paramsId = allfields.value.reduce((pre, next) => {
-      if (next.extField === 2) {
-        pre = [...pre, ...(next.params || []).map(element => element.id)]
-      }
-      return pre
-    }, [])
-    const allfieldsId = allfields.value.map(ele => ele.id).concat(paramsId)
+    const allfieldsId = allfields.value.map(ele => ele.id)
     allfields.value = allfields.value.filter(ele => {
       if (ele.extField !== 2) return true
       const idMap = ele.originName.match(/\[(.+?)\]/g)
@@ -476,11 +451,7 @@ const delFieldByIdFake = (arr, fakeAllfields) => {
     fakeAllfields = fakeAllfields.filter(ele => {
       if (ele.extField !== 2) return true
       const idMap = ele.originName.match(/\[(.+?)\]/g)
-      if (
-        !idMap ||
-        idMap.every(itx => ele.params?.map(element => element.id).includes(itx.slice(1, -1)))
-      )
-        return true
+      if (!idMap) return true
       const result = idMap.every(itm => {
         const id = itm.slice(1, -1)
         return allfieldsId.includes(id)
@@ -496,21 +467,8 @@ const delFieldByIdFake = (arr, fakeAllfields) => {
 }
 
 const deleteField = item => {
-  let tip = ''
-  const idArr = allfields.value.reduce((pre, next) => {
-    if (next.extField !== 2) return pre
-    let idMap = next.originName.match(/\[(.+?)\]/g) || []
-    idMap = idMap.filter(itx => !next.params?.map(element => element.id).includes(itx.slice(1, -1)))
-    const result = idMap.map(itm => {
-      return itm.slice(1, -1)
-    })
-    pre = [...result, ...pre]
-    return pre
-  }, [])
-  tip = idArr.includes(item.id) ? `如果该字段被删除，与其相关的计算字段将被删除，确认删除？` : ''
-  ElMessageBox.confirm(`确认删除字段 ${item.name} 吗`, {
+  ElMessageBox.confirm(t('dataset.confirm_delete'), {
     confirmButtonText: t('dataset.confirm'),
-    tip,
     cancelButtonText: t('common.cancel'),
     showCancelButton: true,
     confirmButtonType: 'danger',
@@ -520,7 +478,7 @@ const deleteField = item => {
     callback: (action: Action) => {
       if (action === 'confirm') {
         delFieldById([item.id])
-        datasetDrag.value.dfsNodeFieldBackReal(item)
+        datasetDrag.value.dfsNodeFieldBack(datasetDrag.value.getNodeList(), item)
         ElMessage({
           message: t('chart.delete_success'),
           type: 'success'
@@ -593,7 +551,7 @@ const confirmEditCalc = () => {
     if (val) {
       calcEdit.value.setFieldForm()
       if (!calcEdit.value.fieldForm.originName.trim()) {
-        ElMessage.error(t('data_set.cannot_be_empty_de_'))
+        ElMessage.error('表达式不能为空!')
         return
       }
       const obj = cloneDeep(calcEdit.value.fieldForm)
@@ -622,11 +580,10 @@ const generateColumns = (arr: Field[]) =>
     headerCellRenderer: ({ column }) => (
       <div class="flex-align-center">
         <ElIcon>
-          <Icon>
-            {h(iconFieldMap[fieldType[column.deType]], {
-              class: `svg-icon field-icon-${fieldType[column.deType]}`
-            })}
-          </Icon>
+          <Icon
+            name={`field_${fieldType[column.deType]}`}
+            className={`field-icon-${fieldType[column.deType]}`}
+          ></Icon>
         </ElIcon>
         <span class="ellipsis" title={column.title} style={{ width: '120px', marginLeft: '4px' }}>
           {column.title}
@@ -684,7 +641,7 @@ const initEdite = async () => {
       nodeInfo = {
         id,
         pid,
-        name: copyId ? t('data_set.copy_a_dataset') : name
+        name: copyId ? '复制数据集' : name
       }
       if (copyId) {
         nodeInfo.id = ''
@@ -769,9 +726,6 @@ const getIconName = (type: number) => {
   }
   if (type === 5) {
     return 'location'
-  }
-  if (type === 7) {
-    return 'url'
   }
 }
 
@@ -871,7 +825,7 @@ const confirmEditUnion = () => {
   })
 
   if (unionFieldsLost) {
-    ElMessage.error(t('data_set.cannot_be_empty_de_field'))
+    ElMessage.error('关联字段不能为空!')
     return
   }
 
@@ -901,28 +855,30 @@ const confirmEditUnion = () => {
       return pre
     }, [])
 
-    ElMessageBox.confirm('字段选择', {
-      confirmButtonText: t('dataset.confirm'),
-      cancelButtonText: t('common.cancel'),
-      showCancelButton: true,
-      tip: `${t('data_set.field')}: ${allfields.value
+    ElMessageBox.confirm(
+      `字段${allfields.value
         .filter(ele => [...new Set(idArr)].includes(ele.id) && ele.extField !== 2)
         .map(ele => ele.name)
-        .join(',')}, 未被勾选, 与其相关的计算字段将被删除，确认删除？`,
-      confirmButtonType: 'danger',
-      type: 'warning',
-      autofocus: false,
-      showClose: false,
-      callback: (action: Action) => {
-        if (action === 'confirm') {
-          datasetDrag.value.setStateBack(top, bottom)
-          setFieldAll()
-          editUnion.value = false
-          addComplete()
-          datasetDrag.value.setChangeStatus(to, from)
+        .join(',')}未被选择，其相关的新建字段将被删除，是否继续？`,
+      {
+        confirmButtonText: t('dataset.confirm'),
+        cancelButtonText: t('common.cancel'),
+        showCancelButton: true,
+        confirmButtonType: 'danger',
+        type: 'warning',
+        autofocus: false,
+        showClose: false,
+        callback: (action: Action) => {
+          if (action === 'confirm') {
+            datasetDrag.value.setStateBack(top, bottom)
+            setFieldAll()
+            editUnion.value = false
+            addComplete()
+            datasetDrag.value.setChangeStatus(to, from)
+          }
         }
       }
-    })
+    )
     return
   }
 
@@ -1096,7 +1052,7 @@ const datasetSave = () => {
   dfsNodeList(union, datasetDrag.value.getNodeList())
   const pid = appStore.getIsDataEaseBi ? embeddedStore.datasetPid : route.query.pid || nodeInfo.pid
   if (!union.length) {
-    ElMessage.error(t('data_set.dataset_cannot_be'))
+    ElMessage.error('数据集不能为空')
     return
   }
   if (nodeInfo.pid && !nodeInfo.id) {
@@ -1321,8 +1277,8 @@ const handleDatasetName = () => {
     errorTips.value = t('commons.input_content')
   }
 
-  if (datasetName.value.trim().length < 1) {
-    errorTips.value = t('datasource.input_limit_1_64', [1, 64])
+  if (datasetName.value.trim().length < 2) {
+    errorTips.value = t('datasource.input_limit_2_25', [2, 64])
   }
   showInput.value = !!errorTips.value
 }
@@ -1350,8 +1306,8 @@ const getDsIcon = data => {
 }
 
 const getDsIconName = data => {
-  if (!data.leaf) return dvFolder
-  return iconDatasourceMap[data.type]
+  if (!data.leaf) return 'dv-folder'
+  return `${data.type}-ds`
 }
 </script>
 
@@ -1360,7 +1316,7 @@ const getDsIconName = data => {
     <div class="top">
       <span class="name">
         <el-icon @click="backToMain">
-          <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+          <Icon name="icon_left_outlined"></Icon>
         </el-icon>
         <template v-if="showInput">
           <el-input
@@ -1378,18 +1334,16 @@ const getDsIconName = data => {
         </template>
       </span>
       <span class="oprate">
-        <el-button :disabled="showInput" type="primary" @click="datasetSaveAndBack">{{
-          t('data_set.save_and_return')
-        }}</el-button>
-        <el-button :disabled="showInput" type="primary" @click="datasetSave">{{
-          t('data_set.save')
-        }}</el-button>
+        <el-button :disabled="showInput" type="primary" @click="datasetSaveAndBack"
+          >保存并返回</el-button
+        >
+        <el-button :disabled="showInput" type="primary" @click="datasetSave">保存</el-button>
       </span>
     </div>
     <div class="container dataset-db" @mouseup="mouseupDrag">
       <p v-show="!showLeft" class="arrow-right" @click="showLeft = true">
         <el-icon>
-          <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+          <Icon name="icon_right_outlined"></Icon>
         </el-icon>
       </p>
       <div
@@ -1407,10 +1361,10 @@ const getDsIconName = data => {
       >
         <div class="table-list-top">
           <p class="select-ds">
-            {{ t('data_set.select_data_source') }}
+            选择数据源
             <span class="left-outlined">
               <el-icon style="color: #1f2329" @click="showLeft = false">
-                <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+                <Icon name="icon_left_outlined" />
               </el-icon>
             </span>
           </p>
@@ -1431,17 +1385,13 @@ const getDsIconName = data => {
             <template #default="{ data: { name, leaf, type, extraFlag } }">
               <div class="flex-align-center icon">
                 <el-icon>
-                  <icon :static-content="getDsIcon({ leaf, type })"
-                    ><component class="svg-icon" :is="getDsIconName({ leaf, type })"></component
+                  <icon
+                    :static-content="getDsIcon({ leaf, type })"
+                    :name="getDsIconName({ leaf, type })"
                   ></icon>
                 </el-icon>
                 <span v-if="!leaf || extraFlag > -1">{{ name }}</span>
-                <el-tooltip
-                  effect="dark"
-                  v-else
-                  :content="`${t('data_set.invalid_data_source')}:${name}`"
-                  placement="top"
-                >
+                <el-tooltip effect="dark" v-else :content="`无效数据源:${name}`" placement="top">
                   <span>{{ name }}</span>
                 </el-tooltip>
               </div>
@@ -1451,7 +1401,7 @@ const getDsIconName = data => {
             {{ t('datasource.data_table') }}
             <span class="num">
               <el-icon class="icon-color">
-                <Icon name="reference-table"><referenceTable class="svg-icon" /></Icon>
+                <Icon name="reference-table"></Icon>
               </el-icon>
               {{ datasourceTableData.length }}
             </span>
@@ -1464,9 +1414,7 @@ const getDsIconName = data => {
           >
             <template #prefix>
               <el-icon>
-                <Icon name="icon_search-outline_outlined"
-                  ><icon_searchOutline_outlined class="svg-icon"
-                /></Icon>
+                <Icon name="icon_search-outline_outlined"></Icon>
               </el-icon>
             </template>
           </el-input>
@@ -1476,7 +1424,7 @@ const getDsIconName = data => {
             class="el-empty__description"
             style="margin-top: 80px; color: #5e6d82; text-align: center"
           >
-            {{ t('data_set.relevant_content_found') }}
+            没有找到相关内容
           </div>
         </div>
         <div v-else class="table-checkbox-list">
@@ -1489,15 +1437,15 @@ const getDsIconName = data => {
             @click="setActiveName(sqlNode)"
           >
             <el-icon class="icon-color">
-              <Icon name="icon_sql_outlined_1"><icon_sql_outlined_1 class="svg-icon" /></Icon>
+              <Icon name="icon_sql_outlined_1"></Icon>
             </el-icon>
-            <span class="label">{{ t('data_set.custom_sql') }}</span>
+            <span class="label">自定义SQL</span>
           </div>
           <FixedSizeList
             :itemSize="40"
             :data="datasourceTableData"
             :total="datasourceTableData.length"
-            :width="LeftWidth - 17"
+            :width="LeftWidth - 7"
             :height="height - 305"
             :scrollbarAlwaysOn="false"
             class-name="el-select-dropdown__list"
@@ -1514,7 +1462,7 @@ const getDsIconName = data => {
                 @click="setActiveName(datasourceTableData[index])"
               >
                 <el-icon class="icon-color">
-                  <Icon name="reference-table"><referenceTable class="svg-icon" /></Icon>
+                  <Icon name="reference-table"></Icon>
                 </el-icon>
                 <span class="label">{{ datasourceTableData[index].tableName }}</span>
               </div>
@@ -1525,9 +1473,9 @@ const getDsIconName = data => {
       <div class="drag-right" :style="{ width: `calc(100vw - ${showLeft ? LeftWidth : 0}px)` }">
         <div v-if="crossDatasources" class="different-datasource">
           <el-icon>
-            <Icon name="icon_warning_colorful"><icon_warning_colorful class="svg-icon" /></Icon>
+            <Icon name="icon_warning_colorful"></Icon>
           </el-icon>
-          {{ t('data_set.be_reported_incorrectly') }}
+          您正在进行跨数据源的表关联,请确保使用calcite的标准语法和函数,否则会导致数据集报错
         </div>
         <dataset-union
           @join-editor="joinEditor"
@@ -1555,7 +1503,7 @@ const getDsIconName = data => {
               <el-button :disabled="!allfields.length" @click="addCalcField('q')" secondary>
                 <template #icon>
                   <el-icon>
-                    <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+                    <Icon name="icon_add_outlined"></Icon>
                   </el-icon>
                 </template>
                 {{ t('dataset.add_calc_field') }}
@@ -1569,12 +1517,10 @@ const getDsIconName = data => {
               >
                 <template #icon>
                   <el-icon>
-                    <Icon name="icon_refresh_outlined"
-                      ><icon_refresh_outlined class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_refresh_outlined"></Icon>
                   </el-icon>
                 </template>
-                {{ t('data_set.refresh_data') }}
+                刷新数据
               </el-button>
             </div>
           </div>
@@ -1587,9 +1533,7 @@ const getDsIconName = data => {
               <div :class="['field-d', { open: expandedD }]">
                 <div :class="['title', { expanded: expandedD }]" @click="expandedD = !expandedD">
                   <ElIcon class="expand">
-                    <Icon name="icon_expand-right_filled"
-                      ><icon_expandRight_filled class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_expand-right_filled"></Icon>
                   </ElIcon>
                   &nbsp;{{ t('chart.dimension') }}
                 </div>
@@ -1598,18 +1542,17 @@ const getDsIconName = data => {
                     <span class="custom-tree-node father">
                       <el-icon>
                         <Icon
-                          ><component
-                            class="svg-icon"
-                            :class="`field-icon-${fieldType[[2, 3].includes(data.deType) ? 2 : 0]}`"
-                            :is="iconFieldMap[fieldType[data.deType]]"
-                          ></component
+                          :name="`field_${fieldType[data.deType]}`"
+                          :className="`field-icon-${
+                            fieldType[[2, 3].includes(data.deType) ? 2 : 0]
+                          }`"
                         ></Icon>
                       </el-icon>
                       <span :title="data.name" class="label-tooltip">{{ data.name }}</span>
                       <div class="operate child">
                         <field-more
                           :extField="data.extField"
-                          :trans-type="t('data_set.convert_to_indicator')"
+                          trans-type="转换为指标"
                           :show-time="data.deExtractType === 0"
                           @handle-command="type => handleFieldMore(data, type)"
                         ></field-more>
@@ -1621,9 +1564,7 @@ const getDsIconName = data => {
               <div :class="['field-q', { open: expandedQ }]">
                 <div :class="['title', { expanded: expandedQ }]" @click="expandedQ = !expandedQ">
                   <ElIcon class="expand">
-                    <Icon name="icon_expand-right_filled"
-                      ><icon_expandRight_filled class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_expand-right_filled"></Icon>
                   </ElIcon>
                   &nbsp;{{ t('chart.quota') }}
                 </div>
@@ -1632,17 +1573,16 @@ const getDsIconName = data => {
                     <span class="custom-tree-node father">
                       <el-icon>
                         <Icon
-                          ><component
-                            class="svg-icon"
-                            :class="`field-icon-${fieldType[[2, 3].includes(data.deType) ? 2 : 0]}`"
-                            :is="iconFieldMap[fieldType[data.deType]]"
-                          ></component
+                          :name="`field_${fieldType[data.deType]}`"
+                          :className="`field-icon-${
+                            fieldType[[2, 3].includes(data.deType) ? 2 : 0]
+                          }`"
                         ></Icon>
                       </el-icon>
                       <span :title="data.name" class="label-tooltip">{{ data.name }}</span>
                       <div class="operate child">
                         <field-more
-                          :trans-type="t('data_set.convert_to_dimension')"
+                          trans-type="转换为维度"
                           typeColor="green-color"
                           :show-time="data.deExtractType === 0"
                           :extField="data.extField"
@@ -1674,13 +1614,8 @@ const getDsIconName = data => {
                     <div class="flex-align-center">
                       <ElIcon style="margin-right: 6px">
                         <Icon
-                          ><component
-                            class="svg-icon"
-                            :class="`field-icon-${
-                              fieldType[[2, 3].includes(column.deType) ? 2 : 0]
-                            }`"
-                            :is="iconFieldMap[fieldType[column.deType]]"
-                          ></component
+                          :name="`field_${fieldType[column.deType]}`"
+                          :className="`field-icon-${fieldType[column.deType]}`"
                         ></Icon>
                       </ElIcon>
                       <span class="ellipsis" :title="column.title" style="width: 120px">
@@ -1690,7 +1625,7 @@ const getDsIconName = data => {
                   </template>
                 </el-table-column>
                 <template #empty>
-                  <empty-background :description="t('data_set.no_data')" img-type="noneWhite" />
+                  <empty-background description="暂无数据" img-type="noneWhite" />
                 </template>
               </el-table>
             </div>
@@ -1762,13 +1697,10 @@ const getDsIconName = data => {
                           <template v-slot="{ data }">
                             <el-icon>
                               <Icon
-                                ><component
-                                  class="svg-icon"
-                                  :class="`field-icon-${
-                                    fieldType[[2, 3].includes(data.value) ? 2 : 0]
-                                  }`"
-                                  :is="iconFieldMap[getIconName(data.value)]"
-                                ></component
+                                :className="`field-icon-${
+                                  fieldType[[2, 3].includes(data.value) ? 2 : 0]
+                                }`"
+                                :name="`field_${getIconName(data.value)}`"
                               ></Icon>
                             </el-icon>
                             <span>{{ data.label }}</span>
@@ -1777,13 +1709,10 @@ const getDsIconName = data => {
                         <span class="select-svg-icon">
                           <el-icon>
                             <Icon
-                              ><component
-                                class="svg-icon"
-                                :class="`field-icon-${
-                                  fieldType[[2, 3].includes(scope.row.deType) ? 2 : 0]
-                                }`"
-                                :is="iconFieldMap[getIconName(scope.row.deType)]"
-                              ></component
+                              :className="`field-icon-${
+                                fieldType[[2, 3].includes(scope.row.deType) ? 2 : 0]
+                              }`"
+                              :name="`field_${getIconName(scope.row.deType)}`"
                             ></Icon>
                           </el-icon>
                         </span>
@@ -1799,11 +1728,9 @@ const getDsIconName = data => {
                         <div class="column-style">
                           <span class="flex-align-center icon" v-if="scope.row.extField === 0">
                             <el-icon>
-                              <Icon className="primary-color"
-                                ><component
-                                  class="svg-icon primary-color"
-                                  :is="iconFieldMap[getIconName(scope.row.deExtractType)]"
-                                ></component
+                              <Icon
+                                className="primary-color"
+                                :name="`field_${getIconName(scope.row.deExtractType)}`"
                               ></Icon>
                             </el-icon>
                             {{ fieldTypes(scope.row.deExtractType) }}
@@ -1815,17 +1742,11 @@ const getDsIconName = data => {
 
                     <el-table-column fixed="right" :label="t('chart.dimension')">
                       <template #default="scope">
-                        <el-tooltip
-                          effect="dark"
-                          :content="t('data_set.convert_to_indicator')"
-                          placement="top"
-                        >
+                        <el-tooltip effect="dark" content="转换为指标" placement="top">
                           <template #default>
                             <el-button text @click="handleFieldMore(scope.row, 'translate')">
                               <template #icon>
-                                <Icon name="icon_switch_outlined"
-                                  ><icon_switch_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_switch_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -1839,9 +1760,7 @@ const getDsIconName = data => {
                           <template #default>
                             <el-button text @click="handleFieldMore(scope.row, 'copy')">
                               <template #icon>
-                                <Icon name="icon_copy_outlined"
-                                  ><icon_copy_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_copy_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -1851,9 +1770,7 @@ const getDsIconName = data => {
                           <template #default>
                             <el-button text @click="handleFieldMore(scope.row, 'delete')">
                               <template #icon>
-                                <Icon name="icon_delete-trash_outlined"
-                                  ><icon_deleteTrash_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_delete-trash_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -1867,9 +1784,7 @@ const getDsIconName = data => {
                               @click="handleFieldMore(scope.row, 'editor')"
                             >
                               <template #icon>
-                                <Icon name="icon_edit_outlined"
-                                  ><icon_edit_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_edit_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -1942,13 +1857,10 @@ const getDsIconName = data => {
                           <template v-slot="{ data }">
                             <el-icon>
                               <Icon
-                                ><component
-                                  class="svg-icon"
-                                  :class="`field-icon-${
-                                    fieldType[[2, 3].includes(data.value) ? 2 : 0]
-                                  }`"
-                                  :is="iconFieldMap[getIconName(data.value)]"
-                                ></component
+                                :className="`field-icon-${
+                                  fieldType[[2, 3].includes(data.value) ? 2 : 0]
+                                }`"
+                                :name="`field_${getIconName(data.value)}`"
                               ></Icon>
                             </el-icon>
                             <span>{{ data.label }}</span>
@@ -1957,13 +1869,10 @@ const getDsIconName = data => {
                         <span class="select-svg-icon">
                           <el-icon>
                             <Icon
-                              ><component
-                                class="svg-icon"
-                                :class="`field-icon-${
-                                  fieldType[[2, 3].includes(scope.row.deType) ? 2 : 0]
-                                }`"
-                                :is="iconFieldMap[getIconName(scope.row.deType)]"
-                              ></component
+                              :className="`field-icon-${
+                                fieldType[[2, 3].includes(scope.row.deType) ? 2 : 0]
+                              }`"
+                              :name="`field_${getIconName(scope.row.deType)}`"
                             ></Icon>
                           </el-icon>
                         </span>
@@ -1979,11 +1888,9 @@ const getDsIconName = data => {
                         <div class="column-style">
                           <span class="flex-align-center icon" v-if="scope.row.extField === 0">
                             <el-icon>
-                              <Icon className="green-color"
-                                ><component
-                                  class="svg-icon green-color"
-                                  :is="iconFieldMap[getIconName(scope.row.deExtractType)]"
-                                ></component
+                              <Icon
+                                className="green-color"
+                                :name="`field_${getIconName(scope.row.deExtractType)}`"
                               ></Icon>
                             </el-icon>
                             {{ fieldTypes(scope.row.deExtractType) }}
@@ -1995,17 +1902,11 @@ const getDsIconName = data => {
 
                     <el-table-column fixed="right" :label="t('chart.quota')">
                       <template #default="scope">
-                        <el-tooltip
-                          effect="dark"
-                          :content="t('data_set.convert_to_dimension')"
-                          placement="top"
-                        >
+                        <el-tooltip effect="dark" content="转换为维度" placement="top">
                           <template #default>
                             <el-button text @click="handleFieldMore(scope.row, 'translate')">
                               <template #icon>
-                                <Icon name="icon_switch_outlined"
-                                  ><icon_switch_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_switch_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -2019,9 +1920,7 @@ const getDsIconName = data => {
                           <template #default>
                             <el-button text @click="handleFieldMore(scope.row, 'copy')">
                               <template #icon>
-                                <Icon name="icon_copy_outlined"
-                                  ><icon_copy_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_copy_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -2031,9 +1930,7 @@ const getDsIconName = data => {
                           <template #default>
                             <el-button text @click="handleFieldMore(scope.row, 'delete')">
                               <template #icon>
-                                <Icon name="icon_delete-trash_outlined"
-                                  ><icon_deleteTrash_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_delete-trash_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -2047,9 +1944,7 @@ const getDsIconName = data => {
                               @click="handleFieldMore(scope.row, 'editor')"
                             >
                               <template #icon>
-                                <Icon name="icon_edit_outlined"
-                                  ><icon_edit_outlined class="svg-icon"
-                                /></Icon>
+                                <Icon name="icon_edit_outlined"></Icon>
                               </template>
                             </el-button>
                           </template>
@@ -2062,9 +1957,9 @@ const getDsIconName = data => {
             </div>
             <div class="batch-operate flex-align-center" v-if="!!deTypeSelection.length">
               <div class="flex-align-center">
-                {{ t('data_set.selected') }}
+                已选择
                 <span class="num">{{ deTypeSelection.length }}</span>
-                {{ t('data_set.bar') }}
+                条
                 <el-button @click="clearSelection" text style="margin-left: 16px">{{
                   t('commons.clear')
                 }}</el-button>
@@ -2082,11 +1977,8 @@ const getDsIconName = data => {
                   <template v-slot="{ data }">
                     <el-icon>
                       <Icon
-                        ><component
-                          class="svg-icon"
-                          :class="`field-icon-${fieldType[[2, 3].includes(data.value) ? 2 : 0]}`"
-                          :is="iconFieldMap[getIconName(data.value)]"
-                        ></component
+                        :className="`field-icon-${fieldType[[2, 3].includes(data.value) ? 2 : 0]}`"
+                        :name="`field_${getIconName(data.value)}`"
                       ></Icon>
                     </el-icon>
                     <span>{{ data.label }}</span>
@@ -2094,12 +1986,9 @@ const getDsIconName = data => {
                 </el-cascader>
                 <span class="select-svg-icon">
                   <el-icon>
-                    <Icon :className="`field-icon-${getIconName(deTypeArr[0])}`"
-                      ><component
-                        class="svg-icon"
-                        :class="`field-icon-${getIconName(deTypeArr[0])}`"
-                        :is="iconFieldMap[getIconName(deTypeArr[0])]"
-                      ></component
+                    <Icon
+                      :className="`field-icon-${getIconName(deTypeArr[0])}`"
+                      :name="`field_${getIconName(deTypeArr[0])}`"
                     ></Icon>
                   </el-icon>
                 </span>
@@ -2110,7 +1999,7 @@ const getDsIconName = data => {
                 plain
                 style="margin-left: 200px"
               >
-                {{ t('data_set.convert_to_indicator') }}
+                转换为指标
               </el-button>
               <el-button
                 @click="dqTransArr('d')"
@@ -2118,7 +2007,7 @@ const getDsIconName = data => {
                 plain
                 style="margin-left: 200px"
               >
-                {{ t('data_set.convert_to_dimension') }}
+                转换为维度
               </el-button>
             </div>
           </div>
@@ -2153,14 +2042,9 @@ const getDsIconName = data => {
       <el-button type="primary" @click="confirmEditCalc()">{{ t('dataset.confirm') }} </el-button>
     </template>
   </el-dialog>
-  <el-dialog
-    class="create-dialog"
-    :title="t('data_set.format_edit')"
-    v-model="updateCustomTime"
-    width="1000px"
-  >
+  <el-dialog class="create-dialog" title="格式编辑" v-model="updateCustomTime" width="1000px">
     <el-form ref="ruleFormRef" :rules="rules" :model="currentField" label-width="120px">
-      <el-form-item prop="name" :label="t('data_set.custom_time_format')">
+      <el-form-item prop="name" label="自定义时间格式">
         <el-input v-model="currentField.name" />
       </el-form-item>
     </el-form>
@@ -2232,7 +2116,7 @@ const getDsIconName = data => {
 
     .name {
       color: #fff;
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 16px;
       font-weight: 400;
       display: flex;
@@ -2336,7 +2220,7 @@ const getDsIconName = data => {
       width: 240px;
       padding-bottom: 16px;
 
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       border-right: 1px solid rgba(31, 35, 41, 0.15);
 
       .select-ds {
@@ -2440,7 +2324,7 @@ const getDsIconName = data => {
         }
       }
       .sql-result {
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 14px;
         overflow-y: auto;
         box-sizing: border-box;
@@ -2565,7 +2449,7 @@ const getDsIconName = data => {
                 margin: 1px;
                 top: 1px;
                 height: 49px;
-                font-family: var(--de-custom_font, 'PingFang');
+                font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
                 font-style: normal;
                 font-weight: 500;
                 font-size: 14px;
@@ -2675,9 +2559,6 @@ const getDsIconName = data => {
 }
 
 .cascader-panel {
-  .ed-scrollbar__wrap {
-    height: 210px;
-  }
   .ed-cascader-node__label {
     display: flex;
     align-items: center;
@@ -2771,11 +2652,6 @@ const getDsIconName = data => {
   .ed-dialog__footer {
     padding-top: 24px;
     border: 1px solid rgba(31, 35, 41, 0.15);
-  }
-}
-.cascader-panel {
-  .ed-scrollbar__wrap {
-    height: 210px;
   }
 }
 </style>

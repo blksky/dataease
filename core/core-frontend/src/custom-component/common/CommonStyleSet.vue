@@ -16,13 +16,11 @@
                 :effect="themes"
                 v-model="styleForm[styleOptionKey.value]"
                 size="small"
-                @change="
-                  changeStyle({ key: styleOptionKey.value, value: styleForm[styleOptionKey.value] })
-                "
+                @change="changeStyle"
               >
                 <template #prefix>
                   <el-icon :class="{ 'dark-icon': themes === 'dark' }">
-                    <Icon><component :is="styleOptionKey.icon"></component></Icon>
+                    <Icon :name="styleOptionKey.icon" />
                   </el-icon>
                 </template>
                 <el-option
@@ -54,13 +52,11 @@
                 :title="t('chart.text_color')"
                 v-model="styleForm[styleColorKey.value]"
                 class="color-picker-style"
-                :prefix-icon="styleColorKey.icon"
+                :prefix-icon="expandIcon(styleColorKey.icon)"
                 :triggerWidth="styleColorKey.width"
                 is-custom
                 :predefine="state.predefineColors"
-                @change="
-                  changeStyle({ key: styleColorKey.value, value: styleForm[styleColorKey.value] })
-                "
+                @change="changeStyle"
               >
               </el-color-picker>
             </el-form-item>
@@ -89,7 +85,7 @@
               >
                 <template #prefix>
                   <el-icon :class="{ 'dark-icon': themes === 'dark' }">
-                    <Icon><component :is="styleOptionMountedKey.icon"></component></Icon>
+                    <Icon :name="styleOptionMountedKey.icon" />
                   </el-icon>
                 </template>
                 <el-option
@@ -122,7 +118,7 @@
               >
                 <template #prefix>
                   <el-icon :class="{ 'dark-icon': themes === 'dark' }">
-                    <Icon><component :is="styleOptionKey.icon"></component></Icon>
+                    <Icon :name="styleOptionKey.icon" />
                   </el-icon>
                 </template>
                 <el-option
@@ -146,7 +142,7 @@
             @click="checkBold"
           >
             <el-icon>
-              <Icon name="icon_bold_outlined"><icon_bold_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_bold_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -161,7 +157,7 @@
             @click="checkItalic"
           >
             <el-icon>
-              <Icon name="icon_italic_outlined"><icon_italic_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_italic_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -178,9 +174,7 @@
                 @click="setPosition('textAlign', 'left')"
               >
                 <el-icon>
-                  <Icon name="icon_left-alignment_outlined"
-                    ><icon_leftAlignment_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_left-alignment_outlined" />
                 </el-icon>
               </div>
             </el-tooltip>
@@ -194,9 +188,7 @@
                 @click="setPosition('textAlign', 'center')"
               >
                 <el-icon>
-                  <Icon name="icon_center-alignment_outlined"
-                    ><icon_centerAlignment_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_center-alignment_outlined" />
                 </el-icon>
               </div>
             </el-tooltip>
@@ -210,9 +202,7 @@
                 @click="setPosition('textAlign', 'right')"
               >
                 <el-icon>
-                  <Icon name="icon_right-alignment_outlined"
-                    ><icon_rightAlignment_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_right-alignment_outlined" />
                 </el-icon>
               </div>
             </el-tooltip>
@@ -233,9 +223,7 @@
               @click="setPosition('headHorizontalPosition', 'left')"
             >
               <el-icon>
-                <Icon name="icon_left-alignment_outlined"
-                  ><icon_leftAlignment_outlined class="svg-icon"
-                /></Icon>
+                <Icon name="icon_left-alignment_outlined" />
               </el-icon>
             </div>
           </el-tooltip>
@@ -252,9 +240,7 @@
               @click="setPosition('headHorizontalPosition', 'center')"
             >
               <el-icon>
-                <Icon name="icon_center-alignment_outlined"
-                  ><icon_centerAlignment_outlined class="svg-icon"
-                /></Icon>
+                <Icon name="icon_center-alignment_outlined" />
               </el-icon>
             </div>
           </el-tooltip>
@@ -271,9 +257,7 @@
               @click="setPosition('headHorizontalPosition', 'right')"
             >
               <el-icon>
-                <Icon name="icon_right-alignment_outlined"
-                  ><icon_rightAlignment_outlined class="svg-icon"
-                /></Icon>
+                <Icon name="icon_right-alignment_outlined" />
               </el-icon>
             </div>
           </el-tooltip>
@@ -284,21 +268,6 @@
 </template>
 
 <script lang="tsx" setup>
-import dvStyleBackgroundColor from '@/assets/svg/dv-style-backgroundColor.svg'
-import dvStyleColor from '@/assets/svg/dv-style-color.svg'
-import dvStyleHeadFontActiveColor from '@/assets/svg/dv-style-headFontActiveColor.svg'
-import dvStyleHeadFontColor from '@/assets/svg/dv-style-headFontColor.svg'
-import dvStyleScrollSpeed from '@/assets/svg/dv-style-scroll-speed.svg'
-import dvStyleOpacity from '@/assets/svg/dv-style-opacity.svg'
-import dvStyleFontSize from '@/assets/svg/dv-style-fontSize.svg'
-import dvStyleLetterSpacing from '@/assets/svg/dv-style-letterSpacing.svg'
-import dvStyleActiveFont from '@/assets/svg/dv-style-activeFont.svg'
-import dvStyleFontFamily from '@/assets/svg/dv-style-fontFamily.svg'
-import icon_bold_outlined from '@/assets/svg/icon_bold_outlined.svg'
-import icon_italic_outlined from '@/assets/svg/icon_italic_outlined.svg'
-import icon_leftAlignment_outlined from '@/assets/svg/icon_left-alignment_outlined.svg'
-import icon_centerAlignment_outlined from '@/assets/svg/icon_center-alignment_outlined.svg'
-import icon_rightAlignment_outlined from '@/assets/svg/icon_right-alignment_outlined.svg'
 import { computed, h, reactive, ref, toRefs, watch } from 'vue'
 import { COLOR_PANEL } from '@/views/chart/components/editor/util/chart'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
@@ -321,6 +290,9 @@ const props = withDefaults(
     themes: 'dark'
   }
 )
+const expandIcon = (name: string) => {
+  return h(Icon, { className: '', name })
+}
 const { themes, element } = toRefs(props)
 const emits = defineEmits(['onStyleAttrChange'])
 const styleMounted = ref({
@@ -377,20 +349,21 @@ const state = reactive({
 })
 
 const styleColorKeyArray = [
-  { value: 'color', label: '颜色', width: 90, icon: dvStyleColor },
+  { value: 'color', label: '颜色', width: 90, icon: 'dv-style-color' },
+  { value: 'borderColor', label: '边框颜色', width: 90, icon: 'dv-style-borderColor' },
   {
     value: 'headFontColor',
     label: '头部字体颜色',
     width: 90,
-    icon: dvStyleHeadFontColor
+    icon: 'dv-style-headFontColor'
   },
   {
     value: 'headFontActiveColor',
     label: '激活字体颜色',
     width: 90,
-    icon: dvStyleHeadFontActiveColor
+    icon: 'dv-style-headFontActiveColor'
   },
-  { value: 'backgroundColor', label: '背景色', width: 90, icon: dvStyleBackgroundColor }
+  { value: 'backgroundColor', label: '背景色', width: 90, icon: 'dv-style-backgroundColor' }
 ]
 
 const letterSpacingList = computed(() => {
@@ -414,13 +387,42 @@ const fontSizeList = computed(() => {
   }
   return arr
 })
+
+const borderWidthList = computed(() => {
+  const arr = []
+  for (let i = 0; i <= 20; i = i + 1) {
+    arr.push({
+      name: i + '',
+      value: i
+    })
+  }
+  return arr
+})
+
+const borderRadiusList = computed(() => {
+  const arr = []
+  for (let i = 0; i <= 50; i = i + 1) {
+    arr.push({
+      name: i + '',
+      value: i
+    })
+  }
+  return arr
+})
+
+const borderStyleList = [
+  { name: '实线', value: 'solid' },
+  { name: '虚线', value: 'dashed' },
+  { name: '点线', value: 'dotted' }
+]
+
 const styleOptionKeyArrayPre = [
   {
     value: 'fontFamily',
     label: '字体',
     customOption: fontFamilyList,
     width: '188px',
-    icon: dvStyleFontFamily
+    icon: 'dv-style-fontFamily'
   }
 ]
 
@@ -431,21 +433,21 @@ const styleOptionMountedKeyArray = [
     label: '字间距',
     customOption: letterSpacingList.value,
     width: '90px',
-    icon: dvStyleLetterSpacing
+    icon: 'dv-style-letterSpacing'
   },
   {
     value: 'fontSize',
     label: '字体大小',
     customOption: fontSizeList.value,
     width: '90px',
-    icon: dvStyleFontSize
+    icon: 'dv-style-fontSize'
   },
   {
     value: 'activeFontSize',
     label: '激活字体大小',
     customOption: fontSizeList.value,
     width: '90px',
-    icon: dvStyleActiveFont
+    icon: 'dv-style-activeFont'
   }
 ]
 
@@ -456,14 +458,35 @@ const styleOptionKeyArray = [
     label: '滚动速度',
     customOption: scrollSpeedList,
     width: '90px',
-    icon: dvStyleScrollSpeed
+    icon: 'dv-style-scroll-speed'
   },
   {
     value: 'opacity',
     label: '不透明度',
     customOption: opacitySizeList,
     width: '90px',
-    icon: dvStyleOpacity
+    icon: 'dv-style-opacity'
+  },
+  {
+    value: 'borderWidth',
+    label: '边框宽度',
+    customOption: borderWidthList.value,
+    width: '90px',
+    icon: 'dv-style-borderSize'
+  },
+  {
+    value: 'borderRadius',
+    label: '圆角',
+    customOption: borderRadiusList.value,
+    width: '90px',
+    icon: 'dv-style-borderRadius'
+  },
+  {
+    value: 'borderStyle',
+    label: '边框样式',
+    customOption: borderStyleList,
+    width: '90px',
+    icon: 'dv-style-borderStyle'
   }
 ]
 
@@ -513,7 +536,7 @@ const checkItalic = () => {
 
 function setPosition(key, p: 'left' | 'center' | 'right') {
   styleForm.value[key] = p
-  changeStyle({ key: key, value: p })
+  changeStyle({ key: key, p })
 }
 
 watch(

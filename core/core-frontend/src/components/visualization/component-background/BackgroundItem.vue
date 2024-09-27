@@ -11,12 +11,10 @@
       @click.stop="setBoard"
     >
       <Icon
-        ><component
-          class="svg-icon svg-background"
-          :style="{ color: curComponent.commonBackground.innerImageColor }"
-          :is="iconBoardMap[mainIconClass]"
-        ></component
-      ></Icon>
+        :style="{ color: curComponent.commonBackground.innerImageColor }"
+        class-name="svg-background"
+        :name="mainIconClass"
+      />
     </div>
     <span class="demonstration">{{ template.name }}</span>
   </div>
@@ -30,7 +28,6 @@ import { computed, toRefs } from 'vue'
 const dvMainStore = dvMainStoreWithOut()
 const { curComponent } = storeToRefs(dvMainStore)
 import Icon from '@/components/icon-custom/src/Icon.vue'
-import { iconBoardMap } from '@/components/icon-group/board-list'
 
 const props = defineProps({
   template: {

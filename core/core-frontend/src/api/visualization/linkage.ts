@@ -13,5 +13,3 @@ export const getPanelAllLinkageInfo = dvId =>
 
 export const updateLinkageActive = data =>
   request.post({ url: '/linkage/updateLinkageActive', data })
-
-export const removeLinkage = data => request.post({ url: '/linkage/removeLinkage', data })

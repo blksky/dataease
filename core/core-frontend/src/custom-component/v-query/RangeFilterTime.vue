@@ -11,7 +11,6 @@ const props = defineProps({
       dynamicWindow: false,
       maximumSingleQuery: 0,
       regularOrTrends: 'fixed',
-      relativeToCurrentRange: 'custom',
       regularOrTrendsValue: '',
       relativeToCurrent: 'custom',
       timeNum: 0,
@@ -174,85 +173,6 @@ const relativeToCurrentList = computed(() => {
     }
   ]
 })
-
-const relativeToCurrentListRange = computed(() => {
-  let list = []
-  if (!timeRange.value) return list
-  switch (props.timeGranularityMultiple) {
-    case 'yearrange':
-      list = [
-        {
-          label: '今年',
-          value: 'thisYear'
-        },
-        {
-          label: '去年',
-          value: 'lastYear'
-        }
-      ]
-      break
-    case 'monthrange':
-      list = [
-        {
-          label: '本月',
-          value: 'thisMonth'
-        },
-        {
-          label: '上月',
-          value: 'lastMonth'
-        },
-        {
-          label: '最近 3 个 月',
-          value: 'LastThreeMonths'
-        },
-        {
-          label: '最近 6 个 月',
-          value: 'LastSixMonths'
-        },
-        {
-          label: '最近 12 个 月',
-          value: 'LastTwelveMonths'
-        }
-      ]
-      break
-    case 'daterange':
-    case 'datetimerange':
-      list = [
-        {
-          label: '今天',
-          value: 'today'
-        },
-        {
-          label: '昨天',
-          value: 'yesterday'
-        },
-        {
-          label: '最近 3 天',
-          value: 'LastThreeDays'
-        },
-        {
-          label: '月初至今',
-          value: 'monthBeginning'
-        },
-        {
-          label: '年初至今',
-          value: 'yearBeginning'
-        }
-      ]
-      break
-
-    default:
-      break
-  }
-
-  return [
-    ...list,
-    {
-      label: '自定义',
-      value: 'custom'
-    }
-  ]
-})
 </script>
 
 <template>
@@ -280,7 +200,7 @@ const relativeToCurrentListRange = computed(() => {
           </el-radio-group>
         </div>
         <template v-if="dynamicTime && timeRange.intervalType !== 'timeInterval'">
-          <div class="setting" v-if="timeRange.intervalType !== 'timeInterval'">
+          <div class="setting">
             <div class="setting-label">相对当前</div>
             <div class="setting-value select">
               <el-select v-model="timeRange.relativeToCurrent">
@@ -316,12 +236,26 @@ const relativeToCurrentListRange = computed(() => {
           </div>
         </template>
         <template v-else-if="dynamicTime && timeRange.intervalType === 'timeInterval'">
-          <div class="setting">
-            <div class="setting-label">相对当前</div>
-            <div class="setting-value select">
-              <el-select v-model="timeRange.relativeToCurrentRange">
+          <div
+            class="setting"
+            :class="
+              ['yearrange', 'monthrange'].includes(timeGranularityMultiple) && 'is-year-month-range'
+            "
+          >
+            <div class="setting-label">开始时间</div>
+            <div class="setting-input range">
+              <el-input-number v-model="timeRange.timeNum" :min="0" controls-position="right" />
+              <el-select v-model="timeRange.relativeToCurrentType">
                 <el-option
-                  v-for="item in relativeToCurrentListRange"
+                  v-for="item in relativeToCurrentTypeList"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+              <el-select v-model="timeRange.around">
+                <el-option
+                  v-for="item in aroundList"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
@@ -329,74 +263,37 @@ const relativeToCurrentListRange = computed(() => {
               </el-select>
             </div>
           </div>
-          <template v-if="timeRange.relativeToCurrentRange === 'custom'">
-            <div
-              class="setting"
-              :class="
-                ['yearrange', 'monthrange'].includes(timeGranularityMultiple) &&
-                'is-year-month-range'
-              "
-            >
-              <div class="setting-label">开始时间</div>
-              <div class="setting-input range">
-                <el-input-number
-                  step-strictly
-                  v-model="timeRange.timeNum"
-                  :min="0"
-                  controls-position="right"
+          <div
+            class="setting"
+            :class="
+              ['yearrange', 'monthrange'].includes(timeGranularityMultiple) && 'is-year-month-range'
+            "
+          >
+            <div class="setting-label">结束时间</div>
+            <div class="setting-input range">
+              <el-input-number
+                v-model="timeRange.timeNumRange"
+                :min="0"
+                controls-position="right"
+              />
+              <el-select v-model="timeRange.relativeToCurrentTypeRange">
+                <el-option
+                  v-for="item in relativeToCurrentTypeList"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
                 />
-                <el-select v-model="timeRange.relativeToCurrentType">
-                  <el-option
-                    v-for="item in relativeToCurrentTypeList"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-                <el-select v-model="timeRange.around">
-                  <el-option
-                    v-for="item in aroundList"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </div>
-            </div>
-            <div
-              class="setting"
-              :class="
-                ['yearrange', 'monthrange'].includes(timeGranularityMultiple) &&
-                'is-year-month-range'
-              "
-            >
-              <div class="setting-label">结束时间</div>
-              <div class="setting-input range">
-                <el-input-number
-                  v-model="timeRange.timeNumRange"
-                  :min="0"
-                  step-strictly
-                  controls-position="right"
+              </el-select>
+              <el-select v-model="timeRange.aroundRange">
+                <el-option
+                  v-for="item in aroundList"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
                 />
-                <el-select v-model="timeRange.relativeToCurrentTypeRange">
-                  <el-option
-                    v-for="item in relativeToCurrentTypeList"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-                <el-select v-model="timeRange.aroundRange">
-                  <el-option
-                    v-for="item in aroundList"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </div>
+              </el-select>
             </div>
-          </template>
+          </div>
         </template>
       </div>
       <div class="parameters" :class="dynamicTime && 'setting'">

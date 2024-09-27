@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import icon_admin_outlined from '@/assets/svg/icon_admin_outlined.svg'
 import { ref } from 'vue'
 import { COLOR_CASES, COLOR_PANEL } from '@/views/chart/components/editor/util/chart'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -100,7 +99,7 @@ const resetCustomColor = () => {
       </div>
       <el-button @click="changeShowCustom" style="margin-left: 8px" size="default" plain>
         <template #icon>
-          <icon name="icon_admin_outlined"><icon_admin_outlined class="svg-icon" /></icon>
+          <icon name="icon_admin_outlined"></icon>
         </template>
       </el-button>
     </div>
@@ -188,7 +187,7 @@ const resetCustomColor = () => {
   .custom-title {
     justify-content: space-between;
     color: #646a73;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-size: 12px;
     font-style: normal;
     font-weight: 400;

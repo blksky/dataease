@@ -1,16 +1,5 @@
 getLastStart
 <script lang="ts" setup>
-import more_v from '@/assets/svg/more_v.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
-import icon_drag_outlined from '@/assets/svg/icon_drag_outlined.svg'
-import icon_visible_outlined from '@/assets/svg/icon_visible_outlined.svg'
-import de_pwd_invisible from '@/assets/svg/de_pwd_invisible.svg'
-import dvFolder from '@/assets/svg/dv-folder.svg'
-import icon_dataset from '@/assets/svg/icon_dataset.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_warning_filled from '@/assets/svg/icon_warning_filled.svg'
-import icon_info_outlined from '@/assets/svg/icon_info_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
 import {
   ref,
   reactive,
@@ -26,7 +15,7 @@ import { storeToRefs } from 'pinia'
 import { addQueryCriteriaConfig } from './options'
 import { getCustomTime } from './time-format'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
-import { getThisStart, getLastStart, getAround, getCustomRange } from './time-format-dayjs'
+import { getThisStart, getLastStart, getAround } from './time-format-dayjs'
 import { snapshotStoreWithOut } from '@/store/modules/data-visualization/snapshot'
 import { useI18n } from '@/hooks/web/useI18n'
 import { fieldType } from '@/utils/attr'
@@ -42,8 +31,6 @@ import draggable from 'vuedraggable'
 import type { ManipulateType } from 'dayjs'
 import dayjs from 'dayjs'
 import ConditionDefaultConfiguration from '@/custom-component/v-query/ConditionDefaultConfiguration.vue'
-import { iconChartMap } from '@/components/icon-group/chart-list'
-import { iconFieldMap } from '@/components/icon-group/field-list'
 
 const { t } = useI18n()
 const dvMainStore = dvMainStoreWithOut()
@@ -343,12 +330,8 @@ const setType = () => {
       if (!(field?.deType === 1 && curComponent.value.displayType === '7')) {
         curComponent.value.displayType = `${[3, 4].includes(field?.deType) ? 2 : field?.deType}`
       }
-      if (field?.deType === 7) {
-        curComponent.value.displayType = '0'
-      }
-
       if (
-        +displayType !== +curComponent.value.displayType &&
+        displayType !== curComponent.value.displayType &&
         !([3, 4].includes(+displayType) && +curComponent.value.displayType === 2)
       ) {
         setTypeChange()
@@ -415,16 +398,7 @@ const timeParameterList = computed(() => {
   const [year, y] = curComponent.value.parameters?.filter(
     ele => ele.deType === 1 && !!ele.variableName
   )[0].type
-  let stopPush = false
-  return timeList.reduce((pre, ele) => {
-    if (ele.value === (typeTimeMap[y] || typeTimeMap[year])) {
-      stopPush = true
-      pre.push(ele)
-    } else if (!stopPush) {
-      pre.push(ele)
-    }
-    return pre
-  }, [])
+  return timeList.filter(ele => ele.value === (typeTimeMap[y] || typeTimeMap[year]))
 })
 
 const cancelClick = () => {
@@ -602,21 +576,16 @@ const isInRange = (ele, startWindowTime, timeStamp) => {
   if (intervalType === 'timeInterval') {
     const startTime =
       regularOrTrends === 'fixed'
-        ? new Date(
-            dayjs(new Date(regularOrTrendsValue[0])).startOf(noTime).format('YYYY/MM/DD HH:mm:ss')
-          )
+        ? regularOrTrendsValue[0]
         : getAround(relativeToCurrentType, around === 'f' ? 'subtract' : 'add', timeNum)
     const endTime =
       regularOrTrends === 'fixed'
-        ? new Date(
-            dayjs(new Date(regularOrTrendsValue[1])).endOf(noTime).format('YYYY/MM/DD HH:mm:ss')
-          )
+        ? regularOrTrendsValue[1]
         : getAround(
             relativeToCurrentTypeRange,
             aroundRange === 'f' ? 'subtract' : 'add',
             timeNumRange
           )
-
     return (
       startWindowTime < +new Date(startTime) - 1000 ||
       timeStamp > +new Date(endTime) ||
@@ -756,7 +725,6 @@ const validate = () => {
         timeNum,
         relativeToCurrentType,
         around,
-        relativeToCurrentRange,
         timeGranularityMultiple,
         arbitraryTime,
         timeGranularity,
@@ -767,7 +735,7 @@ const validate = () => {
         timeType
       } = ele
 
-      let startTime =
+      const startTime =
         timeType === 'dynamic'
           ? getCustomTime(
               timeNum,
@@ -779,7 +747,7 @@ const validate = () => {
               'start-config'
             )
           : new Date(ele.defaultValue[0])
-      let endTime =
+      const endTime =
         timeType === 'dynamic'
           ? getCustomTime(
               timeNumRange,
@@ -791,9 +759,6 @@ const validate = () => {
               'end-config'
             )
           : new Date(ele.defaultValue[1])
-      if (!!relativeToCurrentRange && relativeToCurrentRange !== 'custom') {
-        ;[startTime, endTime] = getCustomRange(relativeToCurrentRange)
-      }
       if (+startTime > +endTime) {
         ElMessage.error('结束时间必须大于开始时间!')
         return true
@@ -830,7 +795,7 @@ const validate = () => {
     }
 
     if (ele.displayType !== '9' && ele.optionValueSource === 1 && !ele.field.id) {
-      ElMessage.error(!ele.dataset?.id ? '请选择数据集及选项值字段' : '请选择数据集的选项值字段')
+      ElMessage.error('请选择数据集的选项值字段')
       return true
     }
 
@@ -986,14 +951,8 @@ const init = (queryId: string) => {
     .then(([dq, p]) => {
       dq.filter(ele => !!ele).forEach(ele => {
         ele.activelist = 'dimensionList'
-        ele.fields.parameterList = p.filter(
-          itx => itx.datasetGroupId === ele.id && !itx.params?.length
-        )
+        ele.fields.parameterList = p.filter(itx => itx.datasetGroupId === ele.id)
         ele.hasParameter = !!ele.fields.parameterList.length
-        ele.fields.dimensionList = (ele.fields.dimensionList || []).filter(
-          itx => !itx.params?.length
-        )
-        ele.fields.quotaList = (ele.fields.quotaList || []).filter(itx => !itx.params?.length)
         datasetMap[ele.id] = ele
       })
       fields.value = datasetFieldList.value
@@ -1020,7 +979,6 @@ const weightlessness = () => {
 const parameterCompletion = () => {
   const attributes = {
     timeType: 'fixed',
-    hideConditionSwitching: false,
     required: false,
     defaultMapValue: [],
     mapValue: [],
@@ -1038,7 +996,6 @@ const parameterCompletion = () => {
     parametersEnd: null,
     relativeToCurrent: 'custom',
     timeNum: 0,
-    relativeToCurrentRange: 'custom',
     relativeToCurrentType: 'year',
     around: 'f',
     arbitraryTime: new Date(),
@@ -1068,12 +1025,8 @@ const parameterCompletion = () => {
     treeFieldList: []
   }
   Object.entries(attributes).forEach(([key, val]) => {
-    curComponent.value[key] ?? (curComponent.value[key] = val)
+    !curComponent.value[key] && (curComponent.value[key] = val)
   })
-
-  if (!curComponent.value.timeRange.relativeToCurrentRange) {
-    curComponent.value.timeRange.relativeToCurrentRange = 'custom'
-  }
 }
 
 const handleCondition = item => {
@@ -1256,105 +1209,31 @@ const relativeToCurrentList = computed(() => {
   ]
 })
 
-const relativeToCurrentListRange = computed(() => {
-  let list = []
-  if (!curComponent.value) return list
-  switch (curComponent.value.timeGranularityMultiple) {
-    case 'yearrange':
-      list = [
-        {
-          label: '今年',
-          value: 'thisYear'
-        },
-        {
-          label: '去年',
-          value: 'lastYear'
-        }
-      ]
-      break
-    case 'monthrange':
-      list = [
-        {
-          label: '本月',
-          value: 'thisMonth'
-        },
-        {
-          label: '上月',
-          value: 'lastMonth'
-        },
-        {
-          label: '最近 3 个 月',
-          value: 'LastThreeMonths'
-        },
-        {
-          label: '最近 6 个 月',
-          value: 'LastSixMonths'
-        },
-        {
-          label: '最近 12 个 月',
-          value: 'LastTwelveMonths'
-        }
-      ]
-      break
-    case 'daterange':
-    case 'datetimerange':
-      list = [
-        {
-          label: '今天',
-          value: 'today'
-        },
-        {
-          label: '昨天',
-          value: 'yesterday'
-        },
-        {
-          label: '最近 3 天',
-          value: 'LastThreeDays'
-        },
-        {
-          label: '月初至今',
-          value: 'monthBeginning'
-        },
-        {
-          label: '年初至今',
-          value: 'yearBeginning'
-        }
-      ]
-      break
-
-    default:
-      break
-  }
-
-  return [
-    ...list,
-    {
-      label: '自定义',
-      value: 'custom'
-    }
-  ]
-})
-
 const timeGranularityChange = (val: string) => {
-  curComponent.value.relativeToCurrentType = ['date', 'datetime'].includes(val) ? 'date' : val
+  if (
+    ['year', 'month', 'date', 'datetime'].indexOf(val) <
+    ['year', 'month', 'date'].indexOf(curComponent.value.relativeToCurrentType)
+  ) {
+    curComponent.value.relativeToCurrentType = 'year'
+  }
   if (curComponent.value.relativeToCurrent !== 'custom') {
     curComponent.value.relativeToCurrent = relativeToCurrentList.value[0]?.value
   }
 }
 
-const handleTimeTypeChange = () => {
-  timeGranularityChange(curComponent.value.timeGranularity)
-  timeGranularityMultipleChange(curComponent.value.timeGranularityMultiple)
-}
-
 const timeGranularityMultipleChange = (val: string) => {
   handleDialogClick()
-  curComponent.value.relativeToCurrentType = ['daterange', 'datetimerange'].includes(val)
-    ? 'date'
-    : val.split('range')[0]
-  curComponent.value.relativeToCurrentTypeRange = curComponent.value.relativeToCurrentType
-  if (curComponent.value.relativeToCurrentRange !== 'custom') {
-    curComponent.value.relativeToCurrentRange = relativeToCurrentListRange.value[0]?.value
+  if (
+    ['yearrange', 'monthrange', 'daterange', 'datetimerange'].indexOf(val) <
+    ['year', 'month', 'date'].indexOf(curComponent.value.relativeToCurrentType)
+  ) {
+    curComponent.value.relativeToCurrentType = 'year'
+  }
+  if (
+    ['yearrange', 'monthrange', 'daterange', 'datetimerange'].indexOf(val) <
+    ['year', 'month', 'date'].indexOf(curComponent.value.relativeToCurrentTypeRange)
+  ) {
+    curComponent.value.relativeToCurrentTypeRange = 'year'
   }
 
   curComponent.value.timeRange = {
@@ -1364,12 +1243,11 @@ const timeGranularityMultipleChange = (val: string) => {
     regularOrTrends: 'fixed',
     regularOrTrendsValue: '',
     relativeToCurrent: 'custom',
-    relativeToCurrentRange: 'custom',
     timeNum: 0,
-    relativeToCurrentType: curComponent.value.relativeToCurrentRange,
+    relativeToCurrentType: 'year',
     around: 'f',
     timeNumRange: 0,
-    relativeToCurrentTypeRange: curComponent.value.relativeToCurrentRange,
+    relativeToCurrentTypeRange: 'year',
     aroundRange: 'f'
   }
 }
@@ -1441,11 +1319,6 @@ const addQueryCriteria = () => {
   conditions.value.push(addQueryCriteriaConfig())
 }
 
-const addQueryCriteriaAndSelect = () => {
-  addQueryCriteria()
-  handleCondition(conditions.value[conditions.value.length - 1])
-}
-
 const addCriteriaConfig = () => {
   addQueryCriteria()
   return conditions.value[conditions.value.length - 1].id
@@ -1473,8 +1346,8 @@ defineExpose({
       <div class="query-condition-list">
         <div class="title">
           查询条件
-          <el-icon @click="addQueryCriteriaAndSelect">
-            <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+          <el-icon @click="addQueryCriteria">
+            <Icon name="icon_add_outlined"></Icon>
           </el-icon>
         </div>
         <draggable tag="div" :list="conditions" handle=".handle">
@@ -1487,14 +1360,14 @@ defineExpose({
               :class="element.id === activeCondition && 'active'"
             >
               <el-icon class="handle">
-                <Icon name="icon_drag_outlined"><icon_drag_outlined class="svg-icon" /></Icon>
+                <Icon name="icon_drag_outlined"></Icon>
               </el-icon>
               <div class="label flex-align-center icon" :title="element.name">
                 <el-icon
                   v-if="!element.auto && element.showError"
                   style="font-size: 16px; color: #f54a45"
                 >
-                  <icon name="icon_warning_filled"><icon_warning_filled class="svg-icon" /></icon>
+                  <icon name="icon_warning_filled"></icon>
                 </el-icon>
                 {{ element.name }}
               </div>
@@ -1502,7 +1375,7 @@ defineExpose({
                 <handle-more
                   @handle-command="cmd => addOperation(cmd, element, index)"
                   :menu-list="typeList"
-                  :icon-name="more_v"
+                  icon-name="more_v"
                   placement="bottom-end"
                 ></handle-more>
                 <el-icon
@@ -1510,12 +1383,10 @@ defineExpose({
                   @click.stop="element.visible = !element.visible"
                   v-if="element.visible"
                 >
-                  <Icon name="icon_visible_outlined"
-                    ><icon_visible_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_visible_outlined"></Icon>
                 </el-icon>
                 <el-icon class="hover-icon" @click.stop="element.visible = !element.visible" v-else>
-                  <Icon name="de_pwd_invisible"><de_pwd_invisible class="svg-icon" /></Icon>
+                  <Icon name="de_pwd_invisible"></Icon>
                 </el-icon>
               </div>
               <div @click.stop v-if="activeConditionForRename.id === element.id" class="rename">
@@ -1546,7 +1417,7 @@ defineExpose({
                     </div>
                   </template>
                   <el-icon style="margin-left: 4px; color: #646a73">
-                    <icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></icon>
+                    <icon name="icon_info_outlined"></icon>
                   </el-icon>
                 </el-tooltip>
               </div>
@@ -1567,14 +1438,10 @@ defineExpose({
             v-model="curComponent.checkedFields"
             @change="handleCheckedFieldsChangeTree"
           >
-            <div v-for="field in fields" :key="field.componentId" class="list-item_field_de">
+            <div v-for="field in fields" :key="field.componentId" class="list-item">
               <el-checkbox :label="field.componentId"
                 ><el-icon class="component-type">
-                  <Icon
-                    ><component
-                      :is="iconChartMap[canvasViewInfo[field.componentId].type]"
-                    ></component
-                  ></Icon> </el-icon
+                  <Icon :name="canvasViewInfo[field.componentId].type"></Icon> </el-icon
                 ><span
                   :title="canvasViewInfo[field.componentId].title"
                   class="checkbox-name ellipsis"
@@ -1594,26 +1461,22 @@ defineExpose({
                 <template v-if="curComponent.checkedFieldsMap[field.componentId]" #prefix>
                   <el-icon>
                     <Icon
-                      ><component
-                        :class="`field-icon-${
-                          fieldType[
-                            getDetype(
-                              curComponent.checkedFieldsMap[field.componentId],
-                              Object.values(field.fields)
-                            )
-                          ]
-                        }`"
-                        :is="
-                          iconFieldMap[
-                            fieldType[
-                              getDetype(
-                                curComponent.checkedFieldsMap[field.componentId],
-                                Object.values(field.fields)
-                              )
-                            ]
-                          ]
-                        "
-                      ></component
+                      :name="`field_${
+                        fieldType[
+                          getDetype(
+                            curComponent.checkedFieldsMap[field.componentId],
+                            Object.values(field.fields)
+                          )
+                        ]
+                      }`"
+                      :className="`field-icon-${
+                        fieldType[
+                          getDetype(
+                            curComponent.checkedFieldsMap[field.componentId],
+                            Object.values(field.fields)
+                          )
+                        ]
+                      }`"
                     ></Icon>
                   </el-icon>
                 </template>
@@ -1647,12 +1510,9 @@ defineExpose({
                     :title="ele.desensitized ? '脱敏字段，不能被设置为查询条件' : ''"
                   >
                     <el-icon>
-                      <Icon :className="`field-icon-${fieldType[ele.deType]}`"
-                        ><component
-                          class="svg-icon"
-                          :class="`field-icon-${fieldType[ele.deType]}`"
-                          :is="iconFieldMap[fieldType[ele.deType]]"
-                        ></component
+                      <Icon
+                        :name="`field_${fieldType[ele.deType]}`"
+                        :className="`field-icon-${fieldType[ele.deType]}`"
                       ></Icon>
                     </el-icon>
                     <span :title="ele.name || ele.variableName" class="ellipsis">
@@ -1749,7 +1609,7 @@ defineExpose({
                 @click="startTreeDesign"
               >
                 <template #icon>
-                  <icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></icon>
+                  <icon name="icon_edit_outlined"></icon>
                 </template>
               </el-button>
             </div>
@@ -1763,12 +1623,9 @@ defineExpose({
                   <span class="level-index">层级{{ indexCascade[index + 1] }}</span>
                   <span class="field-type"
                     ><el-icon>
-                      <Icon :className="`field-icon-${fieldType[ele.deType]}`"
-                        ><component
-                          :class="`field-icon-${fieldType[ele.deType]}`"
-                          class="svg-icon"
-                          :is="iconFieldMap[fieldType[ele.deType]]"
-                        ></component
+                      <Icon
+                        :name="`field_${fieldType[ele.deType]}`"
+                        :className="`field-icon-${fieldType[ele.deType]}`"
                       ></Icon> </el-icon
                   ></span>
                   <span class="field-tree_name">{{ ele.name }}</span>
@@ -1776,7 +1633,7 @@ defineExpose({
               </template>
               <el-button @click="startTreeDesign" v-else text>
                 <template #icon>
-                  <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_add_outlined"></Icon>
                 </template>
                 点击进行树结构设计
               </el-button>
@@ -1851,10 +1708,10 @@ defineExpose({
                     <template #default="{ node, data }">
                       <div class="content">
                         <el-icon size="18px" v-if="!data.leaf">
-                          <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+                          <Icon name="dv-folder"></Icon>
                         </el-icon>
                         <el-icon size="18px" v-if="data.leaf">
-                          <Icon name="icon_dataset"><icon_dataset class="svg-icon" /></Icon>
+                          <Icon name="icon_dataset"></Icon>
                         </el-icon>
                         <span class="label ellipsis" style="margin-left: 8px" :title="node.label">{{
                           node.label
@@ -1874,18 +1731,12 @@ defineExpose({
                     <template v-if="curComponent.field.id" #prefix>
                       <el-icon>
                         <Icon
+                          :name="`field_${
+                            fieldType[getDetype(curComponent.field.id, curComponent.dataset.fields)]
+                          }`"
                           :className="`field-icon-${
                             fieldType[getDetype(curComponent.field.id, curComponent.dataset.fields)]
                           }`"
-                          ><component
-                            :is="
-                              iconFieldMap[
-                                fieldType[
-                                  getDetype(curComponent.field.id, curComponent.dataset.fields)
-                                ]
-                              ]
-                            "
-                          ></component
                         ></Icon>
                       </el-icon>
                     </template>
@@ -1893,8 +1744,7 @@ defineExpose({
                       v-for="ele in curComponent.dataset.fields.filter(
                         ele =>
                           ele.deType === +curComponent.displayType ||
-                          ([3, 4].includes(ele.deType) && +curComponent.displayType === 2) ||
-                          (ele.deType === 7 && +curComponent.displayType === 0)
+                          ([3, 4].includes(ele.deType) && +curComponent.displayType === 2)
                       )"
                       :key="ele.id"
                       :label="ele.name"
@@ -1906,12 +1756,9 @@ defineExpose({
                         :title="ele.desensitized ? '脱敏字段，不能被设置为查询条件' : ''"
                       >
                         <el-icon>
-                          <Icon :className="`field-icon-${fieldType[ele.deType]}`"
-                            ><component
-                              class="svg-icon"
-                              :class="`field-icon-${fieldType[ele.deType]}`"
-                              :is="iconFieldMap[fieldType[ele.deType]]"
-                            ></component
+                          <Icon
+                            :name="`field_${fieldType[ele.deType]}`"
+                            :className="`field-icon-${fieldType[ele.deType]}`"
                           ></Icon>
                         </el-icon>
                         <span>
@@ -1931,20 +1778,16 @@ defineExpose({
                     <template v-if="curComponent.displayId" #prefix>
                       <el-icon>
                         <Icon
+                          :name="`field_${
+                            fieldType[
+                              getDetype(curComponent.displayId, curComponent.dataset.fields)
+                            ]
+                          }`"
                           :className="`field-icon-${
                             fieldType[
                               getDetype(curComponent.displayId, curComponent.dataset.fields)
                             ]
                           }`"
-                          ><component
-                            :is="
-                              iconFieldMap[
-                                fieldType[
-                                  getDetype(curComponent.displayId, curComponent.dataset.fields)
-                                ]
-                              ]
-                            "
-                          ></component
                         ></Icon>
                       </el-icon>
                     </template>
@@ -1952,8 +1795,7 @@ defineExpose({
                       v-for="ele in curComponent.dataset.fields.filter(
                         ele =>
                           ele.deType === +curComponent.displayType ||
-                          ([3, 4].includes(ele.deType) && +curComponent.displayType === 2) ||
-                          (ele.deType === 7 && +curComponent.displayType === 0)
+                          ([3, 4].includes(ele.deType) && +curComponent.displayType === 2)
                       )"
                       :key="ele.id"
                       :label="ele.name"
@@ -1965,12 +1807,9 @@ defineExpose({
                         :title="ele.desensitized ? '脱敏字段，不能被设置为查询条件' : ''"
                       >
                         <el-icon>
-                          <Icon :className="`field-icon-${fieldType[ele.deType]}`"
-                            ><component
-                              class="svg-icon"
-                              :class="`field-icon-${fieldType[ele.deType]}`"
-                              :is="iconFieldMap[fieldType[ele.deType]]"
-                            ></component
+                          <Icon
+                            :name="`field_${fieldType[ele.deType]}`"
+                            :className="`field-icon-${fieldType[ele.deType]}`"
                           ></Icon>
                         </el-icon>
                         <span>
@@ -1992,18 +1831,12 @@ defineExpose({
                     <template v-if="curComponent.sortId" #prefix>
                       <el-icon>
                         <Icon
+                          :name="`field_${
+                            fieldType[getDetype(curComponent.sortId, curComponent.dataset.fields)]
+                          }`"
                           :className="`field-icon-${
                             fieldType[getDetype(curComponent.sortId, curComponent.dataset.fields)]
                           }`"
-                          ><component
-                            :is="
-                              iconFieldMap[
-                                fieldType[
-                                  getDetype(curComponent.sortId, curComponent.dataset.fields)
-                                ]
-                              ]
-                            "
-                          ></component
                         ></Icon>
                       </el-icon>
                     </template>
@@ -2019,12 +1852,9 @@ defineExpose({
                         :title="ele.desensitized ? '脱敏字段，不能被设置为查询条件' : ''"
                       >
                         <el-icon>
-                          <Icon :className="`field-icon-${fieldType[ele.deType]}`"
-                            ><component
-                              :class="`field-icon-${fieldType[ele.deType]}`"
-                              class="svg-icon"
-                              :is="iconFieldMap[fieldType[ele.deType]]"
-                            ></component
+                          <Icon
+                            :name="`field_${fieldType[ele.deType]}`"
+                            :className="`field-icon-${fieldType[ele.deType]}`"
                           ></Icon>
                         </el-icon>
                         <span>
@@ -2054,9 +1884,7 @@ defineExpose({
                   <template #reference>
                     <el-button text>
                       <template #icon>
-                        <Icon name="icon_edit_outlined"
-                          ><icon_edit_outlined class="svg-icon"
-                        /></Icon>
+                        <Icon name="icon_edit_outlined"></Icon>
                       </template>
                       {{ t('common.edit') }}
                     </el-button>
@@ -2085,9 +1913,7 @@ defineExpose({
                           text
                         >
                           <template #icon>
-                            <Icon name="icon_delete-trash_outlined"
-                              ><icon_deleteTrash_outlined class="svg-icon"
-                            /></Icon>
+                            <Icon name="icon_delete-trash_outlined"></Icon>
                           </template>
                         </el-button>
                       </div>
@@ -2095,9 +1921,7 @@ defineExpose({
                     <div class="add-btn">
                       <el-button @click="valueSource.push('')" text>
                         <template #icon>
-                          <Icon name="icon_add_outlined"
-                            ><icon_add_outlined class="svg-icon"
-                          /></Icon>
+                          <Icon name="icon_add_outlined"></Icon>
                         </template>
                         添加选项值
                       </el-button>
@@ -2139,12 +1963,8 @@ defineExpose({
               </div>
             </div>
           </div>
-          <div v-if="curComponent.displayType === '8'">
-            <el-checkbox v-model="curComponent.hideConditionSwitching" label="隐藏条件切换" />
-          </div>
           <condition-default-configuration
             ref="defaultConfigurationRef"
-            @handleTimeTypeChange="handleTimeTypeChange"
             :cur-component="curComponent"
           ></condition-default-configuration>
         </div>
@@ -2190,7 +2010,7 @@ defineExpose({
   }
 }
 .dataset-parameters {
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-style: normal;
   font-weight: 400;
   .ed-select-dropdown__item {
@@ -2235,7 +2055,7 @@ defineExpose({
   }
   .container {
     font-size: 14px;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     width: 1152px;
     height: 454px;
     border-radius: 4px;
@@ -2258,7 +2078,7 @@ defineExpose({
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 14px;
         font-style: normal;
         font-weight: 500;
@@ -2325,7 +2145,7 @@ defineExpose({
       }
 
       .title {
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 14px;
         font-style: normal;
         font-weight: 500;
@@ -2343,7 +2163,7 @@ defineExpose({
           font-size: 20px;
           color: var(--ed-color-primary);
         }
-        .list-item_field_de {
+        .list-item {
           height: 32px;
           display: flex;
           align-items: center;
@@ -2391,7 +2211,7 @@ defineExpose({
         color: #646a73;
         height: 16px;
         padding: 0px 4px;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 10px;
         font-style: normal;
         font-weight: 500;
@@ -2420,7 +2240,7 @@ defineExpose({
       }
       .title {
         margin-bottom: 16px;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
         font-size: 14px;
         font-style: normal;
         font-weight: 500;
@@ -2534,7 +2354,8 @@ defineExpose({
                 border-radius: 0;
                 box-shadow: none;
                 height: 26px;
-                font-family: var(--de-custom_font, 'PingFang');
+                font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei,
+                  sans-serif;
                 word-wrap: break-word;
                 text-align: left;
                 color: rgba(0, 0, 0, 0.65);

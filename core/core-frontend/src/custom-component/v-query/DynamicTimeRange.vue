@@ -3,7 +3,6 @@ import { toRefs, PropType, ref, onBeforeMount, watch, computed } from 'vue'
 import { Calendar } from '@element-plus/icons-vue'
 import { type DatePickType } from 'element-plus-secondary'
 import { getCustomTime } from './time-format'
-import { getCustomRange } from './time-format-dayjs'
 interface SelectConfig {
   timeType: string
   timeGranularityMultiple: DatePickType
@@ -11,7 +10,6 @@ interface SelectConfig {
   selectValue: [Date, Date]
   defaultValueCheck: boolean
   id: string
-  relativeToCurrentRange: string
   timeNum: number
   relativeToCurrentType: string
   around: string
@@ -39,7 +37,6 @@ const props = defineProps({
         defaultValueCheck: false,
         timeGranularity: 'date',
         timeNumRange: 0,
-        relativeToCurrentRange: 'custom',
         relativeToCurrentTypeRange: 'year',
         aroundRange: 'f',
         arbitraryTimeRange: new Date()
@@ -56,7 +53,6 @@ const timeConfig = computed(() => {
     relativeToCurrentType,
     timeGranularityMultiple,
     around,
-    relativeToCurrentRange,
     defaultValueCheck,
     arbitraryTime,
     timeGranularity,
@@ -69,7 +65,6 @@ const timeConfig = computed(() => {
     timeNum,
     relativeToCurrentType,
     around,
-    relativeToCurrentRange,
     timeGranularityMultiple,
     defaultValueCheck,
     arbitraryTime,
@@ -118,16 +113,10 @@ const init = () => {
     timeNumRange,
     relativeToCurrentTypeRange,
     aroundRange,
-    relativeToCurrentRange,
     arbitraryTimeRange
   } = timeConfig.value
   if (!defaultValueCheck) {
     selectValue.value = [new Date(), new Date()]
-    return
-  }
-
-  if (relativeToCurrentRange !== 'custom') {
-    selectValue.value = getCustomRange(relativeToCurrentRange)
     return
   }
 

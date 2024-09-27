@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, reactive, inject } from 'vue'
+import { ref, onBeforeMount, reactive } from 'vue'
 import { initCanvasData } from '@/utils/canvasUtils'
 import { interactiveStoreWithOut } from '@/store/modules/interactive'
 import { useEmbedded } from '@/store/modules/embedded'
@@ -13,7 +13,6 @@ import { XpackComponent } from '@/components/plugin'
 const { wsCache } = useCache()
 const interactiveStore = interactiveStoreWithOut()
 const embeddedStore = useEmbedded()
-const embeddedParamsDiv = inject('embeddedParams') as object
 const config = ref()
 const viewInfo = ref()
 const userViewEnlargeRef = ref()
@@ -27,8 +26,6 @@ const state = reactive({
   dvInfo: null,
   chartId: null
 })
-
-const embeddedParams = embeddedParamsDiv?.chartId ? embeddedParamsDiv : embeddedStore
 
 // 目标校验： 需要校验targetSourceId 是否是当前可视化资源ID
 const winMsgHandle = event => {
@@ -46,42 +43,40 @@ const checkPer = async resourceId => {
   if (!window.DataEaseBi || !resourceId) {
     return true
   }
-  const request = { busiFlag: embeddedParams.busiFlag }
+  const request = { busiFlag: embeddedStore.busiFlag }
   await interactiveStore.setInteractive(request)
-  const key = embeddedParams.busiFlag === 'dataV' ? 'screen-weight' : 'panel-weight'
+  const key = embeddedStore.busiFlag === 'dataV' ? 'screen-weight' : 'panel-weight'
   return check(wsCache.get(key), resourceId, 1)
 }
 onBeforeMount(async () => {
-  const checkResult = await checkPer(embeddedParams.dvId)
+  const checkResult = await checkPer(embeddedStore.dvId)
   if (!checkResult) {
     return
   }
-  state.chartId = embeddedParams.dvId
+  state.chartId = embeddedStore.dvId
   window.addEventListener('message', winMsgHandle)
 
   // 添加外部参数
   let attachParams
-  await getOuterParamsInfo(embeddedParams.dvId).then(rsp => {
+  await getOuterParamsInfo(embeddedStore.dvId).then(rsp => {
     dvMainStore.setNowPanelOuterParamsInfo(rsp.data)
   })
 
   // div嵌入
-  if (embeddedParams.outerParams) {
+  if (embeddedStore.outerParams) {
     try {
-      const outerPramsParse = JSON.parse(embeddedParams.outerParams)
+      const outerPramsParse = JSON.parse(embeddedStore.outerParams)
       attachParams = outerPramsParse.attachParams
       dvMainStore.setEmbeddedCallBack(outerPramsParse.callBackFlag || 'no')
     } catch (e) {
       console.error(e)
       ElMessage.error(t('visualization.outer_param_decode_error'))
-      return
     }
   }
-  const chartId = embeddedParams?.chartId
 
   initCanvasData(
-    embeddedParams.dvId,
-    embeddedParams.busiFlag,
+    embeddedStore.dvId,
+    embeddedStore.busiFlag,
     function ({ canvasDataResult, canvasStyleResult, dvInfo, canvasViewInfoPreview }) {
       state.canvasDataPreview = canvasDataResult
       state.canvasStylePreview = canvasStyleResult
@@ -90,7 +85,8 @@ onBeforeMount(async () => {
       if (attachParams) {
         dvMainStore.addOuterParamsFilter(attachParams, canvasDataResult)
       }
-      viewInfo.value = canvasViewInfoPreview[chartId]
+
+      viewInfo.value = canvasViewInfoPreview[embeddedStore.chartId]
       ;(
         (canvasDataResult as unknown as Array<{
           id: string
@@ -98,14 +94,14 @@ onBeforeMount(async () => {
           propValue: Array<{ id: string }>
         }>) || []
       ).some(ele => {
-        if (ele.id === chartId) {
+        if (ele.id === embeddedStore.chartId) {
           config.value = ele
           return true
         }
 
         if (ele.component === 'Group') {
           return (ele.propValue || []).some(itx => {
-            if (itx.id === chartId) {
+            if (itx.id === embeddedStore.chartId) {
               config.value = itx
               return true
             }
@@ -117,8 +113,8 @@ onBeforeMount(async () => {
     }
   )
 })
-const userViewEnlargeOpen = opt => {
-  userViewEnlargeRef.value.dialogInit(state.canvasStylePreview, viewInfo.value, config.value, opt)
+const userViewEnlargeOpen = () => {
+  userViewEnlargeRef.value.dialogInit(state.canvasStylePreview, viewInfo.value, config.value)
 }
 
 const onPointClick = param => {

@@ -4,7 +4,7 @@ import { isEmpty } from 'lodash-es'
 
 export const clearExtremum = chart => {
   // 清除图表标注
-  const pointElement = document.getElementById(chartPointParentId(chart))
+  const pointElement = document.getElementById('point_' + chart.id)
   if (pointElement) {
     pointElement.remove()
     pointElement.parentNode?.removeChild(pointElement)
@@ -51,19 +51,18 @@ const getRgbaColorLastRgba = (rgbaString: string) => {
   return lastRGBA
 }
 
-function createExtremumDiv(id, value, formatterCfg, chart) {
+function createExtremumDiv(id, value, formatterCfg, chartId) {
   // 空值不处理
   if (!value && value != 0) {
     return
   }
   // 装标注的div
-  const parentElement = document.getElementById(chartPointParentId(chart))
+  const parentElement = document.getElementById('point_' + chartId)
   if (parentElement) {
     // 标注div
-    const oldElement = document.getElementById(id)
-    if (oldElement) {
-      oldElement.remove()
-      oldElement.parentNode?.removeChild(oldElement)
+    const element = document.getElementById(id)
+    if (element) {
+      return
     }
     const div = document.createElement('div')
     div.id = id
@@ -77,8 +76,6 @@ function createExtremumDiv(id, value, formatterCfg, chart) {
         padding: 4px 5px 4px 5px;
         display:none;
         transform: translateX(-50%);
-        opacity: 1;
-        transition: opacity 0.2s ease-in-out;
         white-space:nowrap;`
     )
     div.textContent = valueFormatter(value, formatterCfg)
@@ -106,34 +103,49 @@ const noChildrenFieldChart = chart => {
   return ['area', 'bar'].includes(chart.type)
 }
 
-const chartContainerId = chart => {
-  return chart.container + '_'
-}
+const overlap = chart => {
+  const container = document.getElementById('point_' + chart.id)
+  const children = Array.from(container.getElementsByClassName('child'))
 
-const chartPointParentId = chart => {
-  return chart.container + '_point_' + chart.id + '_'
-}
+  function getOverlapArea(rect1, rect2) {
+    const x_overlap = Math.max(
+      0,
+      Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left)
+    )
+    const y_overlap = Math.max(
+      0,
+      Math.min(rect1.bottom, rect2.bottom) - Math.max(rect1.top, rect2.top)
+    )
+    return x_overlap * y_overlap
+  }
 
-function removeDivsWithPrefix(parentDivId, prefix) {
-  const parentDiv = document.getElementById(parentDivId)
-  if (!parentDiv) {
-    console.error('Parent div not found')
-    return
+  function checkAndHideOverlappedElements() {
+    children.forEach(child => {
+      const childRect = child.getBoundingClientRect()
+      let totalOverlapArea = 0
+
+      children.forEach(otherChild => {
+        if (child !== otherChild) {
+          const otherChildRect = otherChild.getBoundingClientRect()
+          totalOverlapArea += getOverlapArea(childRect, otherChildRect)
+        }
+      })
+
+      const childArea = childRect.width * childRect.height
+      if (totalOverlapArea / childArea > 0.3) {
+        child.parentNode?.removeChild(child)
+      }
+    })
   }
-  const childDivs = parentDiv.getElementsByTagName('div')
-  for (let i = childDivs.length - 1; i >= 0; i--) {
-    const div = childDivs[i]
-    if (div.id && div.id.startsWith(prefix)) {
-      div.parentNode.removeChild(div)
-    }
-  }
+
+  checkAndHideOverlappedElements()
 }
 
 export const extremumEvt = (newChart, chart, _options, container) => {
   chart.container = container
   const { label: labelAttr } = parseJson(chart.customAttr)
   const { yAxis } = parseJson(chart)
-  newChart.once('beforerender', ev => {
+  newChart.on('beforerender', ev => {
     ev.view.on('beforepaint', () => {
       newChart.chart.geometries[0]?.beforeMappingData.forEach(i => {
         i.forEach(item => {
@@ -164,17 +176,20 @@ export const extremumEvt = (newChart, chart, _options, container) => {
     })
     newChart.chart.geometries[0].on('afteranimate', () => {
       createExtremumPoint(chart, ev)
+      overlap(chart)
     })
   })
   newChart.on('legend-item:click', ev => {
-    const legendHideData = ev.view
+    const legendShowSize = ev.view
       .getController('legend')
-      .components[0].component.cfg.items.filter(l => l.unchecked)
-    if (legendHideData.length > 0) {
-      legendHideData.forEach(l => {
-        const seriesKey = chartContainerId(chart) + chartPointParentId(chart) + l.id
-        removeDivsWithPrefix(chartPointParentId(chart), seriesKey)
-      })
+      .components[0].component.cfg.items.filter(l => !l.unchecked)
+    if (legendShowSize.length === 0) {
+      const allElement = document.getElementById('point_' + chart.id)
+      if (allElement && allElement.childNodes) {
+        allElement.childNodes.forEach(c => {
+          c.style.display = 'none'
+        })
+      }
     }
   })
 }
@@ -201,31 +216,17 @@ export const createExtremumPoint = (chart, ev) => {
   const pointSize = basicStyle.lineSymbolSize
   const { yAxis } = parseJson(chart)
   clearExtremum(chart)
+  const parentKey = 'point_' + chart.id
   // 创建标注父元素
-  const divParentElement = document.getElementById(chartPointParentId(chart))
+  const divParentElement = document.getElementById(parentKey)
   if (!divParentElement) {
     const divParent = document.createElement('div')
-    divParent.id = chartPointParentId(chart)
+    divParent.id = parentKey
     divParent.style.position = 'fixed'
     divParent.style.zIndex = '1'
-    divParent.style.opacity = '0'
-    divParent.style.transition = 'opacity 0.2s ease-in-out'
     // 将父标注加入到图表中
     const containerElement = document.getElementById(chart.container)
     containerElement.insertBefore(divParent, containerElement.firstChild)
-    // 处理最值闪烁的问题
-    let opacity = 0
-    const animate = () => {
-      // 增加不透明度
-      opacity += 0.19
-      if (opacity >= 1) {
-        cancelAnimationFrame(animationFrameId)
-        return
-      }
-      divParent.style.opacity = opacity + ''
-      animationFrameId = requestAnimationFrame(animate)
-    }
-    let animationFrameId = requestAnimationFrame(animate)
   }
   let geometriesDataArray = []
   // 获取数据点
@@ -241,7 +242,7 @@ export const createExtremumPoint = (chart, ev) => {
   if (pointPoint) {
     geometriesDataArray = pointPoint.dataArray
   }
-  performChunk(geometriesDataArray, pointObjList => {
+  geometriesDataArray?.forEach(pointObjList => {
     if (pointObjList && pointObjList.length > 0) {
       const pointObj = pointObjList[0]
       const [minItem, maxItem] = pointObjList.filter(i => i._origin.EXTREME)
@@ -266,17 +267,12 @@ export const createExtremumPoint = (chart, ev) => {
         return
       }
       const maxKey =
-        chartContainerId(chart) +
-        chartPointParentId(chart) +
+        parentKey +
+        'point_' +
         pointObj._origin.category +
-        '_' +
+        '-' +
         (maxItem ? maxItem._origin.value : minItem._origin.value)
-      const minKey =
-        chartContainerId(chart) +
-        chartPointParentId(chart) +
-        pointObj._origin.category +
-        '_' +
-        minItem._origin.value
+      const minKey = parentKey + 'point_' + pointObj._origin.category + '-' + minItem._origin.value
       // 最值标注
       if (showExtremum && labelAttr.show) {
         if (maxItem) {
@@ -284,24 +280,21 @@ export const createExtremumPoint = (chart, ev) => {
             maxKey,
             maxItem._origin.value,
             attr ? attr.formatterCfg : labelAttr.labelFormatter,
-            chart
+            chart.id
           )
         }
         createExtremumDiv(
           minKey,
           minItem._origin.value,
           attr ? attr.formatterCfg : labelAttr.labelFormatter,
-          chart
+          chart.id
         )
         pointObjList.forEach(point => {
           const pointElement = document.getElementById(
-            chartContainerId(chart) +
-              chartPointParentId(chart) +
-              point._origin.category +
-              '_' +
-              point._origin.value
+            parentKey + 'point_' + point._origin.category + '-' + point._origin.value
           )
           if (pointElement && point._origin.EXTREME) {
+            pointElement.style.position = 'absolute'
             pointElement.style.position = 'absolute'
             pointElement.style.top =
               (point.y[1] ? point.y[1] : point.y) -
@@ -326,38 +319,12 @@ export const createExtremumPoint = (chart, ev) => {
       }
     }
   })
-}
 
-function removeDivElement(key) {
-  const element = document.getElementById(key)
-  if (element) {
-    element.remove()
-    element.parentNode?.removeChild(element)
+  function removeDivElement(key) {
+    const element = document.getElementById(key)
+    if (element) {
+      element.remove()
+      element.parentNode?.removeChild(element)
+    }
   }
-}
-
-/**
- * 用于分批处理数据，利用requestIdleCallback在浏览器空闲期间执行任务，避免阻塞主线程
- * @param dataList
- * @param taskHandler
- */
-function performChunk(dataList, taskHandler) {
-  if (typeof dataList === 'number') {
-    dataList = { length: dataList }
-  }
-  if (dataList.length === 0) return
-  let i = 0
-  function _run() {
-    if (i >= dataList.length) return
-    // 请求浏览器空闲期间执行的回调函数
-    requestIdleCallback(idle => {
-      // 在当前空闲期间内尽可能多地处理任务，直到时间耗尽或所有任务处理完毕
-      while (idle.timeRemaining() > 0 && i < dataList.length) {
-        taskHandler(dataList[i], i)
-        i++
-      }
-      _run()
-    })
-  }
-  _run()
 }

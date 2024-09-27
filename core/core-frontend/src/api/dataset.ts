@@ -120,28 +120,6 @@ export const delDatasetTree = async (id): Promise<IResponse> => {
   })
 }
 
-export const exportDatasetData = async (data): Promise<IResponse> => {
-  return request.post({
-    url: '/datasetTree/exportDataset',
-    method: 'post',
-    data: data,
-    loading: true,
-    responseType: 'blob'
-  })
-}
-
-export const exportLimit = async (): Promise<boolean> => {
-  return request.post({ url: `/exportCenter/exportLimit`, data: {} }).then(res => {
-    return res?.data
-  })
-}
-
-export const perDelete = async (id): Promise<boolean> => {
-  return request.post({ url: `/datasetTree/perDelete/${id}`, data: {} }).then(res => {
-    return res?.data
-  })
-}
-
 export const getDatasourceList = async (): Promise<IResponse> => {
   return request.post({ url: '/datasource/tree', data: { busiFlag: 'datasource' } }).then(res => {
     return res?.data
@@ -168,12 +146,6 @@ export const getPreviewData = async (data): Promise<IResponse> => {
 
 export const getDatasetPreview = async (id): Promise<FieldData> => {
   return request.post({ url: `/datasetTree/get/${id}`, data: {} }).then(res => {
-    return res?.data
-  })
-}
-
-export const getDatasetTotal = async (id): Promise<FieldData> => {
-  return request.post({ url: `/datasetData/getDatasetTotal`, data: { id: id } }).then(res => {
     return res?.data
   })
 }

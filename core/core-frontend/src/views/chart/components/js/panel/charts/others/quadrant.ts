@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { ScatterOptions, Scatter as G2Scatter } from '@antv/g2plot/esm/plots/scatter'
+import { ScatterOptions, Scatter as G2Scatter } from '@antv/g2plot/esm/plots/scatter'
 import { flow, parseJson, setUpSingleDimensionSeriesColor } from '../../../util'
 import { valueFormatter } from '@/views/chart/components/js/formatter'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -16,7 +16,6 @@ const { t } = useI18n()
 export class Quadrant extends G2PlotChartView<ScatterOptions, G2Scatter> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'x-axis-selector',
     'y-axis-selector',
@@ -122,7 +121,7 @@ export class Quadrant extends G2PlotChartView<ScatterOptions, G2Scatter> {
     return [...new Set(arr.map(JSON.stringify))].map(JSON.parse) as T[]
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Scatter>): Promise<G2Scatter> {
+  public drawChart(drawOptions: G2PlotDrawOptions<G2Scatter>) {
     const { chart, container, action, quadrantDefaultBaseline } = drawOptions
     if (!chart.data?.data) {
       return
@@ -204,7 +203,6 @@ export class Quadrant extends G2PlotChartView<ScatterOptions, G2Scatter> {
     }
 
     const options = this.setupOptions(chart, baseOptions)
-    const { Scatter: G2Scatter } = await import('@antv/g2plot/esm/plots/scatter')
     const newChart = new G2Scatter(container, options)
     newChart.on('point:click', action)
     newChart.on('click', () => quadrantDefaultBaseline(defaultBaselineQuadrant))

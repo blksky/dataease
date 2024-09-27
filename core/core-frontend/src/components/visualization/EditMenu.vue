@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import language from '@/assets/svg/language.svg'
 import { ref, onMounted } from 'vue'
 import { Icon } from '@/components/icon-custom'
 import { useUserStoreWithOut } from '@/store/modules/user'
@@ -18,7 +17,7 @@ onMounted(() => {
     @command="handleSetLanguage"
   >
     <el-icon>
-      <Icon name="language"><language class="svg-icon" /></Icon>
+      <Icon name="language" />
     </el-icon>
     <template #dropdown>
       <el-dropdown-menu>

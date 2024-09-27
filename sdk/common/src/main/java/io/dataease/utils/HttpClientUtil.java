@@ -18,7 +18,6 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -30,11 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -443,50 +438,6 @@ public class HttpClientUtil {
         return HttpClientUtil.postFile(url, bytes, name, paramMap, config);
     }
 
-    public static String upload(String url, File file, String name) {
-        HttpClientConfig config = new HttpClientConfig();
-        Map<String, String> param = new HashMap<>();
-        param.put("fileFlag", "media");
-        param.put("fileName", name);
-        return HttpClientUtil.postFile(url, file, param, config);
-    }
-
-    public static String postFile(String fileServer, File file, Map<String, String> param, HttpClientConfig config) {
-        CloseableHttpClient httpClient = buildHttpClient(fileServer);
-        HttpPost postRequest = new HttpPost(fileServer);
-        if (config == null) {
-            config = new HttpClientConfig();
-        }
-        postRequest.setConfig(config.buildRequestConfig());
-        Map<String, String> header = config.getHeader();
-        String fileFlag = param.get("fileFlag");
-        String fileName = param.get("fileName");
-        param.remove("fileFlag");
-        param.remove("fileName");
-        if (MapUtils.isNotEmpty(header)) {
-            for (String key : header.keySet()) {
-                postRequest.addHeader(key, header.get(key));
-            }
-        }
-        postRequest.setHeader("Content-Type", "multipart/form-data");
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setCharset(StandardCharsets.UTF_8);
-        builder.addBinaryBody(StringUtils.isNotBlank(fileFlag) ? fileFlag : "file", file, ContentType.APPLICATION_OCTET_STREAM, StringUtils.isNotBlank(fileName) ? fileName : file.getName());
-        if (MapUtils.isNotEmpty(param)) {
-            for (Map.Entry<String, String> entry : param.entrySet()) {
-                StringBody stringBody = new StringBody(entry.getValue(), ContentType.TEXT_PLAIN.withCharset("utf-8"));
-                builder.addPart(entry.getKey(), stringBody);
-            }
-        }
-        try {
-            postRequest.setEntity(builder.build());
-            return getResponseStr(httpClient.execute(postRequest), config);
-        } catch (Exception e) {
-            logger.error("HttpClient查询失败", e);
-            throw new RuntimeException("HttpClient查询失败: " + e.getMessage());
-        }
-    }
-
     private static void addHead(HttpClientConfig config, Map<String, Object> headMap) {
         if (MapUtils.isEmpty(headMap)) return;
         for (Map.Entry<String, Object> entry : headMap.entrySet()) {
@@ -523,29 +474,5 @@ public class HttpClientUtil {
                 logger.error("HttpClient关闭连接失败", e);
             }
         }
-    }
-
-    public static boolean isURLReachable(String urlString, Map<String, String> head) {
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000); // 设置连接超时时间，单位为毫秒
-            connection.setReadTimeout(5000); // 设置读取超时时间，单位为毫秒
-            if (MapUtils.isNotEmpty(head)) {
-                for (Map.Entry<String, String> entry : head.entrySet()) {
-                    connection.addRequestProperty(entry.getKey(), entry.getValue());
-                }
-            }
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                return true; // 状态码200表示URL可达
-            } else if (StringUtils.equalsIgnoreCase("Unauthorized", connection.getResponseMessage())) {
-                LogUtil.error("apisix key error [failed to check token]");
-            }
-        } catch (IOException e) {
-            return false;
-        }
-        return false; // 如果发生异常或状态码不是200，则URL不可达
     }
 }

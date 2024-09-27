@@ -1,7 +1,7 @@
 package io.dataease.api.exportCenter;
 
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
-import io.dataease.model.ExportTaskDTO;
+import io.dataease.api.exportCenter.vo.ExportTaskDTO;
 import io.dataease.auth.DeApiPath;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,8 +37,5 @@ public interface ExportCenterApi {
 
     @PostMapping("/retry/{id}")
     public void  retry(@PathVariable String id);
-
-    @PostMapping("/exportLimit")
-    public String  exportLimit();
 
 }

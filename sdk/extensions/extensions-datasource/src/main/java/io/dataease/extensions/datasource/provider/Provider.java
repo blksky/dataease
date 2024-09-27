@@ -92,15 +92,6 @@ public abstract class Provider {
      */
     public abstract void hidePW(DatasourceDTO datasourceDTO);
 
-    public void exec(DatasourceRequest datasourceRequest) {
-
-    }
-
-    public int executeUpdate(DatasourceRequest datasourceRequest) {
-        return 0;
-    }
-
-
     @Getter
     private static final Map<Long, Integer> lPorts = new HashMap<>();
     @Getter
@@ -121,7 +112,7 @@ public abstract class Provider {
     }
 
     public String rebuildSQL(String sql, SQLMeta sqlMeta, boolean crossDs, Map<Long, DatasourceSchemaDTO> dsMap) {
-        logger.debug("calcite sql: " + sql);
+        logger.info("calcite sql: " + sql);
         if (crossDs) {
             return sql;
         }
@@ -135,12 +126,6 @@ public abstract class Provider {
     public String transSqlDialect(String sql, Map<Long, DatasourceSchemaDTO> dsMap) throws DEException {
         try {
             DatasourceSchemaDTO value = dsMap.entrySet().iterator().next().getValue();
-
-            // 获取数据库version
-            ConnectionObj connection = getConnection(value);
-            if (connection != null) {
-                value.setDsVersion(connection.getConnection().getMetaData().getDatabaseMajorVersion());
-            }
 
             SqlParser parser = SqlParser.create(sql, SqlParser.Config.DEFAULT.withLex(Lex.JAVA));
             SqlNode sqlNode = parser.parseStmt();
@@ -186,11 +171,6 @@ public abstract class Provider {
         return s;
     }
 
-    public String replaceComment(String s) {
-        String regex = "/\\*[\\s\\S]*?\\*/|-- .*";
-        return s.replaceAll(regex, " ");
-    }
-
     public SqlDialect getDialect(DatasourceSchemaDTO coreDatasource) {
         SqlDialect sqlDialect = null;
         DatasourceConfiguration.DatasourceType datasourceType = DatasourceConfiguration.DatasourceType.valueOf(coreDatasource.getType());
@@ -224,7 +204,7 @@ public abstract class Provider {
                 sqlDialect = RedshiftSqlDialect.DEFAULT;
                 break;
             case ck:
-                sqlDialect = new ClickHouseSqlDialect(ClickHouseSqlDialect.DEFAULT_CONTEXT, coreDatasource.getDsVersion());
+                sqlDialect = ClickHouseSqlDialect.DEFAULT;
                 break;
             case h2:
                 sqlDialect = H2SqlDialect.DEFAULT;

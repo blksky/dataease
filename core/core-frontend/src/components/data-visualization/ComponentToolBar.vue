@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import dvReposition from '@/assets/svg/dv-reposition.svg'
-import dvMax from '@/assets/svg/dv-max.svg'
-import dvMin from '@/assets/svg/dv-min.svg'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { storeToRefs } from 'pinia'
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
@@ -127,7 +124,7 @@ onUnmounted(() => {
       />
 
       <el-icon @click="scaleDecrease(1)" class="hover-icon-custom" style="margin-right: 12px">
-        <Icon name="dv-min"><dvMin class="svg-icon"></dvMin></Icon
+        <Icon name="dv-min"></Icon
       ></el-icon>
       <el-slider
         style="width: 100px; margin-right: 12px"
@@ -139,12 +136,12 @@ onUnmounted(() => {
         size="small"
       />
       <el-icon @click="scaleIncrease(1)" class="hover-icon-custom">
-        <Icon name="dv-max"><dvMax class="svg-icon"></dvMax></Icon
+        <Icon name="dv-max"></Icon
       ></el-icon>
       <el-divider direction="vertical" class="custom-divider_scale" />
       <el-tooltip effect="ndark" content="定位到中心点" placement="top">
         <el-icon @click="reposition" class="hover-icon-custom" style="margin-right: 12px">
-          <Icon name="dv-reposition"><dvReposition class="svg-icon"></dvReposition></Icon
+          <Icon name="dv-reposition"></Icon
         ></el-icon>
       </el-tooltip>
     </div>

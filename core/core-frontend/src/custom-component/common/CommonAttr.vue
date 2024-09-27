@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref, toRefs } from 'vue'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { storeToRefs } from 'pinia'
-import { styleData } from '@/utils/attr'
+import { styleData, selectKey, optionMap, horizontalPosition } from '@/utils/attr'
 import ComponentPosition from '@/components/visualization/common/ComponentPosition.vue'
 import BackgroundOverallCommon from '@/components/visualization/component-background/BackgroundOverallCommon.vue'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -10,9 +10,6 @@ import elementResizeDetectorMaker from 'element-resize-detector'
 import { snapshotStoreWithOut } from '@/store/modules/data-visualization/snapshot'
 import CommonStyleSet from '@/custom-component/common/CommonStyleSet.vue'
 import CommonEvent from '@/custom-component/common/CommonEvent.vue'
-import CarouselSetting from '@/custom-component/common/CarouselSetting.vue'
-import CommonBorderSetting from '@/custom-component/common/CommonBorderSetting.vue'
-import CollapseSwitchItem from '../../components/collapse-switch-item/src/CollapseSwitchItem.vue'
 const snapshotStore = snapshotStoreWithOut()
 
 const { t } = useI18n()
@@ -96,28 +93,19 @@ const colorPickerWidth = computed(() => {
   }
 })
 
-const borderSettingShow = computed(() => {
-  return !!element.value.style['borderStyle']
-})
-
 // 暂时关闭
 const eventsShow = computed(() => {
-  return (
-    ['Picture', 'CanvasIcon', 'CircleShape', 'SvgTriangle', 'RectShape', 'ScrollText'].includes(
-      element.value.component
-    ) || element.value.innerType === 'rich-text'
-  )
-})
-
-const carouselShow = computed(() => {
-  return element.value.component === 'DeTabs' && element.value.carousel
+  return false
+  // return !dashboardActive.value && ['Picture'].includes(element.value.component)
 })
 
 const backgroundCustomShow = computed(() => {
   return (
     dashboardActive.value ||
     (!dashboardActive.value &&
-      !['CanvasBoard', 'CanvasIcon', 'CircleShape', 'RectShape'].includes(element.value.component))
+      !['CanvasBoard', 'CanvasIcon', 'Picture', 'CircleShape', 'RectShape'].includes(
+        element.value.component
+      ))
   )
 })
 onMounted(() => {
@@ -177,27 +165,11 @@ const stopEvent = e => {
         v-if="element && element.events && eventsShow"
         :effect="themes"
         title="事件"
-        name="events"
+        name="style"
         class="common-style-area"
       >
-        <common-event :themes="themes" :events-info="element.events"></common-event>
+        <common-event :themes="themes" :element="element"></common-event>
       </el-collapse-item>
-      <collapse-switch-item
-        v-if="element && borderSettingShow"
-        v-model="element.style.borderActive"
-        @modelChange="val => onStyleAttrChange({ key: 'borderActive', value: val })"
-        :themes="themes"
-        title="边框"
-        name="borderSetting"
-        class="common-style-area"
-      >
-        <common-border-setting
-          :style-info="element.style"
-          :themes="themes"
-          @onStyleAttrChange="onStyleAttrChange"
-        ></common-border-setting>
-      </collapse-switch-item>
-      <CarouselSetting v-if="carouselShow" :element="element" :themes="themes"></CarouselSetting>
     </el-collapse>
   </div>
 </template>

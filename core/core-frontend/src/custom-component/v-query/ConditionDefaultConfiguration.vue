@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import icon_admin_outlined from '@/assets/svg/icon_admin_outlined.svg'
 import { ElSelect } from 'element-plus-secondary'
 import { computed, ref, toRefs } from 'vue'
 import RangeFilterTime from '@/custom-component/v-query/RangeFilterTime.vue'
@@ -34,14 +33,6 @@ const filterTypeCom = computed(() => {
     ? Tree
     : Select
 })
-
-const emits = defineEmits(['handleTimeTypeChange'])
-
-const handleTimeTypeChange = val => {
-  if (val === 'dynamic') {
-    emits('handleTimeTypeChange')
-  }
-}
 
 const props = defineProps({
   curComponent: {
@@ -165,85 +156,6 @@ const relativeToCurrentList = computed(() => {
   ]
 })
 
-const relativeToCurrentListRange = computed(() => {
-  let list = []
-  if (!curComponent.value) return list
-  switch (curComponent.value.timeGranularityMultiple) {
-    case 'yearrange':
-      list = [
-        {
-          label: '今年',
-          value: 'thisYear'
-        },
-        {
-          label: '去年',
-          value: 'lastYear'
-        }
-      ]
-      break
-    case 'monthrange':
-      list = [
-        {
-          label: '本月',
-          value: 'thisMonth'
-        },
-        {
-          label: '上月',
-          value: 'lastMonth'
-        },
-        {
-          label: '最近 3 个 月',
-          value: 'LastThreeMonths'
-        },
-        {
-          label: '最近 6 个 月',
-          value: 'LastSixMonths'
-        },
-        {
-          label: '最近 12 个 月',
-          value: 'LastTwelveMonths'
-        }
-      ]
-      break
-    case 'daterange':
-    case 'datetimerange':
-      list = [
-        {
-          label: '今天',
-          value: 'today'
-        },
-        {
-          label: '昨天',
-          value: 'yesterday'
-        },
-        {
-          label: '最近 3 天',
-          value: 'LastThreeDays'
-        },
-        {
-          label: '月初至今',
-          value: 'monthBeginning'
-        },
-        {
-          label: '年初至今',
-          value: 'yearBeginning'
-        }
-      ]
-      break
-
-    default:
-      break
-  }
-
-  return [
-    ...list,
-    {
-      label: '自定义',
-      value: 'custom'
-    }
-  ]
-})
-
 const aroundList = [
   {
     label: '前',
@@ -325,11 +237,10 @@ defineExpose({
 <template>
   <div class="list-item top-item" v-if="curComponent.displayType === '8'" @click.stop>
     <div class="label">设置默认值</div>
-    <div class="value" :class="curComponent.hideConditionSwitching && 'hide-condition_switching'">
+    <div class="value">
       <div class="condition-type">
         <el-select
           class="condition-value-select"
-          v-if="!curComponent.hideConditionSwitching"
           popper-class="condition-value-select-popper"
           v-model="curComponent.defaultConditionValueOperatorF"
         >
@@ -347,7 +258,6 @@ defineExpose({
       <div class="condition-type" v-if="[1, 2].includes(curComponent.conditionType)">
         <sapn class="condition-type-tip">{{ curComponent.conditionType === 1 ? '与' : '或' }}</sapn>
         <el-select
-          v-if="!curComponent.hideConditionSwitching"
           class="condition-value-select"
           popper-class="condition-value-select-popper"
           v-model="curComponent.defaultConditionValueOperatorS"
@@ -399,7 +309,7 @@ defineExpose({
             style="margin-left: -4px"
           >
             <template #icon>
-              <Icon name="icon_admin_outlined"><icon_admin_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_admin_outlined"></Icon>
             </template>
             设置
           </el-button>
@@ -446,7 +356,7 @@ defineExpose({
       v-if="curComponent.defaultValueCheck && ['1', '7'].includes(curComponent.displayType)"
     >
       <div class="setting">
-        <el-radio-group @change="handleTimeTypeChange" v-model="curComponent.timeType">
+        <el-radio-group v-model="curComponent.timeType">
           <el-radio label="fixed">固定时间</el-radio>
           <el-radio label="dynamic">动态时间</el-radio>
         </el-radio-group>
@@ -470,12 +380,7 @@ defineExpose({
             class="setting-input"
             :class="curComponent.timeGranularity === 'datetime' && 'with-date'"
           >
-            <el-input-number
-              step-strictly
-              v-model="curComponent.timeNum"
-              :min="0"
-              controls-position="right"
-            />
+            <el-input-number v-model="curComponent.timeNum" :min="0" controls-position="right" />
             <el-select @focus="handleDialogClick" v-model="curComponent.relativeToCurrentType">
               <el-option
                 v-for="item in relativeToCurrentTypeList"
@@ -500,22 +405,8 @@ defineExpose({
         </div>
       </template>
       <template v-else-if="dynamicTime && curComponent.displayType === '7'">
-        <div class="setting">
-          <div class="setting-label">相对当前</div>
-          <div class="setting-value select">
-            <el-select @focus="handleDialogClick" v-model="curComponent.relativeToCurrentRange">
-              <el-option
-                v-for="item in relativeToCurrentListRange"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </div>
-        </div>
         <div
           class="setting"
-          v-if="curComponent.relativeToCurrentRange === 'custom'"
           :class="
             ['yearrange', 'monthrange', 'daterange'].includes(
               curComponent.timeGranularityMultiple
@@ -524,12 +415,7 @@ defineExpose({
         >
           <div class="setting-label">开始时间</div>
           <div class="setting-input with-date range">
-            <el-input-number
-              step-strictly
-              v-model="curComponent.timeNum"
-              :min="0"
-              controls-position="right"
-            />
+            <el-input-number v-model="curComponent.timeNum" :min="0" controls-position="right" />
             <el-select @focus="handleDialogClick" v-model="curComponent.relativeToCurrentType">
               <el-option
                 v-for="item in relativeToCurrentTypeList"
@@ -551,7 +437,6 @@ defineExpose({
         </div>
         <div
           class="setting"
-          v-if="curComponent.relativeToCurrentRange === 'custom'"
           :class="
             ['yearrange', 'monthrange', 'daterange'].includes(
               curComponent.timeGranularityMultiple
@@ -563,7 +448,6 @@ defineExpose({
             <el-input-number
               v-model="curComponent.timeNumRange"
               :min="0"
-              step-strictly
               controls-position="right"
             />
             <el-select @focus="handleDialogClick" v-model="curComponent.relativeToCurrentTypeRange">
@@ -596,7 +480,12 @@ defineExpose({
   </div>
 </template>
 
-<style lang="less" scoped>
+<style lang="less">
+.condition-value-select-popper {
+  .ed-select-dropdown__item.selected::after {
+    display: none;
+  }
+}
 .list-item {
   display: flex;
   align-items: center;
@@ -657,7 +546,8 @@ defineExpose({
         border-radius: 0;
         box-shadow: none;
         height: 26px;
-        font-family: var(--de-custom_font, 'PingFang');
+        font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei,
+          sans-serif;
         word-wrap: break-word;
         text-align: left;
         color: rgba(0, 0, 0, 0.65);
@@ -710,16 +600,6 @@ defineExpose({
       }
       &:first-child {
         margin-top: -0.5px;
-      }
-    }
-
-    &.hide-condition_switching {
-      .bottom-line {
-        width: 307px !important;
-
-        &.next-line {
-          width: 288px !important;
-        }
       }
     }
   }
@@ -850,13 +730,6 @@ defineExpose({
         }
       }
     }
-  }
-}
-</style>
-<style lang="less">
-.condition-value-select-popper {
-  .ed-select-dropdown__item.selected::after {
-    display: none;
   }
 }
 </style>

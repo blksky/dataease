@@ -12,9 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.security.ProtectionDomain;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -39,27 +38,25 @@ public abstract class DataEaseDatasourcePlugin extends Provider implements DataE
     private void loadDriver() throws Exception {
         XpackPluginsDatasourceVO config = getConfig();
         String localPath = StringUtils.isEmpty(config.getDriverPath()) ? DEFAULT_FILE_PATH : config.getDriverPath();
-        ProtectionDomain protectionDomain = this.getClass().getProtectionDomain();
-        URI uri = protectionDomain.getCodeSource().getLocation().toURI();
-        try(JarFile jarFile = new JarFile(new File(uri))) {
-            Enumeration<JarEntry> entries = jarFile.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String name = entry.getName();
-                if (StringUtils.endsWith(name, ".jar")) {
-                    File file = new File(localPath, Paths.get(name).getFileName().toString());
-                    if (!file.getParentFile().exists()) {
-                        file.getParentFile().mkdirs();
-                    }
-
-                    try(InputStream inputStream = jarFile.getInputStream(entry);
-                        FileOutputStream outputStream = new FileOutputStream(file)){
-                        byte[] bytes = new byte[1024];
-                        int length;
-                        while ((length = inputStream.read(bytes)) >= 0) {
-                            outputStream.write(bytes, 0, length);
-                        }
-                    }
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL[] urls = ((URLClassLoader) classLoader).getURLs();
+        String jarPath = urls[0].getPath();
+        JarFile jarFile = new JarFile(jarPath);
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry entry = (JarEntry) entries.nextElement();
+            String name = entry.getName();
+            if (StringUtils.endsWith(name, ".jar")) {
+                InputStream inputStream = jarFile.getInputStream(entry);
+                File file = new File(localPath, name.substring(name.indexOf("/") + 1));
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                FileOutputStream outputStream = new FileOutputStream(file);
+                byte[] bytes = new byte[1024];
+                int length;
+                while ((length = inputStream.read(bytes)) >= 0) {
+                    outputStream.write(bytes, 0, length);
                 }
             }
         }
@@ -81,17 +78,17 @@ public abstract class DataEaseDatasourcePlugin extends Provider implements DataE
     @Override
     public void unloadPlugin() {
         try {
-            ProtectionDomain protectionDomain = this.getClass().getProtectionDomain();
-            URI uri = protectionDomain.getCodeSource().getLocation().toURI();
-            try(JarFile jarFile = new JarFile(new File(uri))) {
-                Enumeration<JarEntry> entries = jarFile.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    String name = entry.getName();
-                    if (StringUtils.endsWith(name, ".jar")) {
-                        File file = new File(DEFAULT_FILE_PATH, Paths.get(name).getFileName().toString());
-                        file.delete();
-                    }
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
+            String jarPath = urls[0].getPath();
+            JarFile jarFile = new JarFile(jarPath);
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = (JarEntry) entries.nextElement();
+                String name = entry.getName();
+                if (StringUtils.endsWith(name, ".jar")) {
+                    File file = new File(DEFAULT_FILE_PATH, name.substring(name.indexOf("/") + 1));
+                    file.delete();
                 }
             }
         } catch (Exception e) {

@@ -1,7 +1,6 @@
 package io.dataease.api.visualization.vo;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 
 import java.io.Serializable;
 
@@ -13,7 +12,6 @@ import java.io.Serializable;
  * @author fit2cloud
  * @since 2024-03-08
  */
-@Data
 public class VisualizationOuterParamsInfoVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -38,21 +36,6 @@ public class VisualizationOuterParamsInfoVO implements Serializable {
      */
     private Boolean checked;
 
-
-    /**
-     * 是否必填
-     */
-    private Boolean required;
-
-    /**
-     * 默认值 JSON格式
-     */
-    private String defaultValue;
-
-    /**
-     * 是否启用默认值
-     */
-    private Boolean enabledDefault;
     /**
      * 复制来源
      */
@@ -62,6 +45,54 @@ public class VisualizationOuterParamsInfoVO implements Serializable {
      * 复制来源ID
      */
     private String copyId;
+
+    public String getParamsInfoId() {
+        return paramsInfoId;
+    }
+
+    public void setParamsInfoId(String paramsInfoId) {
+        this.paramsInfoId = paramsInfoId;
+    }
+
+    public String getParamsId() {
+        return paramsId;
+    }
+
+    public void setParamsId(String paramsId) {
+        this.paramsId = paramsId;
+    }
+
+    public String getParamName() {
+        return paramName;
+    }
+
+    public void setParamName(String paramName) {
+        this.paramName = paramName;
+    }
+
+    public Boolean getChecked() {
+        return checked;
+    }
+
+    public void setChecked(Boolean checked) {
+        this.checked = checked;
+    }
+
+    public String getCopyFrom() {
+        return copyFrom;
+    }
+
+    public void setCopyFrom(String copyFrom) {
+        this.copyFrom = copyFrom;
+    }
+
+    public String getCopyId() {
+        return copyId;
+    }
+
+    public void setCopyId(String copyId) {
+        this.copyId = copyId;
+    }
 
     @Override
     public String toString() {

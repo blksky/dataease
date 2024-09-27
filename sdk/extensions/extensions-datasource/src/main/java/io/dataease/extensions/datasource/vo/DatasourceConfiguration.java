@@ -18,7 +18,6 @@ public class DatasourceConfiguration extends Configuration {
         impala("impala", "Apache Impala", "OLAP", "`", "`"),
         mariadb("mariadb", "Mariadb", "OLTP", "`", "`"),
         StarRocks("StarRocks", "StarRocks", "OLAP", "`", "`"),
-        es("es", "Elasticsearch", "OLAP", "\"", "\""),
         doris("doris", "Apache Doris", "OLAP", "`", "`"),
         TiDB("TiDB", "TiDB", "OLTP", "`", "`"),
         oracle("oracle", "ORACLE", "OLTP", "\"", "\""),

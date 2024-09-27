@@ -1,8 +1,4 @@
 <script lang="ts" setup>
-import icon_left_outlined from '@/assets/svg/icon_left_outlined.svg'
-import icon_close_outlined from '@/assets/svg/icon_close_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_right_outlined from '@/assets/svg/icon_right_outlined.svg'
 import { nextTick, ref, watch } from 'vue'
 import { Icon } from '@/components/icon-custom'
 import { ElButton, ElDivider, ElIcon } from 'element-plus-secondary'
@@ -54,7 +50,7 @@ watch(
     <span class="title">个结果</span>
     <el-divider direction="vertical" />
     <el-icon @click="scrollPre" class="arrow-left arrow-filter" v-if="showScroll">
-      <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+      <Icon name="icon_left_outlined"></Icon>
     </el-icon>
     <div class="filter-texts-container" ref="container">
       <p v-for="(ele, index) in filterTexts" :key="ele" class="text">
@@ -62,7 +58,7 @@ watch(
           {{ ele }}
         </el-tooltip>
         <el-icon @click="clearFilter(index)">
-          <Icon name="icon_close_outlined"><icon_close_outlined class="svg-icon" /></Icon>
+          <Icon name="icon_close_outlined"></Icon>
         </el-icon>
       </p>
       <el-button
@@ -72,15 +68,13 @@ watch(
         @click="clearFilterAll"
       >
         <template #icon>
-          <Icon name="icon_delete-trash_outlined"
-            ><icon_deleteTrash_outlined class="svg-icon"
-          /></Icon>
+          <Icon name="icon_delete-trash_outlined"></Icon>
         </template>
         清空条件</el-button
       >
     </div>
     <el-icon @click="scrollNext" class="arrow-right arrow-filter" v-if="showScroll">
-      <Icon name="icon_right_outlined"><icon_right_outlined class="svg-icon" /></Icon>
+      <Icon name="icon_right_outlined"></Icon>
     </el-icon>
     <el-button
       type="text"
@@ -90,9 +84,7 @@ watch(
       @click="clearFilterAll"
     >
       <template #icon>
-        <Icon name="icon_delete-trash_outlined"
-          ><icon_deleteTrash_outlined class="svg-icon"
-        /></Icon>
+        <Icon name="icon_delete-trash_outlined"></Icon>
       </template>
       清空条件</el-button
     >
@@ -104,7 +96,7 @@ watch(
   display: flex;
   align-items: center;
   margin: 17px 0;
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-weight: 400;
 
   .sum {

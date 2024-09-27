@@ -1,12 +1,9 @@
 <script lang="tsx" setup>
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
 import { computed, onMounted, reactive } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { COLOR_PANEL } from '@/views/chart/components/editor/util/chart'
 import { fieldType } from '@/utils/attr'
 import { find } from 'lodash-es'
-import { iconFieldMap } from '@/components/icon-group/field-list'
 
 const { t } = useI18n()
 
@@ -233,13 +230,10 @@ onMounted(() => {
             >
               <span style="float: left">
                 <el-icon>
-                  <Icon :className="`field-icon-${fieldType[item.deType]}`"
-                    ><component
-                      class="svg-icon"
-                      :class="`field-icon-${fieldType[item.deType]}`"
-                      :is="iconFieldMap[fieldType[item.deType]]"
-                    ></component
-                  ></Icon>
+                  <Icon
+                    :className="`field-icon-${fieldType[item.deType]}`"
+                    :name="`field_${fieldType[item.deType]}`"
+                  />
                 </el-icon>
               </span>
               <span :style="{ float: 'left', color: '#8492a6', fontSize: '12px' }">
@@ -304,9 +298,7 @@ onMounted(() => {
               class="hover-icon"
               @click="removeLine(index)"
             >
-              <Icon name="icon_delete-trash_outlined"
-                ><icon_deleteTrash_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_delete-trash_outlined"></Icon>
             </el-icon>
           </div>
         </el-col>
@@ -314,7 +306,7 @@ onMounted(() => {
     </div>
     <el-button class="circle-button" text style="margin-left: 5px" @click="addLine">
       <template #icon>
-        <Icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_add_outlined"></Icon>
       </template>
       {{ t('chart.add_assist_line') }}
     </el-button>

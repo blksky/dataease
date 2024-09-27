@@ -56,7 +56,7 @@ export function download2AppTemplate(downloadType, canvasDom, name, attachParams
             componentData: JSON.stringify(componentData.value),
             dynamicData: JSON.stringify(canvasViewDataTemplate),
             staticResource: JSON.stringify(staticResource || {}),
-            appData: attachParams ? JSON.stringify(attachParams) : null
+            appData: JSON.stringify(attachParams || {})
           }
           const blob = new Blob([JSON.stringify(templateInfo)], { type: '' })
           if (downloadType === 'template') {
@@ -88,7 +88,6 @@ export function downloadCanvas2(type, canvasDom, name, callBack?) {
         const a = document.createElement('a')
         a.setAttribute('download', name)
         a.href = dataUrl
-        document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
       } else {
@@ -124,7 +123,6 @@ export function downloadCanvas(type, canvasDom, name, callBack?) {
           const a = document.createElement('a')
           a.setAttribute('download', name)
           a.href = dataUrl
-          document.body.appendChild(a)
           a.click()
           document.body.removeChild(a)
         } else {

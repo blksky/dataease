@@ -4,14 +4,14 @@
     :append-to-body="true"
     title="外部参数设置"
     v-model="state.outerParamsSetVisible"
-    width="80vw"
+    width="70vw"
     top="10vh"
     trigger="click"
   >
     <el-row style="height: 550px">
       <el-row v-loading="state.loading">
         <el-row class="preview">
-          <el-col :span="6" class="preview-left">
+          <el-col :span="8" style="height: 100%; overflow-y: hidden">
             <el-row class="tree-head">
               <span class="head-text">参数列表</span>
               <span class="head-filter">
@@ -24,7 +24,7 @@
                 menu
                 ref="outerParamsInfoTree"
                 :data="state.outerParamsInfoArray"
-                node-key="paramsInfoId"
+                node-key="id"
                 highlight-current
                 :props="state.treeProp"
                 @node-click="nodeClick"
@@ -56,10 +56,10 @@
                     </span>
                     <span class="icon-more">
                       <handle-more
-                        style="margin-right: 16px"
+                        style="margin-right: 10px"
                         @handle-command="cmd => outerParamsOperation(cmd, node, data)"
                         :menu-list="state.optMenu"
-                        :icon-name="icon_more_outlined"
+                        icon-name="icon_more_outlined"
                         placement="bottom-start"
                       ></handle-more>
                     </span>
@@ -68,245 +68,126 @@
               </el-tree>
             </el-row>
           </el-col>
-          <el-col :span="13" class="preview-show">
+          <el-col :span="16" class="preview-show">
             <el-row v-if="state.curNodeId">
-              <el-row class="new-params-title"> 选择参数关联组件 </el-row>
-              <el-row class="new-params-filter" v-if="state.outerParamsInfo?.filterInfo?.length">
+              <el-row style="margin-top: 5px">
                 <div style="display: flex" class="inner-content">
-                  <div style="width: 16px; margin-top: 2px" class="expand-custom-outer">
-                    <div class="expand-custom">
-                      <el-icon @click="() => (state.filterExpand = !state.filterExpand)"
-                        ><CaretBottom v-show="state.filterExpand" />
-                        <CaretRight v-show="!state.filterExpand" />
-                      </el-icon>
-                    </div>
-                  </div>
-                  <div style="flex: 1">查询组件</div>
-                  <div style="flex: 1">关联条件</div>
+                  <div style="flex: 1">联动组件</div>
+                  <div style="width: 36px"></div>
+                  <div style="flex: 1">联动组件字段</div>
+                  <div style="width: 32px"></div>
                 </div>
-                <div class="outer-filter-content">
+                <div style="width: 100%; max-height: 350px; overflow-y: auto">
                   <div
-                    v-show="state.filterExpand"
-                    style="display: flex"
-                    class="inner-filter-content"
-                    v-for="(baseFilter, index) in state.outerParamsInfo?.filterInfo"
+                    style="display: flex; padding: 0 16px 8px"
+                    v-for="(targetViewInfo, index) in state.outerParamsInfo.targetViewInfoList"
                     :key="index"
                   >
-                    <div style="width: 16px"></div>
-                    <div style="flex: 1; line-height: 32px">
-                      <Icon name="filter-params"
-                        ><filterParams style="margin-top: 4px" class="svg-icon view-type-icon"
-                      /></Icon>
-                      <span>{{ findFilterName(baseFilter.id) }}</span>
-                    </div>
                     <div style="flex: 1">
-                      <el-select
-                        v-model="baseFilter.filterSelected"
-                        filterable
-                        style="width: 100%"
-                        placeholder="请选择查询条件"
-                        clearable
-                      >
-                        <el-option
-                          v-for="item in baseFilter.propValue"
-                          :key="item.id"
-                          :label="item.name"
-                          :value="item.id"
-                        >
-                          <span style="font-size: 12px"> {{ item.name }}</span>
-                        </el-option>
-                      </el-select>
-                    </div>
-                  </div>
-                </div>
-              </el-row>
-              <el-row class="new-params-ds" v-if="state.outerParamsInfo?.datasetInfo?.length">
-                <div style="display: flex" class="inner-content">
-                  <div style="width: 16px; margin-top: 2px" class="expand-custom-outer">
-                    <div class="expand-custom">
-                      <el-icon @click="() => (state.datasetExpand = !state.datasetExpand)"
-                        ><CaretBottom v-show="state.datasetExpand" />
-                        <CaretRight v-show="!state.datasetExpand" />
-                      </el-icon>
-                    </div>
-                  </div>
-                  <div style="flex: 1">图表</div>
-                  <div style="flex: 1">关联字段或参数</div>
-                </div>
-                <div class="outer-dataset-content">
-                  <div
-                    v-show="state.datasetExpand"
-                    class="inner-dataset-content"
-                    v-for="(baseDatasetInfo, index) in state.outerParamsInfo?.datasetInfo"
-                    :key="index"
-                  >
-                    <div style="display: flex; width: 100%">
-                      <div style="width: 16px; margin-top: 7px" class="expand-custom-outer">
-                        <div class="expand-custom">
-                          <el-icon
-                            @click="
-                              () => (baseDatasetInfo.viewExpand = !baseDatasetInfo.viewExpand)
-                            "
-                            ><CaretBottom v-show="baseDatasetInfo.viewExpand" />
-                            <CaretRight v-show="!baseDatasetInfo.viewExpand" />
-                          </el-icon>
-                        </div>
-                      </div>
-                      <div style="flex: 1; display: flex; line-height: 32px">
-                        <div style="width: 16px; margin-top: 2px; margin-right: 4px">
-                          <el-icon>
-                            <Icon name="icon_dataset"><icon_dataset class="svg-icon" /></Icon>
-                          </el-icon>
-                        </div>
-                        <span>{{ baseDatasetInfo.name }}</span>
-                      </div>
-                      <div style="flex: 1; margin-left: -16px">
+                      <div class="select-filed">
                         <el-select
-                          v-model="baseDatasetInfo.fieldIdSelected"
+                          v-model="targetViewInfo.targetViewId"
                           filterable
-                          clearable
                           style="width: 100%"
-                          placeholder="请选择"
+                          size="small"
+                          :placeholder="t('visualization.please_select')"
+                          @change="viewInfoOnChange(targetViewInfo)"
                         >
-                          <template #header>
-                            <el-tabs
-                              class="params-select--header"
-                              v-model="baseDatasetInfo.activelist"
-                            >
-                              <el-tab-pane label="字段" name="dimensionList"></el-tab-pane>
-                              <el-tab-pane label="参数" name="parameterList"></el-tab-pane>
-                            </el-tabs>
-                          </template>
                           <el-option
-                            v-for="item in findFields(
-                              baseDatasetInfo.activelist,
-                              baseDatasetInfo.datasetFields
+                            v-for="item in state.currentLinkPanelViewArray.filter(
+                              curItem =>
+                                !viewSelectedField.includes(curItem.id) ||
+                                curItem.id === targetViewInfo.targetViewId
                             )"
-                            :key="item.attachId"
-                            :label="item.name"
-                            :value="item.attachId"
+                            :key="item.id"
+                            :label="item.title"
+                            :value="item.id"
                           >
                             <Icon
-                              ><component
-                                class="svg-icon"
-                                style="width: 14px; height: 14px"
-                                :class="`field-icon-${fieldType[item.deType]}`"
-                                :is="iconFieldMap[fieldType[item.deType]]"
-                              ></component
-                            ></Icon>
-                            <span style="font-size: 12px">{{ item.name }}</span>
+                              class-name="view-type-icon"
+                              style="margin-right: 4px"
+                              :name="item.type"
+                            />
+                            <span style="font-size: 12px"> {{ item.title }}</span>
                           </el-option>
                         </el-select>
                       </div>
                     </div>
-
-                    <div class="ds-view-content" v-show="baseDatasetInfo.viewExpand">
-                      <div style="display: flex; width: 100%; height: 22px">
-                        <div class="ds-content-title">选择关联的图表</div>
-                        <div class="custom-view-diver"></div>
-                        <div>
-                          <el-checkbox
-                            style="margin-top: -4px"
-                            v-model="baseDatasetInfo.checkAll"
-                            :indeterminate="baseDatasetInfo.checkAllIsIndeterminate"
-                            :disabled="!baseDatasetInfo.fieldIdSelected"
-                            @change="batchSelectChange($event, baseDatasetInfo)"
-                            >全选</el-checkbox
-                          >
-                        </div>
-                      </div>
-                      <div style="display: flex; flex-wrap: wrap; width: 100%">
-                        <div
-                          class="view-item"
-                          v-for="viewInfo in baseDatasetInfo.datasetViews"
-                          :key="viewInfo"
+                    <el-icon class="link-icon-join">
+                      <Icon style="width: 20px; height: 20px" name="dv-link-target" />
+                    </el-icon>
+                    <div style="flex: 1">
+                      <div class="select-filed">
+                        <el-select
+                          v-model="targetViewInfo.targetFieldId"
+                          filterable
+                          :disabled="fieldIdDisabledCheck(targetViewInfo)"
+                          style="width: 100%"
+                          size="small"
+                          :placeholder="t('visualization.please_select')"
                         >
-                          <div>
-                            <el-checkbox
-                              v-model="viewInfo.checked"
-                              :disabled="!baseDatasetInfo.fieldIdSelected"
-                              @change="datasetInfoChange(baseDatasetInfo)"
-                            />
-                          </div>
-                          <div>
+                          <el-option
+                            v-for="viewField in getFieldArray(targetViewInfo.targetViewId)"
+                            :key="viewField.id"
+                            :label="viewField.name"
+                            :value="viewField.id"
+                          >
                             <Icon
-                              ><component
-                                class="svg-icon view-type-icon"
-                                style="margin: 0 4px"
-                                :is="iconChartMap[viewInfo.chartType]"
-                              ></component
-                            ></Icon>
-                          </div>
-                          <span style="font-size: 12px"> {{ viewInfo.chartName }}</span>
-                        </div>
+                              style="width: 14px; height: 14px"
+                              :name="`field_${fieldType[viewField.deType]}`"
+                              :className="`field-icon-${fieldType[viewField.deType]}`"
+                            />
+                            <span style="font-size: 12px">{{ viewField.name }}</span>
+                          </el-option>
+                        </el-select>
                       </div>
                     </div>
+                    <el-button class="m-del-icon-btn" text @click="deleteOuterParamsField(index)">
+                      <el-icon size="20px">
+                        <Icon name="icon_delete-trash_outlined" />
+                      </el-icon>
+                    </el-button>
                   </div>
                 </div>
+
+                <el-row style="width: 100%; padding-left: 16px">
+                  <el-button type="primary" icon="Plus" text @click="addOuterParamsField">
+                    {{ t('visualization.add_param_link_field') }}
+                  </el-button>
+                </el-row>
               </el-row>
             </el-row>
             <div v-else class="empty">
               <empty-background description="请配置参数" img-type="noneWhite" />
             </div>
           </el-col>
-          <el-col :span="5" class="params-attach-setting">
-            <el-row v-if="state.curNodeId">
-              <el-row class="new-params-title"> 参数配置 </el-row>
-              <el-row class="params-attach-content">
-                <el-row>
-                  <el-checkbox v-model="state.outerParamsInfo.required">必填 </el-checkbox>
-                </el-row>
-                <el-row>
-                  <el-checkbox v-model="state.outerParamsInfo.enabledDefault">默认值 </el-checkbox>
-                </el-row>
-                <el-input
-                  :ref="el => setArgRef(el, state.outerParamsInfo.paramsInfoId)"
-                  :placeholder="'请输入参数'"
-                  v-model="state.outerParamsInfo.defaultValue"
-                  type="textarea"
-                  :autosize="{ minRows: 4, maxRows: 8 }"
-                  @change="
-                    val =>
-                      validateArgs(
-                        state.outerParamsInfo.defaultValue,
-                        state.outerParamsInfo.paramsInfoId
-                      )
-                  "
-                />
-              </el-row>
-            </el-row>
-          </el-col>
         </el-row>
       </el-row>
       <el-row class="root-class">
-        <el-button @click="cancel()">{{ t('commons.cancel') }} </el-button>
-        <el-button type="primary" @click="save()">{{ t('commons.confirm') }} </el-button>
+        <el-button size="small" @click="cancel()">{{ t('commons.cancel') }} </el-button>
+        <el-button type="primary" size="small" @click="save()"
+          >{{ t('commons.confirm') }}
+        </el-button>
       </el-row>
     </el-row>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import _delete from '@/assets/svg/delete.svg'
-import edit from '@/assets/svg/edit.svg'
-import icon_more_outlined from '@/assets/svg/icon_more_outlined.svg'
-import filterParams from '@/assets/svg/filter-params.svg'
-import icon_dataset from '@/assets/svg/icon_dataset.svg'
 import { ref, reactive, computed, nextTick } from 'vue'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { storeToRefs } from 'pinia'
-import { ElCol, ElInput, ElMessage } from 'element-plus-secondary'
+import { ElMessage } from 'element-plus-secondary'
 import { useI18n } from '@/hooks/web/useI18n'
 import { deepCopy } from '@/utils/utils'
 import generateID from '@/utils/generateID'
 import { queryWithVisualizationId, updateOuterParamsSet } from '@/api/visualization/outerParams'
-import { queryOuterParamsDsInfo, viewDetailList } from '@/api/visualization/dataVisualization'
+import { viewDetailList } from '@/api/visualization/dataVisualization'
+import checkArrayRepeat from '@/utils/check'
 import HandleMore from '@/components/handle-more/src/HandleMore.vue'
 import { fieldType } from '@/utils/attr'
 import EmptyBackground from '@/components/empty-background/src/EmptyBackground.vue'
 import { snapshotStoreWithOut } from '@/store/modules/data-visualization/snapshot'
-import { iconChartMap } from '../icon-group/chart-list'
-import { iconFieldMap } from '../icon-group/field-list'
 const dvMainStore = dvMainStoreWithOut()
 const { dvInfo, componentData } = storeToRefs(dvMainStore)
 const outerParamsInfoTree = ref(null)
@@ -315,19 +196,17 @@ const curEditDataId = ref(null)
 const snapshotStore = snapshotStoreWithOut()
 
 const state = reactive({
-  filterExpand: true,
-  datasetExpand: true,
   loading: false,
   outerParamsSetVisible: false,
   optMenu: [
     {
       label: '重命名',
-      svgName: edit,
+      svgName: 'edit',
       command: 'rename'
     },
     {
       label: '删除',
-      svgName: _delete,
+      svgName: 'delete',
       command: 'delete'
     }
   ],
@@ -340,8 +219,6 @@ const state = reactive({
     checked: false,
     outerParamsInfoArray: []
   },
-  baseDatasetInfo: [],
-  baseFilterInfo: [],
   outerParamsInfoArray: [],
   mapOuterParamsInfoArray: {},
   panelList: [],
@@ -349,9 +226,6 @@ const state = reactive({
   outerParamsInfo: {
     content: '',
     linkType: '',
-    required: false,
-    enabledDefault: false,
-    defaultValue: null,
     targetViewInfoList: [],
     paramsInfoId: null
   },
@@ -359,9 +233,6 @@ const state = reactive({
   defaultOuterParamsInfo: {
     paramName: '',
     checked: true,
-    required: false,
-    enabledDefault: false,
-    defaultValue: null,
     targetViewInfoList: []
   },
   defaultTargetViewInfo: {
@@ -384,49 +255,6 @@ const state = reactive({
     numberRangeWidget: '数值区间过滤组件'
   }
 })
-
-const argRefs = ref({})
-
-const setArgRef = (el, id) => {
-  if (el) {
-    argRefs.value[id] = el
-  }
-}
-
-const validateArgs = (val, id) => {
-  const cref = argRefs.value[id]
-  const e = cref.input
-  if (val === null || val === '' || typeof val === 'undefined') {
-    e.style.color = null
-    e.parentNode.removeAttribute('style')
-    const child = e.parentNode.querySelector('.error-msg')
-    if (child) {
-      e.parentNode.removeChild(child)
-    }
-    return true
-  }
-  try {
-    JSON.parse(val)
-    e.style.color = null
-    e.parentNode.removeAttribute('style')
-    const child = e.parentNode.querySelector('.error-msg')
-    if (child) {
-      e.parentNode.removeChild(child)
-    }
-    return true
-  } catch (error) {
-    e.style.color = 'red'
-    e.parentNode.setAttribute('style', 'box-shadow: 0 0 0 1px red inset;')
-    const child = e.parentNode.querySelector('.error-msg')
-    if (!child) {
-      const errorDom = document.createElement('div')
-      errorDom.className = 'error-msg'
-      errorDom.innerText = '格式错误'
-      e.parentNode.appendChild(errorDom)
-    }
-    return false
-  }
-}
 
 const viewSelectedField = computed(() =>
   state.outerParamsInfo?.targetViewInfoList?.map(targetViewInfo => targetViewInfo.targetViewId)
@@ -456,116 +284,23 @@ const getFieldArray = id => {
   return state.viewIdFieldArrayMap[id]
 }
 
-const initParams = async () => {
-  state.baseFilterInfo = []
-  state.baseDatasetInfo = []
-  // 同步过滤组件信息
-  componentData.value.forEach(componentItem => {
-    if (componentItem.component === 'VQuery') {
-      state.baseFilterInfo.push(componentItem)
-    } else if (componentItem.component === 'Group') {
-      componentItem.propValue.forEach(groupItem => {
-        if (groupItem.component === 'VQuery') {
-          state.baseFilterInfo.push(groupItem)
-        }
-      })
-    } else if (componentItem.component === 'DeTabs') {
-      componentItem.propValue.forEach(tabItem => {
-        tabItem.componentData.forEach(tabComponent => {
-          if (tabComponent.component === 'VQuery') {
-            state.baseFilterInfo.push(tabComponent)
-          }
-        })
-      })
-    }
-  })
-  // 同步基础数据集信息
-  await queryOuterParamsDsInfo(dvInfo.value.id).then(rsp => {
-    state.baseDatasetInfo = rsp.data
-  })
+const initParams = () => {
   // 获取当前仪表板外部跳转信息
   queryWithVisualizationId(dvInfo.value.id).then(rsp => {
     state.outerParams = rsp.data
     state.outerParamsInfoArray = state.outerParams?.outerParamsInfoArray
     if (state.outerParamsInfoArray.length >= 1) {
       state.outerParamsInfoArray.forEach(outerParamsInfo => {
-        const newBaseFilterInfo = deepCopy(state.baseFilterInfo)
-        const newBaseDatasetInfo = deepCopy(state.baseDatasetInfo)
-        paramsCheckedAdaptor(outerParamsInfo, newBaseFilterInfo, newBaseDatasetInfo)
         state.mapOuterParamsInfoArray[outerParamsInfo.paramsInfoId] = outerParamsInfo
       })
       state.curNodeId = null
-      const firstNode = state.outerParamsInfoArray[0]
       nextTick(() => {
-        outerParamsInfoTree.value.setCurrentKey(firstNode.paramsInfoId)
-        nodeClick(firstNode)
+        // outerParamsInfoTree.value.setCurrentKey(firstNode.paramsInfoId)
+        // nodeClick(firstNode)
       })
     }
   })
-
   getPanelViewList(dvInfo.value.id)
-}
-
-const findFields = (type, datasetFields) => {
-  if (type === 'parameterList') {
-    return datasetFields.filter(field => field.attachId.indexOf('DE') > -1)
-  } else {
-    return datasetFields.filter(field => field.attachId.indexOf('DE') === -1)
-  }
-}
-
-const datasetInfoChange = datasetInfo => {
-  let viewCheckCount = 0
-  datasetInfo.datasetViews.forEach(dsView => {
-    if (dsView['checked']) {
-      viewCheckCount++
-    }
-  })
-  datasetInfo['checkAll'] = viewCheckCount === datasetInfo.datasetViews.length
-  datasetInfo['checkAllIsIndeterminate'] =
-    viewCheckCount > 0 && viewCheckCount < datasetInfo.datasetViews.length
-}
-
-const paramsCheckedAdaptor = (outerParamsInfo, newBaseFilterInfo, newBaseDatasetInfo) => {
-  const dsFieldIdSelected = {}
-  const viewMatchIds = []
-  outerParamsInfo.targetViewInfoList.forEach(targetViewInfo => {
-    viewMatchIds.push(targetViewInfo.targetViewId)
-    dsFieldIdSelected[targetViewInfo.targetDsId] =
-      targetViewInfo.targetFieldId === 'empty'
-        ? targetViewInfo.targetViewId
-        : targetViewInfo.targetFieldId
-  })
-  if (newBaseDatasetInfo) {
-    newBaseDatasetInfo.forEach(datasetInfo => {
-      datasetInfo['fieldIdSelected'] = dsFieldIdSelected[datasetInfo.id]
-      datasetInfo['viewExpand'] = true
-      let viewCheckCount = 0
-      datasetInfo.datasetViews.forEach(dsView => {
-        if (viewMatchIds.includes(dsView.chartId)) {
-          dsView['checked'] = true
-          viewCheckCount++
-        } else {
-          dsView['checked'] = false
-        }
-      })
-      datasetInfo['checkAll'] = viewCheckCount === datasetInfo.datasetViews.length
-      datasetInfo['checkAllIsIndeterminate'] =
-        viewCheckCount > 0 && viewCheckCount < datasetInfo.datasetViews.length
-      if (datasetInfo['fieldIdSelected'] && datasetInfo['fieldIdSelected'].indexOf('DE') > -1) {
-        datasetInfo['activelist'] = 'parameterList'
-      } else {
-        datasetInfo['activelist'] = 'dimensionList'
-      }
-    })
-  }
-  if (newBaseFilterInfo) {
-    newBaseFilterInfo.forEach(filterInfo => {
-      filterInfo['filterSelected'] = dsFieldIdSelected[filterInfo.id]
-    })
-  }
-  outerParamsInfo['filterInfo'] = newBaseFilterInfo
-  outerParamsInfo['datasetInfo'] = newBaseDatasetInfo
 }
 
 const cancel = () => {
@@ -573,35 +308,14 @@ const cancel = () => {
 }
 
 const save = () => {
-  const outerParamsCopy = deepCopy(state.outerParams)
-  outerParamsCopy.outerParamsInfoArray?.forEach(outerParamsInfo => {
-    outerParamsInfo.targetViewInfoList = []
-    outerParamsInfo.filterInfo?.forEach(baseFilterInfo => {
-      // 存在过滤器选项被选
-      if (baseFilterInfo.filterSelected) {
-        outerParamsInfo.targetViewInfoList.push({
-          targetViewId: baseFilterInfo.filterSelected,
-          targetDsId: baseFilterInfo.id,
-          targetFieldId: 'empty'
-        })
-      }
+  if (checkArrayRepeat(state.outerParams.outerParamsInfoArray, 'paramName')) {
+    ElMessage.warning({
+      message: t('visualization.repeat_params'),
+      showClose: true
     })
-    outerParamsInfo.datasetInfo?.forEach(baseDatasetInfo => {
-      // 存在数据集字段被选中
-      if (baseDatasetInfo.fieldIdSelected) {
-        baseDatasetInfo.datasetViews?.forEach(dsView => {
-          if (dsView.checked) {
-            outerParamsInfo.targetViewInfoList.push({
-              targetViewId: dsView.chartId,
-              targetDsId: baseDatasetInfo.id,
-              targetFieldId: baseDatasetInfo.fieldIdSelected
-            })
-          }
-        })
-      }
-    })
-  })
-  updateOuterParamsSet(outerParamsCopy).then(() => {
+    return
+  }
+  updateOuterParamsSet(state.outerParams).then(() => {
     ElMessage({
       message: t('commons.save_success'),
       type: 'success',
@@ -617,7 +331,7 @@ const nodeClick = data => {
   state.curNodeId = data.paramsInfoId
 }
 
-// 获取当前图表字段 关联仪表板的图表信息列表
+// 获取当前视图字段 关联仪表板的视图信息列表
 const getPanelViewList = dvId => {
   viewDetailList(dvId).then(rsp => {
     state.viewIdFieldArrayMap = {}
@@ -667,14 +381,6 @@ const viewInfoOnChange = targetViewInfo => {
     targetViewInfo.targetFieldId = null
   }
 }
-
-const initSelected = data => {
-  nextTick(() => {
-    outerParamsInfoTree.value.setCurrentKey(data.paramsInfoId)
-    nodeClick(data)
-  })
-}
-
 const sourceFieldCheckedChange = data => {
   if (data.checked) {
     state.outerParams.checked = true
@@ -689,13 +395,9 @@ const addOuterParamsInfo = () => {
   state.outerParams.checked = true
   const outerParamsInfo = deepCopy(state.defaultOuterParamsInfo)
   outerParamsInfo['paramsInfoId'] = generateID()
-  const newBaseFilterInfo = deepCopy(state.baseFilterInfo)
-  const newBaseDatasetInfo = deepCopy(state.baseDatasetInfo)
-  paramsCheckedAdaptor(outerParamsInfo, newBaseFilterInfo, newBaseDatasetInfo)
   state.outerParamsInfoArray.push(outerParamsInfo)
   state.mapOuterParamsInfoArray[outerParamsInfo.paramsInfoId] = outerParamsInfo
   curEditDataId.value = outerParamsInfo['paramsInfoId']
-  initSelected(outerParamsInfo)
 }
 
 const removeOuterParamsInfo = (node, data) => {
@@ -708,22 +410,10 @@ const removeOuterParamsInfo = (node, data) => {
     state.curNodeId = null
   }
 }
-const batchSelectChange = (value, baseDatasetInfo) => {
-  // do change
-  baseDatasetInfo.datasetViews.forEach(viewInfo => {
-    viewInfo.checked = value
-  })
-  baseDatasetInfo.checkAll = value
-  baseDatasetInfo.checkAllIsIndeterminate = false
-}
 
 const optInit = () => {
-  initParams()
   state.outerParamsSetVisible = true
-}
-
-const findFilterName = id => {
-  return dvMainStore.canvasViewInfo[id]?.title
+  initParams()
 }
 
 defineExpose({
@@ -751,7 +441,6 @@ defineExpose({
   line-height: 40px;
   font-size: 12px;
   color: #3d4d66;
-  border-bottom: 1px solid #e6e6e6;
   .head-text {
     margin-left: 16px;
     font-weight: 500;
@@ -799,24 +488,18 @@ defineExpose({
 .preview-show {
   border-left: 1px solid #e6e6e6;
   background-size: 100% 100% !important;
-  height: 100%;
-  overflow-y: auto;
 }
 
 .view-type-icon {
-  color: #3370ff;
+  color: var(--ed-color-primary);
   width: 22px;
-  height: 14px;
+  height: 16px;
 }
 
 .custom-tree {
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  background: none;
-  :deep(.ed-tree-node__expand-icon) {
-    display: none;
-  }
 }
 
 .custom-tree-node {
@@ -828,7 +511,7 @@ defineExpose({
 
   .icon-more {
     margin-left: auto;
-    visibility: visible;
+    visibility: hidden;
   }
 
   &:hover .icon-more {
@@ -846,26 +529,8 @@ defineExpose({
 
 .inner-content {
   width: 100%;
-  font-size: 14px;
-}
-
-.outer-filter-content {
-  width: 100%;
-}
-
-.outer-dataset-content {
-  width: 100%;
-  padding-left: 16px;
-}
-
-.inner-filter-content {
-  width: 100%;
-  margin-top: 12px;
-}
-
-.inner-dataset-content {
-  width: 100%;
-  margin-top: 12px;
+  padding: 16px 16px 8px 16px;
+  font-size: 14px !important;
 }
 
 .slot-class {
@@ -937,9 +602,8 @@ defineExpose({
 
 .auth-span {
   float: right;
-  width: 16px;
-  margin-right: 8px;
-  margin-left: 16px;
+  width: 40px;
+  margin-right: 5px;
 }
 
 .tree-content {
@@ -957,7 +621,7 @@ defineExpose({
 }
 
 :deep(.ed-tree--highlight-current .ed-tree-node.is-current > .ed-tree-node__content) {
-  background: var(--ed-color-primary-1a, rgba(51, 112, 255, 0.1)) !important;
+  background-color: rgba(51, 112, 255, 0.1) !important;
 }
 
 .tree-content ::deep(.ed-input__inner) {
@@ -979,100 +643,5 @@ defineExpose({
 
 .params-class ::deep(.ed-dialog__body) {
   padding: 10px 20px 20px;
-}
-
-.new-params-title {
-  height: 56px;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 16px;
-  border-bottom: 1px solid rgba(31, 35, 41, 0.15);
-}
-
-.new-params-filter {
-  padding: 16px;
-  border-bottom: 1px solid rgba(31, 35, 41, 0.15);
-}
-
-.new-params-ds {
-  padding: 16px;
-}
-
-.expand-custom {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  padding: 0px 1px;
-  color: rgba(100, 106, 115, 1);
-  &:hover {
-    background: rgba(31, 35, 41, 0.1);
-    cursor: pointer;
-  }
-}
-
-.ds-view-content {
-  width: calc(100% - 16px);
-  border-radius: 4px;
-  margin: 8px 16px 0 16px;
-  padding: 12px;
-  background: rgba(245, 246, 247, 1);
-}
-
-.ds-content-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(100, 106, 115, 1);
-}
-
-.custom-view-diver {
-  width: 1px;
-  margin: 4px 8px;
-  height: 14px;
-  background: rgba(31, 35, 41, 0.15);
-}
-
-.preview-left {
-  background: rgba(245, 246, 247, 1);
-  height: 100%;
-  overflow-y: hidden;
-}
-
-.view-item {
-  display: flex;
-  width: 50%;
-  line-height: 32px;
-}
-
-.ed-select-dropdown__header {
-  padding: 0 8px;
-  .params-select--header {
-    --ed-tabs-header-height: 32px;
-    .ed-tabs__item {
-      font-weight: 400;
-      font-size: 15px;
-    }
-  }
-}
-
-.expand-custom-outer {
-  margin-right: 4px;
-}
-
-.params-attach-setting {
-  border-left: 1px solid #e6e6e6;
-}
-
-.params-attach-content {
-  padding: 16px;
-}
-
-:deep(.error-msg) {
-  color: red;
-  position: fixed;
-  z-index: 9;
-  font-size: 10px;
-  height: 10px;
-  margin-bottom: 12px;
-  margin-right: -80px;
 }
 </style>

@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-import icon_drag_outlined from '@/assets/svg/icon_drag_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_add_outlined from '@/assets/svg/icon_add_outlined.svg'
 import { propTypes } from '@/utils/propTypes'
 import { computed, onBeforeMount, PropType, toRefs, inject, ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -75,10 +72,6 @@ const querySearch = (queryString, cb) => {
     : suggestions.value
   cb(results)
 }
-
-const changeNameType = element => {
-  element.value = ''
-}
 const createFilter = (queryString: string) => {
   return restaurant => {
     return restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
@@ -94,23 +87,8 @@ const options = [
     value: 'fixed'
   },
   {
-    label: '时间函数',
-    value: 'timeFun'
-  },
-  {
     label: '自定义',
     value: 'custom'
-  }
-]
-
-const timeFunLists = [
-  {
-    label: '当天（yyyy-MM-dd）',
-    value: 'currentDay yyyy-MM-dd'
-  },
-  {
-    label: '当天（yyyy/MM/dd）',
-    value: 'currentDay yyyy/MM/dd'
   }
 ]
 </script>
@@ -122,7 +100,7 @@ const timeFunLists = [
         <div style="margin-bottom: 16px">
           <el-row :gutter="8">
             <el-icon class="drag handle">
-              <Icon name="icon_drag_outlined"><icon_drag_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_drag_outlined"></Icon>
             </el-icon>
             <el-col :span="activeName === 'params' ? 8 : 6" v-if="!unShowSelect">
               <el-input
@@ -144,7 +122,7 @@ const timeFunLists = [
               />
             </el-col>
             <el-col :span="3" v-if="activeName === 'table'">
-              <el-select v-model="element.nameType" @change="changeNameType(element)">
+              <el-select v-model="element.nameType">
                 <el-option
                   v-for="item in options"
                   :key="item.value"
@@ -183,25 +161,9 @@ const timeFunLists = [
                   :value="item.originName"
                 />
               </el-select>
-              <el-select
-                v-model="element.value"
-                v-if="!needMock && activeName === 'table' && element.nameType === 'timeFun'"
-              >
-                <el-option
-                  v-for="item in timeFunLists"
-                  :key="item.originName"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
 
               <el-input
-                v-if="
-                  !needMock &&
-                  activeName === 'table' &&
-                  element.nameType !== 'params' &&
-                  element.nameType !== 'timeFun'
-                "
+                v-if="!needMock && activeName === 'table' && element.nameType !== 'params'"
                 v-model="element.value"
                 :disabled="isReadOnly"
                 :placeholder="element.nameType === 'fixed' ? '值' : '可用${参数名}，使用参数'"
@@ -221,9 +183,7 @@ const timeFunLists = [
             <el-col :span="1">
               <el-button text :disabled="isDisable()" @click="remove(index)">
                 <template #icon>
-                  <Icon name="icon_delete-trash_outlined"
-                    ><icon_deleteTrash_outlined class="svg-icon"
-                  /></Icon>
+                  <Icon name="icon_delete-trash_outlined"></Icon>
                 </template>
               </el-button>
             </el-col>
@@ -234,7 +194,7 @@ const timeFunLists = [
 
     <el-button @click="change" text>
       <template #icon>
-        <icon name="icon_add_outlined"><icon_add_outlined class="svg-icon" /></icon>
+        <icon name="icon_add_outlined"></icon>
       </template>
       添加参数
     </el-button>

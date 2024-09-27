@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { Line as G2Line, LineOptions } from '@antv/g2plot/esm/plots/line'
+import { Line as G2Line, LineOptions } from '@antv/g2plot/esm/plots/line'
 import { getPadding } from '../../common/common_antv'
 import {
   flow,
@@ -17,11 +17,10 @@ import {
   LINE_EDITOR_PROPERTY,
   LINE_EDITOR_PROPERTY_INNER
 } from '@/views/chart/components/js/panel/charts/line/common'
-import type { Datum } from '@antv/g2plot/esm/types/common'
+import { Datum } from '@antv/g2plot/esm/types/common'
 import { useI18n } from '@/hooks/web/useI18n'
 import { DEFAULT_LABEL } from '@/views/chart/components/editor/util/chart'
 import { clearExtremum, extremumEvt } from '@/views/chart/components/js/extremumUitl'
-import { Group } from '@antv/g-canvas'
 
 const { t } = useI18n()
 const DEFAULT_DATA = []
@@ -47,10 +46,9 @@ export class Line extends G2PlotChartView<LineOptions, G2Line> {
       type: 'q'
     }
   }
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Line>): Promise<G2Line> {
+  drawChart(drawOptions: G2PlotDrawOptions<G2Line>): G2Line {
     const { chart, action, container } = drawOptions
-    if (!chart.data?.data?.length) {
-      chart.container = container
+    if (!chart.data.data?.length) {
       clearExtremum(chart)
       return
     }
@@ -107,7 +105,6 @@ export class Line extends G2PlotChartView<LineOptions, G2Line> {
       ]
     }
     const options = this.setupOptions(chart, initOptions)
-    const { Line: G2Line } = await import('@antv/g2plot/esm/plots/line')
     // 开始渲染
     const newChart = new G2Line(container, options)
 
@@ -150,7 +147,7 @@ export class Line extends G2PlotChartView<LineOptions, G2Line> {
           return
         }
         const value = valueFormatter(data.value, labelCfg.formatterCfg)
-        const group = new Group({})
+        const group = new G2PlotChartView.engine.Group({})
         group.addShape({
           type: 'text',
           attrs: {
@@ -286,49 +283,6 @@ export class Line extends G2PlotChartView<LineOptions, G2Line> {
   }
   public setupSeriesColor(chart: ChartObj, data?: any[]): ChartBasicStyle['seriesColor'] {
     return setUpGroupSeriesColor(chart, data)
-  }
-  protected configLegend(chart: Chart, options: LineOptions): LineOptions {
-    const optionTmp = super.configLegend(chart, options)
-    if (!optionTmp.legend) {
-      return optionTmp
-    }
-    const xAxisExt = chart.xAxisExt[0]
-    if (xAxisExt?.customSort?.length > 0) {
-      // 图例自定义排序
-      const l = optionTmp.legend
-      const basicStyle = parseJson(chart.customAttr).basicStyle
-      const sort = xAxisExt.customSort ?? []
-      const legendItems = []
-      sort.forEach((item, index) => {
-        legendItems.push({
-          name: item,
-          value: item,
-          marker: {
-            symbol: l.marker.symbol,
-            style: {
-              r: 4,
-              fill: basicStyle.colors[index % basicStyle.colors.length]
-            }
-          }
-        })
-      })
-      const legend = {
-        ...l,
-        custom: true,
-        items: legendItems
-      }
-      return {
-        ...optionTmp,
-        legend
-      }
-    }
-    optionTmp.legend.marker.style = style => {
-      return {
-        r: 5,
-        fill: style.stroke
-      }
-    }
-    return optionTmp
   }
   protected setupOptions(chart: Chart, options: LineOptions): LineOptions {
     return flow(

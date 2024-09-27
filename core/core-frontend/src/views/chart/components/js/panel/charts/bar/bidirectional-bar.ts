@@ -9,16 +9,14 @@ import {
   getYAxisExt,
   setGradientColor
 } from '@/views/chart/components/js/panel/common/common_antv'
-import type {
+import {
   BidirectionalBar as G2BidirectionalBar,
   BidirectionalBarOptions
 } from '@antv/g2plot/esm/plots/bidirectional-bar'
 import { flow, hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
 import { useI18n } from '@/hooks/web/useI18n'
 import { valueFormatter } from '@/views/chart/components/js/formatter'
-import type { Options } from '@antv/g2plot/esm'
-import { Group } from '@antv/g-canvas'
-
+import { Options } from '@antv/g2plot/esm'
 const { t } = useI18n()
 /**
  * 对称柱状图
@@ -49,7 +47,6 @@ export class BidirectionalHorizontalBar extends G2PlotChartView<
   axis: AxisType[] = ['xAxis', 'yAxis', 'yAxisExt', 'filter', 'drill', 'extLabel', 'extTooltip']
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'x-axis-selector',
     'dual-y-axis-selector',
@@ -63,10 +60,9 @@ export class BidirectionalHorizontalBar extends G2PlotChartView<
   ]
   propertyInner = {
     'background-overall-component': ['all'],
-    'border-style': ['all'],
-    'basic-style-selector': ['colors', 'alpha', 'gradient', 'layout', 'radiusColumnBar'],
+    'basic-style-selector': ['colors', 'alpha', 'gradient', 'layout'],
     'x-axis-selector': ['position', 'axisLabel', 'axisLine', 'splitLine'],
-    'dual-y-axis-selector': [
+    'y-axis-selector': [
       'name',
       'position',
       'color',
@@ -105,7 +101,7 @@ export class BidirectionalHorizontalBar extends G2PlotChartView<
     }
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<G2BidirectionalBar>): Promise<G2BidirectionalBar> {
+  drawChart(drawOptions: G2PlotDrawOptions<G2BidirectionalBar>): G2BidirectionalBar {
     const { chart, container, action } = drawOptions
     if (!chart.data?.data?.length) {
       return
@@ -154,11 +150,8 @@ export class BidirectionalHorizontalBar extends G2PlotChartView<
         }
       }
     }
-    const { BidirectionalBar: BidirectionalBarClass } = await import(
-      '@antv/g2plot/esm/plots/bidirectional-bar'
-    )
     // 开始渲染
-    const newChart = new BidirectionalBarClass(container, options)
+    const newChart = new G2BidirectionalBar(container, options)
 
     newChart.on('interval:click', action)
     newChart.on('element:click', ev => {
@@ -458,7 +451,7 @@ export class BidirectionalHorizontalBar extends G2PlotChartView<
               } else {
                 res = valueFormatter(value, l.labelFormatter)
               }
-              const group = new Group({})
+              const group = new G2PlotChartView.engine.Group({})
               const isValue = param['series-field-key'] === 'value'
               const textAlign = isValue && layoutHorizontal ? 'end' : 'start'
               const isMiddle = label.position === 'middle'

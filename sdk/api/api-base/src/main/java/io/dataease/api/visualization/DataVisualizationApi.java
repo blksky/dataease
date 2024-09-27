@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 import static io.dataease.constant.AuthResourceEnum.PANEL;
 
@@ -72,10 +71,6 @@ public interface DataVisualizationApi {
     @PostMapping("/tree")
     @Operation(summary = "查询可视化资源树")
     List<BusiNodeVO> tree(@RequestBody BusiNodeRequest request);
-
-    @PostMapping("/interactiveTree")
-    @Operation(summary = "查询业务资源树")
-    Map<String, List<BusiNodeVO>> interactiveTree(@RequestBody Map<String, BusiNodeRequest> requestMap);
 
     @PostMapping("/move")
     @DePermit(value = {"#p0.id+':manage'", "#p0.pid+':manage'"}, busiFlag = "#p0.type")

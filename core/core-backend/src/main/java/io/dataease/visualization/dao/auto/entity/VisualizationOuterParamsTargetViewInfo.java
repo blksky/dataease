@@ -1,6 +1,5 @@
 package io.dataease.visualization.dao.auto.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 
@@ -10,7 +9,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author fit2cloud
- * @since 2024-08-21
+ * @since 2024-03-08
  */
 @TableName("visualization_outer_params_target_view_info")
 public class VisualizationOuterParamsTargetViewInfo implements Serializable {
@@ -20,7 +19,6 @@ public class VisualizationOuterParamsTargetViewInfo implements Serializable {
     /**
      * 主键
      */
-    @TableId("target_id")
     private String targetId;
 
     /**
@@ -29,14 +27,9 @@ public class VisualizationOuterParamsTargetViewInfo implements Serializable {
     private String paramsInfoId;
 
     /**
-     * 联动视图ID/联动过滤项ID
+     * 联动视图ID
      */
     private String targetViewId;
-
-    /**
-     * 联动数据集id/联动过滤组件id
-     */
-    private String targetDsId;
 
     /**
      * 联动字段ID
@@ -77,14 +70,6 @@ public class VisualizationOuterParamsTargetViewInfo implements Serializable {
         this.targetViewId = targetViewId;
     }
 
-    public String getTargetDsId() {
-        return targetDsId;
-    }
-
-    public void setTargetDsId(String targetDsId) {
-        this.targetDsId = targetDsId;
-    }
-
     public String getTargetFieldId() {
         return targetFieldId;
     }
@@ -115,7 +100,6 @@ public class VisualizationOuterParamsTargetViewInfo implements Serializable {
         "targetId = " + targetId +
         ", paramsInfoId = " + paramsInfoId +
         ", targetViewId = " + targetViewId +
-        ", targetDsId = " + targetDsId +
         ", targetFieldId = " + targetFieldId +
         ", copyFrom = " + copyFrom +
         ", copyId = " + copyId +

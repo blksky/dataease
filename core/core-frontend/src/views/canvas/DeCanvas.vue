@@ -87,7 +87,7 @@ const handleNewFromCanvasMain = newComponentInfo => {
     const component = findNewComponentFromList(componentName, innerType, curOriginThemes, staticMap)
     syncShapeItemStyle(component, baseWidth.value, baseHeight.value)
     component.id = guid()
-    component.y = undefined
+    component.y = 200
     component.x = cyGridster.value.findPositionX(component)
     dvMainStore.addComponent({
       component: component,
@@ -257,7 +257,6 @@ const scrollTo = y => {
       top: (y - 1) * baseHeight.value,
       behavior: 'smooth'
     })
-    cyGridster.value?.watermarkUpdate()
   })
 }
 
@@ -309,7 +308,7 @@ defineExpose({
   </div>
 </template>
 
-<style lang="less" scoped>
+<style lang="less">
 .content {
   width: 100%;
   height: 100%;

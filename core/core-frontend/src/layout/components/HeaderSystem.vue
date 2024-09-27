@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import logo from '@/assets/svg/logo.svg'
-import icon_left_outlined from '@/assets/svg/icon_left_outlined.svg'
 import { computed } from 'vue'
 import { ElHeader } from 'element-plus-secondary'
 import { useRouter } from 'vue-router'
@@ -25,15 +23,13 @@ const navigate = computed(() => appearanceStore.getNavigate)
     :class="{ 'header-light': navigateBg && navigateBg === 'light' }"
   >
     <img class="logo" v-if="navigate" :src="navigate" alt="" />
-    <Icon class="de-logo" v-else className="logo" name="logo"
-      ><logo class="svg-icon logo de-logo"
-    /></Icon>
+    <Icon class="de-logo" v-else className="logo" name="logo"></Icon>
     <el-divider direction="vertical" />
     <span class="system">{{ props.title || '系统设置' }}</span>
     <div class="operate-setting">
       <span @click="backToMain" class="work-bar flex-align-center">
         <el-icon>
-          <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+          <Icon name="icon_left_outlined"></Icon>
         </el-icon>
         <span class="work">返回工作台</span>
       </span>
@@ -45,7 +41,7 @@ const navigate = computed(() => appearanceStore.getNavigate)
 
 <style lang="less" scoped>
 .system-header {
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
 
   .logo {
     width: 134px;

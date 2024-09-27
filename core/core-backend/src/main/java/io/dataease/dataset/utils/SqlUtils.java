@@ -20,8 +20,7 @@ public class SqlUtils {
     public static Logger logger = LoggerFactory.getLogger(SqlUtils.class);
 
     public static String addSchema(String sql, String schema) {
-        sql = sql.trim();
-        if (sql.endsWith(";")) {
+        if (sql.trim().endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
 

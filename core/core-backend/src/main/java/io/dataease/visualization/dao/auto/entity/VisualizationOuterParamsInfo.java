@@ -1,6 +1,5 @@
 package io.dataease.visualization.dao.auto.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 
@@ -10,7 +9,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author fit2cloud
- * @since 2024-09-09
+ * @since 2024-03-08
  */
 @TableName("visualization_outer_params_info")
 public class VisualizationOuterParamsInfo implements Serializable {
@@ -20,7 +19,6 @@ public class VisualizationOuterParamsInfo implements Serializable {
     /**
      * 主键
      */
-    @TableId("params_info_id")
     private String paramsInfoId;
 
     /**
@@ -47,21 +45,6 @@ public class VisualizationOuterParamsInfo implements Serializable {
      * 复制来源ID
      */
     private String copyId;
-
-    /**
-     * 是否必填
-     */
-    private Boolean required;
-
-    /**
-     * 默认值 JSON格式
-     */
-    private String defaultValue;
-
-    /**
-     * 是否启用默认值
-     */
-    private Boolean enabledDefault;
 
     public String getParamsInfoId() {
         return paramsInfoId;
@@ -111,30 +94,6 @@ public class VisualizationOuterParamsInfo implements Serializable {
         this.copyId = copyId;
     }
 
-    public Boolean getRequired() {
-        return required;
-    }
-
-    public void setRequired(Boolean required) {
-        this.required = required;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-    public Boolean getEnabledDefault() {
-        return enabledDefault;
-    }
-
-    public void setEnabledDefault(Boolean enabledDefault) {
-        this.enabledDefault = enabledDefault;
-    }
-
     @Override
     public String toString() {
         return "VisualizationOuterParamsInfo{" +
@@ -144,9 +103,6 @@ public class VisualizationOuterParamsInfo implements Serializable {
         ", checked = " + checked +
         ", copyFrom = " + copyFrom +
         ", copyId = " + copyId +
-        ", required = " + required +
-        ", defaultValue = " + defaultValue +
-        ", enabledDefault = " + enabledDefault +
         "}";
     }
 }

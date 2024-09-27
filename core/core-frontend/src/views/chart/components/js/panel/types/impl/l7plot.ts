@@ -1,7 +1,7 @@
-import type { ViewLevel } from '@antv/l7plot/dist/esm/plots/choropleth/types'
-import type { FeatureCollection } from '@antv/l7plot/dist/esm/plots/choropleth/types'
-import type { PlotOptions } from '@antv/l7plot/dist/esm/types/plot'
-import type { Plot as L7Plot } from '@antv/l7plot/dist/esm/core/plot'
+import { ViewLevel } from '@antv/l7plot/dist/esm/plots/choropleth/types'
+import { FeatureCollection } from '@antv/l7plot/dist/esm/plots/choropleth/types'
+import { PlotOptions } from '@antv/l7plot/dist/esm/types/plot'
+import { Plot as L7Plot } from '@antv/l7plot/dist/esm/core/plot'
 import {
   configL7Label,
   configL7Legend,
@@ -72,7 +72,7 @@ export abstract class L7PlotChartView<
         if (data[i].value === null) {
           data.splice(i, 1)
         }
-        for (let j = data[i]?.dynamicTooltipValue?.length - 1; j >= 0; j--) {
+        for (let j = data[i].dynamicTooltipValue?.length - 1; j >= 0; j--) {
           if (data[i].dynamicTooltipValue[j].value === null) {
             data[i].dynamicTooltipValue.splice(j, 1)
           }

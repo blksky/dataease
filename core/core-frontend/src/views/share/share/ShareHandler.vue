@@ -6,7 +6,7 @@
     placement="top"
   >
     <el-icon class="hover-icon hover-icon-in-table share-button-icon" @click.stop="share">
-      <Icon name="icon_share-label_outlined"><icon_shareLabel_outlined class="svg-icon" /></Icon>
+      <Icon name="icon_share-label_outlined"></Icon>
     </el-icon>
   </el-tooltip>
   <el-button v-if="props.weight >= 7 && props.isButton" @click.stop="share" icon="Share">{{
@@ -49,7 +49,7 @@
           <el-button v-if="linkCustom" text @click="finishEditUuid">完成</el-button>
           <el-button v-else @click="editUuid" size="default" plain>
             <template #icon>
-              <icon name="icon_admin_outlined"><icon_admin_outlined class="svg-icon" /></icon>
+              <icon name="icon_admin_outlined"></icon>
             </template>
           </el-button>
         </div>
@@ -141,9 +141,6 @@
 </template>
 
 <script lang="ts" setup>
-import dvShare from '@/assets/svg/dv-share.svg'
-import icon_shareLabel_outlined from '@/assets/svg/icon_share-label_outlined.svg'
-import icon_admin_outlined from '@/assets/svg/icon_admin_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import request from '@/config/axios'
@@ -496,7 +493,7 @@ onMounted(() => {
     const commandInfo = {
       label: '分享',
       command: 'share',
-      svgName: dvShare
+      svgName: 'dv-share'
     }
     emits('loaded', commandInfo)
   }

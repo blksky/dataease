@@ -8,7 +8,6 @@ const { t } = useI18n()
 export class IndicatorChartView extends AbstractChartView {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'title-selector',
     'indicator-value-selector',
     'indicator-name-selector',
@@ -17,7 +16,6 @@ export class IndicatorChartView extends AbstractChartView {
   ]
   propertyInner: EditorPropertyInner = {
     'background-overall-component': ['all'],
-    'border-style': ['all'],
     'title-selector': [
       'title',
       'fontSize',
@@ -57,7 +55,8 @@ export class IndicatorChartView extends AbstractChartView {
   axisConfig: AxisConfig = {
     yAxis: {
       name: `${t('chart.quota')}`,
-      limit: 1
+      limit: 1,
+      type: 'q'
     }
   }
   constructor() {

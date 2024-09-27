@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import dvFolder from '@/assets/svg/dv-folder.svg'
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { checkRepeat, listDatasources, save, update } from '@/api/datasource'
@@ -177,9 +175,9 @@ const createInit = (type, data: Tree, exec, name: string) => {
         trigger: 'blur'
       },
       {
-        min: 1,
+        min: 2,
         max: 64,
-        message: t('datasource.input_limit_1_64', [1, 64]),
+        message: t('datasource.input_limit_2_64', [2, 64]),
         trigger: 'blur'
       }
     ],
@@ -293,6 +291,7 @@ const saveDataset = () => {
                   })
               })
               .catch(() => {
+                console.log('aaa')
                 loading.value = false
                 createDataset.value = false
               })
@@ -360,7 +359,7 @@ const emits = defineEmits(['finish', 'handleShowFinishPage'])
         >
           <template #default="{ data: { name } }">
             <el-icon>
-              <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+              <Icon name="dv-folder"></Icon>
             </el-icon>
             <span :title="name">{{ name }}</span>
           </template>
@@ -370,9 +369,7 @@ const emits = defineEmits(['finish', 'handleShowFinishPage'])
         <el-input style="margin-bottom: 12px" v-model="filterText" clearable>
           <template #prefix>
             <el-icon>
-              <Icon name="icon_search-outline_outlined"
-                ><icon_searchOutline_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_search-outline_outlined"></Icon>
             </el-icon>
           </template>
         </el-input>
@@ -391,7 +388,7 @@ const emits = defineEmits(['finish', 'handleShowFinishPage'])
             <template #default="{ data }">
               <span class="custom-tree-node">
                 <el-icon style="font-size: 18px">
-                  <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+                  <Icon name="dv-folder"></Icon>
                 </el-icon>
                 <span class="node-text" :title="data.name">{{ data.name }}</span>
               </span>
@@ -446,7 +443,7 @@ const emits = defineEmits(['finish', 'handleShowFinishPage'])
       margin-bottom: 8px;
     }
     span {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       font-weight: 400;
       line-height: 22px;

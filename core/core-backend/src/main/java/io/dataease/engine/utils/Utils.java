@@ -3,17 +3,12 @@ package io.dataease.engine.utils;
 import io.dataease.engine.constant.ExtFieldConstant;
 import io.dataease.engine.constant.SQLConstants;
 import io.dataease.exception.DEException;
-import io.dataease.extensions.datasource.api.PluginManageApi;
 import io.dataease.extensions.datasource.constant.SqlPlaceholderConstants;
-import io.dataease.extensions.datasource.dto.CalParam;
 import io.dataease.extensions.datasource.dto.DatasetTableFieldDTO;
 import io.dataease.extensions.datasource.dto.DatasourceSchemaDTO;
-import io.dataease.extensions.datasource.dto.DsTypeDTO;
 import io.dataease.extensions.datasource.model.SQLObj;
 import io.dataease.extensions.datasource.vo.DatasourceConfiguration;
-import io.dataease.extensions.datasource.vo.XpackPluginsDatasourceVO;
 import io.dataease.i18n.Translator;
-import io.dataease.utils.JsonUtil;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -30,37 +25,37 @@ public class Utils {
     }
 
     // 解析计算字段
-    public static String calcFieldRegex(String originField, SQLObj tableObj, List<DatasetTableFieldDTO> originFields, boolean isCross, Map<Long, DatasourceSchemaDTO> dsMap, Map<String, String> paramMap, PluginManageApi pluginManage) {
+    public static String calcFieldRegex(String originField, SQLObj tableObj, List<DatasetTableFieldDTO> originFields, boolean isCross, Map<Long, DatasourceSchemaDTO> dsMap) {
         try {
             int i = 0;
-            DsTypeDTO datasourceType = null;
+            DatasourceConfiguration.DatasourceType datasourceType = null;
             if (dsMap != null && dsMap.entrySet().iterator().hasNext()) {
                 Map.Entry<Long, DatasourceSchemaDTO> next = dsMap.entrySet().iterator().next();
-                datasourceType = getDs(pluginManage, next.getValue().getType());
+                datasourceType = DatasourceConfiguration.DatasourceType.valueOf(next.getValue().getType());
             }
-            return buildCalcField(originField, tableObj, originFields, i, isCross, datasourceType, paramMap);
+            return buildCalcField(originField, tableObj, originFields, i, isCross, datasourceType);
         } catch (Exception e) {
             DEException.throwException(Translator.get("i18n_field_circular_ref"));
         }
         return null;
     }
 
-    public static String calcSimpleFieldRegex(String originField, SQLObj tableObj, List<DatasetTableFieldDTO> originFields, boolean isCross, Map<Long, String> dsTypeMap, PluginManageApi pluginManage) {
+    public static String calcSimpleFieldRegex(String originField, SQLObj tableObj, List<DatasetTableFieldDTO> originFields, boolean isCross, Map<Long, String> dsTypeMap) {
         try {
             int i = 0;
-            DsTypeDTO datasourceType = null;
+            DatasourceConfiguration.DatasourceType datasourceType = null;
             if (dsTypeMap != null && dsTypeMap.entrySet().iterator().hasNext()) {
                 Map.Entry<Long, String> next = dsTypeMap.entrySet().iterator().next();
-                datasourceType = getDs(pluginManage, next.getValue());
+                datasourceType = DatasourceConfiguration.DatasourceType.valueOf(next.getValue());
             }
-            return buildCalcField(originField, tableObj, originFields, i, isCross, datasourceType, null);
+            return buildCalcField(originField, tableObj, originFields, i, isCross, datasourceType);
         } catch (Exception e) {
             DEException.throwException(Translator.get("i18n_field_circular_ref"));
         }
         return null;
     }
 
-    public static String buildCalcField(String originField, SQLObj tableObj, List<DatasetTableFieldDTO> originFields, int i, boolean isCross, DsTypeDTO datasourceType, Map<String, String> paramMap) throws Exception {
+    public static String buildCalcField(String originField, SQLObj tableObj, List<DatasetTableFieldDTO> originFields, int i, boolean isCross, DatasourceConfiguration.DatasourceType datasourceType) throws Exception {
         try {
             i++;
             if (i > 100) {
@@ -79,14 +74,6 @@ public class Utils {
             if (CollectionUtils.isEmpty(ids)) {
                 return originField;
             }
-            // 替换参数
-            if (ObjectUtils.isNotEmpty(paramMap)) {
-                Set<Map.Entry<String, String>> entries = paramMap.entrySet();
-                for (Map.Entry<String, String> ele : entries) {
-                    originField = originField.replaceAll("\\[" + ele.getKey() + "]", ele.getValue());
-                }
-            }
-            // 替换字段引用
             for (DatasetTableFieldDTO ele : originFields) {
                 if (StringUtils.containsIgnoreCase(originField, ele.getId() + "")) {
                     // 计算字段允许二次引用，这里递归查询完整引用链
@@ -98,7 +85,7 @@ public class Utils {
                         }
                     } else {
                         originField = originField.replaceAll("\\[" + ele.getId() + "]", "(" + ele.getOriginName() + ")");
-                        originField = buildCalcField(originField, tableObj, originFields, i, isCross, datasourceType, paramMap);
+                        originField = buildCalcField(originField, tableObj, originFields, i, isCross, datasourceType);
                     }
                 }
             }
@@ -264,10 +251,6 @@ public class Utils {
 
     public static String replaceSchemaAlias(String sql, Map<Long, DatasourceSchemaDTO> dsMap) {
         DatasourceSchemaDTO value = dsMap.entrySet().iterator().next().getValue();
-        Map map = JsonUtil.parseObject(value.getConfiguration(), Map.class);
-        if (ObjectUtils.isNotEmpty(map.get("schema"))) {
-            return sql;
-        }
         return sql.replaceAll(SqlPlaceholderConstants.KEYWORD_PREFIX_REGEX + value.getSchemaAlias() + SqlPlaceholderConstants.KEYWORD_SUFFIX_REGEX + "\\.", "");
     }
 
@@ -417,63 +400,5 @@ public class Utils {
         map.put("startTime", startTime);
         map.put("endTime", endTime);
         return map;
-    }
-
-    public static String transLong2Str(Long ts) {
-        Date date = new Date(ts);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return simpleDateFormat.format(date);
-    }
-
-    public static List<CalParam> getParams(List<DatasetTableFieldDTO> list) {
-        if (ObjectUtils.isEmpty(list)) return Collections.emptyList();
-        List<CalParam> param = new ArrayList<>();
-        for (DatasetTableFieldDTO dto : list) {
-            if (Objects.equals(dto.getExtField(), ExtFieldConstant.EXT_CALC) && ObjectUtils.isNotEmpty(dto.getParams())) {
-                param.addAll(dto.getParams());
-            }
-        }
-        return param;
-    }
-
-    public static Map<String, String> mergeParam(List<CalParam> fieldParam, List<CalParam> chartParam) {
-        Map<String, String> map = new HashMap<>();
-        if (ObjectUtils.isNotEmpty(fieldParam)) {
-            for (CalParam param : fieldParam) {
-                map.put(param.getId(), param.getValue());
-            }
-        }
-        if (ObjectUtils.isNotEmpty(chartParam)) {
-            for (CalParam param : chartParam) {
-                map.put(param.getId(), param.getValue());
-            }
-        }
-        return map;
-    }
-
-    private static DsTypeDTO getDs(PluginManageApi pluginManage, String type) {
-        DsTypeDTO dto = new DsTypeDTO();
-        try {
-            DatasourceConfiguration.DatasourceType datasourceType = DatasourceConfiguration.DatasourceType.valueOf(type);
-            dto.setType(type);
-            dto.setName(datasourceType.getName());
-            dto.setCatalog(datasourceType.getCatalog());
-            dto.setPrefix(datasourceType.getPrefix());
-            dto.setSuffix(datasourceType.getSuffix());
-            return dto;
-        } catch (Exception e) {
-            List<XpackPluginsDatasourceVO> xpackPluginsDatasourceVOS = pluginManage.queryPluginDs();
-            for (XpackPluginsDatasourceVO vo : xpackPluginsDatasourceVOS) {
-                if (StringUtils.equalsIgnoreCase(vo.getType(), type)) {
-                    dto.setType(type);
-                    dto.setName(vo.getName());
-                    dto.setCatalog(vo.getCategory());
-                    dto.setPrefix(vo.getPrefix());
-                    dto.setSuffix(vo.getSuffix());
-                    return dto;
-                }
-            }
-        }
-        return null;
     }
 }

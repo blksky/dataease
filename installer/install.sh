@@ -32,11 +32,6 @@ function check_and_prepare_env_params() {
 
    cd ${CURRENT_DIR}
    if [ -f /usr/bin/dectl ]; then
-      v2_version=$(dectl version | head -n 2 | grep "v2.")
-      if [[ -z $v2_version ]];then
-         echo "系统当前版本不是 DataEase v2 版本系列，不支持升级到 v2，请检查离线包版本。"
-         exit 1;
-      fi
       # 获取已安装的 DataEase 的运行目录
       DE_BASE=$(grep "^DE_BASE=" /usr/bin/dectl | cut -d'=' -f2)
       DE_BASE_OLD=$DE_BASE
@@ -51,6 +46,12 @@ function check_and_prepare_env_params() {
       fi
 
       INSTALL_TYPE='upgrade'
+
+      v2_version=$(dectl version | head -n 2 | grep "v2.")
+      if [[ -z $v2_version ]];then
+         echo "系统当前版本不是 DataEase v2 版本系列，不支持升级到 v2，请检查离线包版本。"
+         exit 1;
+      fi
    fi
 
    set -a
@@ -104,7 +105,7 @@ function prepare_de_run_base() {
    env | grep DE_ >.env
 
    mkdir -p ${DE_RUN_BASE}/{cache,logs,conf}
-   mkdir -p ${DE_RUN_BASE}/data/{mysql,static-resource,map,etcd_data,geo,appearance,exportData,plugin,font}
+   mkdir -p ${DE_RUN_BASE}/data/{mysql,static-resource,map,etcd_data,geo,appearance,exportData,plugin}
    mkdir -p ${DE_RUN_BASE}/apisix/logs
    mkdir -p ${DE_RUN_BASE}/task/logs
    chmod 777 ${DE_RUN_BASE}/apisix/logs ${DE_RUN_BASE}/data/etcd_data ${DE_RUN_BASE}/task/logs

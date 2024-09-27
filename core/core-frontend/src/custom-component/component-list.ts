@@ -5,50 +5,16 @@ import { getViewConfig } from '@/views/chart/components/editor/util/chart'
 
 export const commonStyle = {
   rotate: 0,
-  opacity: 1,
-  borderActive: false,
-  borderWidth: 1,
-  borderRadius: 5,
-  borderStyle: 'solid',
-  borderColor: '#cccccc'
-}
-
-// 轮询设置
-export const BASE_CAROUSEL = {
-  enable: false,
-  time: 10
+  opacity: 1
 }
 
 export const BASE_EVENTS = {
   checked: false,
-  showTips: false,
-  type: 'jump', // openHidden  jump
-  typeList: [
-    { key: 'jump', label: '跳转' },
-    { key: 'download', label: '下载' },
-    { key: 'share', label: '分享' },
-    { key: 'fullScreen', label: '全屏' },
-    { key: 'showHidden', label: '弹窗区域' },
-    { key: 'refreshDataV', label: '刷新' },
-    { key: 'refreshView', label: '刷新图表' }
-  ],
+  type: 'displayChange', // openHidden  jump
   jump: {
-    value: 'https://',
-    type: '_blank'
+    value: null
   },
-  download: {
-    value: true
-  },
-  share: {
-    value: true
-  },
-  showHidden: {
-    value: true
-  },
-  refreshDataV: {
-    value: true
-  },
-  refreshView: {
+  displayChange: {
     value: true, // 事件当前值 false
     target: 'all'
   }
@@ -168,13 +134,6 @@ export const ACTION_SELECTION = {
   linkageActive: 'custom'
 }
 
-export const MULTI_DIMENSIONAL = {
-  enable: false,
-  x: 0,
-  y: 0,
-  z: 0
-}
-
 export const COMMON_COMPONENT_BACKGROUND_BASE = {
   backgroundColorSelect: true,
   backgroundImageEnable: false,
@@ -213,8 +172,6 @@ export const commonAttr = {
   animations: [],
   canvasId: 'canvas-main',
   events: BASE_EVENTS,
-  carousel: BASE_CAROUSEL,
-  multiDimensional: MULTI_DIMENSIONAL, // 3d 设置
   groupStyle: {}, // 当一个组件成为 Group 的子组件时使用
   isLock: false, // 是否锁定组件
   maintainRadio: false, // 布局时保持宽高比例
@@ -231,9 +188,7 @@ export const commonAttr = {
     'picture',
     'frameLinks',
     'videoLinks',
-    'streamLinks',
-    'carouselInfo',
-    'events'
+    'streamLinks'
   ], // 编辑组件时记录当前使用的是哪个折叠面板，再次回来时恢复上次打开的折叠面板，优化用户体验
   linkage: {
     duration: 0, // 过渡持续时间
@@ -251,18 +206,6 @@ export const commonAttr = {
 
 // 编辑器左侧组件列表
 const list = [
-  {
-    component: 'Group',
-    name: '组合',
-    label: '组合',
-    propValue: '&nbsp;',
-    icon: 'icon_graphical',
-    innerType: 'Group',
-    style: {
-      width: 200,
-      height: 200
-    }
-  },
   {
     id: 100000001,
     component: 'GroupArea',
@@ -307,7 +250,7 @@ const list = [
     component: 'UserView',
     name: '图表',
     label: '图表',
-    propValue: { textValue: '', urlList: [] },
+    propValue: { textValue: '' },
     icon: 'bar',
     innerType: 'bar',
     editing: false,
@@ -485,8 +428,11 @@ const list = [
     style: {
       width: 200,
       height: 200,
-      backgroundColor: 'rgba(236,231,231,0.1)',
-      borderActive: true
+      borderWidth: 1,
+      borderRadius: 5,
+      borderStyle: 'solid',
+      borderColor: '#cccccc',
+      backgroundColor: 'rgba(236,231,231,0.1)'
     }
   },
   {

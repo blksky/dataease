@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import icon_left_outlined from '@/assets/svg/icon_left_outlined.svg'
-import icon_pc_outlined from '@/assets/svg/icon_pc_outlined.svg'
 import { ref, onMounted, unref, onBeforeUnmount, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus-secondary'
 import MobileBackgroundSelector from './MobileBackgroundSelector.vue'
@@ -217,7 +215,7 @@ const save = () => {
     <div class="top-bar">
       <div class="mobile-to-pc">
         <el-icon @click="handleBack">
-          <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+          <Icon name="icon_left_outlined" />
         </el-icon>
         {{ dvInfo.name }}
       </div>
@@ -227,7 +225,7 @@ const save = () => {
         <span class="open-mobile-line"></span>
         <el-tooltip :offset="14" effect="dark" content="切换至PC端布局" placement="bottom">
           <el-icon @click="handleBack" class="switch-pc">
-            <Icon name="icon_pc_outlined"><icon_pc_outlined class="svg-icon" /></Icon>
+            <Icon name="icon_pc_outlined" />
           </el-icon>
         </el-tooltip>
         <el-button type="primary" @click="save">保存</el-button>
@@ -239,7 +237,7 @@ const save = () => {
       </div>
       <div class="config-panel-title">
         <el-icon>
-          <Icon name="icon_left_outlined"><icon_left_outlined class="svg-icon" /></Icon>
+          <Icon name="icon_left_outlined" />
         </el-icon>
         {{ dvInfo.name }}
       </div>

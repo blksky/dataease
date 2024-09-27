@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { Liquid as G2Liquid, LiquidOptions } from '@antv/g2plot/esm/plots/liquid'
+import { Liquid as G2Liquid, LiquidOptions } from '@antv/g2plot/esm/plots/liquid'
 import { flow, hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
 import { DEFAULT_MISC } from '@/views/chart/components/editor/util/chart'
 import { valueFormatter } from '@/views/chart/components/js/formatter'
@@ -16,7 +16,6 @@ const DEFAULT_LIQUID_DATA = []
 export class Liquid extends G2PlotChartView<LiquidOptions, G2Liquid> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'label-selector',
     'misc-selector',
@@ -25,7 +24,6 @@ export class Liquid extends G2PlotChartView<LiquidOptions, G2Liquid> {
   ]
   propertyInner: EditorPropertyInner = {
     'background-overall-component': ['all'],
-    'border-style': ['all'],
     'basic-style-selector': ['colors', 'alpha'],
     'label-selector': ['fontSize', 'color', 'labelFormatter'],
     'misc-selector': ['liquidShape', 'liquidSize', 'liquidMaxType', 'liquidMaxField'],
@@ -52,7 +50,7 @@ export class Liquid extends G2PlotChartView<LiquidOptions, G2Liquid> {
     }
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Liquid>): Promise<G2Liquid> {
+  drawChart(drawOptions: G2PlotDrawOptions<G2Liquid>): G2Liquid {
     const { chart, container } = drawOptions
     if (!chart.data?.series) {
       return
@@ -61,7 +59,6 @@ export class Liquid extends G2PlotChartView<LiquidOptions, G2Liquid> {
       percent: 0
     }
     const options = this.setupOptions(chart, initOptions)
-    const { Liquid: G2Liquid } = await import('@antv/g2plot/esm/plots/liquid')
     // 开始渲染
     return new G2Liquid(container, options)
   }

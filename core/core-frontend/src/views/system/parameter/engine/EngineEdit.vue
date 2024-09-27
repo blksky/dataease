@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import icon_down_outlined1 from '@/assets/svg/icon_down_outlined-1.svg'
-import icon_down_outlined from '@/assets/svg/icon_down_outlined.svg'
 import { ref, reactive } from 'vue'
 import { ElMessage, ElLoading } from 'element-plus-secondary'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -207,6 +205,7 @@ const submitForm = async () => {
         .post({ url: '/engine/save', data: data })
         .then(res => {
           if (res !== undefined) {
+            console.log(res)
             ElMessage.success(t('common.save_success'))
             emits('saved')
             reset()
@@ -330,12 +329,7 @@ defineExpose({
       <span class="de-expand" @click="showPriority = !showPriority"
         >{{ t('datasource.priority') }}
         <el-icon>
-          <Icon
-            ><component
-              class="svg-icon"
-              :is="showPriority ? icon_down_outlined : icon_down_outlined1"
-            ></component
-          ></Icon>
+          <Icon :name="showPriority ? 'icon_down_outlined' : 'icon_down_outlined-1'"></Icon>
         </el-icon>
       </span>
       <template v-if="showPriority">

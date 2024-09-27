@@ -42,7 +42,7 @@
             @click="checkBold"
           >
             <el-icon>
-              <Icon name="icon_bold_outlined"><icon_bold_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_bold_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -57,7 +57,7 @@
             @click="checkItalic"
           >
             <el-icon>
-              <Icon name="icon_italic_outlined"><icon_italic_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_italic_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -74,9 +74,7 @@
             @click="setPosition('left')"
           >
             <el-icon>
-              <Icon name="icon_left-alignment_outlined"
-                ><icon_leftAlignment_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_left-alignment_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -90,9 +88,7 @@
             @click="setPosition('center')"
           >
             <el-icon>
-              <Icon name="icon_center-alignment_outlined"
-                ><icon_centerAlignment_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_center-alignment_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -106,9 +102,7 @@
             @click="setPosition('right')"
           >
             <el-icon>
-              <Icon name="icon_right-alignment_outlined"
-                ><icon_rightAlignment_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_right-alignment_outlined" />
             </el-icon>
           </div>
         </el-tooltip>
@@ -118,11 +112,6 @@
 </template>
 
 <script lang="ts" setup>
-import icon_bold_outlined from '@/assets/svg/icon_bold_outlined.svg'
-import icon_italic_outlined from '@/assets/svg/icon_italic_outlined.svg'
-import icon_leftAlignment_outlined from '@/assets/svg/icon_left-alignment_outlined.svg'
-import icon_centerAlignment_outlined from '@/assets/svg/icon_center-alignment_outlined.svg'
-import icon_rightAlignment_outlined from '@/assets/svg/icon_right-alignment_outlined.svg'
 import { computed, reactive, ref } from 'vue'
 import { COLOR_PANEL } from '@/views/chart/components/editor/util/chart'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'

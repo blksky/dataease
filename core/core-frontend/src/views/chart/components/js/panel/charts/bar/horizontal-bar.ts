@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { Bar, BarOptions } from '@antv/g2plot/esm/plots/bar'
+import { Bar, BarOptions } from '@antv/g2plot/esm/plots/bar'
 import { getPadding, setGradientColor } from '@/views/chart/components/js/panel/common/common_antv'
 import { cloneDeep } from 'lodash-es'
 import {
@@ -17,10 +17,9 @@ import {
   BAR_EDITOR_PROPERTY,
   BAR_EDITOR_PROPERTY_INNER
 } from '@/views/chart/components/js/panel/charts/bar/common'
-import type { Datum } from '@antv/g2plot/esm/types/common'
+import { Datum } from '@antv/g2plot/esm/types/common'
 import { useI18n } from '@/hooks/web/useI18n'
 import { DEFAULT_LABEL } from '@/views/chart/components/editor/util/chart'
-import { Group } from '@antv/g-canvas'
 
 const { t } = useI18n()
 const DEFAULT_DATA = []
@@ -106,7 +105,7 @@ export class HorizontalBar extends G2PlotChartView<BarOptions, Bar> {
     ]
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<Bar>): Promise<Bar> {
+  drawChart(drawOptions: G2PlotDrawOptions<Bar>): Bar {
     const { chart, container, action } = drawOptions
     if (!chart.data?.data?.length) {
       return
@@ -123,7 +122,6 @@ export class HorizontalBar extends G2PlotChartView<BarOptions, Bar> {
 
     const options = this.setupOptions(chart, initOptions)
 
-    const { Bar } = await import('@antv/g2plot/esm/plots/bar')
     // 开始渲染
     const newChart = new Bar(container, options)
 
@@ -240,7 +238,7 @@ export class HorizontalBar extends G2PlotChartView<BarOptions, Bar> {
           return
         }
         const value = valueFormatter(data.value, labelCfg.formatterCfg)
-        const group = new Group({})
+        const group = new G2PlotChartView.engine.Group({})
         group.addShape({
           type: 'text',
           attrs: {
@@ -352,39 +350,6 @@ export class HorizontalStackBar extends HorizontalBar {
   public setupSeriesColor(chart: ChartObj, data?: any[]): ChartBasicStyle['seriesColor'] {
     return setUpStackSeriesColor(chart, data)
   }
-
-  protected configData(chart: Chart, options: BarOptions): BarOptions {
-    const { xAxis, extStack, yAxis } = chart
-    const mainSort = xAxis.some(axis => axis.sort !== 'none')
-    const subSort = extStack.some(axis => axis.sort !== 'none')
-    if (mainSort || subSort) {
-      return options
-    }
-    const quotaSort = yAxis?.[0]?.sort !== 'none'
-    if (!quotaSort || !extStack.length || !yAxis.length) {
-      return options
-    }
-    const { data } = options
-    const mainAxisValueMap = data.reduce((p, n) => {
-      p[n.field] = p[n.field] ? p[n.field] + n.value : n.value || 0
-      return p
-    }, {})
-    const sort = yAxis[0].sort
-    data.sort((p, n) => {
-      if (sort === 'asc') {
-        return mainAxisValueMap[p.field] - mainAxisValueMap[n.field]
-      } else {
-        return mainAxisValueMap[n.field] - mainAxisValueMap[p.field]
-      }
-    })
-    return options
-  }
-
-  protected setupOptions(chart: Chart, options: BarOptions): BarOptions {
-    const tmp = super.setupOptions(chart, options)
-    return flow(this.configData)(chart, tmp, {}, this)
-  }
-
   constructor(name = 'bar-stack-horizontal') {
     super(name)
     this.baseOptions = {

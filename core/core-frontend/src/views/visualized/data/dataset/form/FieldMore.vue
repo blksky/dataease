@@ -1,21 +1,8 @@
 <script lang="ts" setup>
-import custom_sort from '@/assets/svg/custom_sort.svg'
-import dvRename from '@/assets/svg/dv-rename.svg'
-import icon_calendar_outlined from '@/assets/svg/icon_calendar_outlined.svg'
-import icon_copy_outlined from '@/assets/svg/icon_copy_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
-import icon_local_outlined from '@/assets/svg/icon_local_outlined.svg'
-import icon_number_outlined from '@/assets/svg/icon_number_outlined.svg'
-import icon_url_outlined from '@/assets/svg/icon_url_outlined.svg'
-import icon_switch_outlined from '@/assets/svg/icon_switch_outlined.svg'
-import icon_text_outlined from '@/assets/svg/icon_text_outlined.svg'
-import more_v from '@/assets/svg/more_v.svg'
 import { ref, computed, nextTick } from 'vue'
 import { ElCascaderPanel } from 'element-plus-secondary'
 import { timeTypes } from './util'
 import { fieldType } from '@/utils/attr'
-import { useI18n } from '@/hooks/web/useI18n'
 
 export interface Menu {
   svgName: string
@@ -23,7 +10,6 @@ export interface Menu {
   command: string
   divided?: boolean
 }
-const { t } = useI18n()
 
 const props = defineProps({
   extField: {
@@ -41,75 +27,69 @@ const props = defineProps({
 })
 const timeTypesChildren = timeTypes.map(ele => {
   return {
-    label: ele === 'custom' ? t('data_set.customize') : ele,
+    label: ele === 'custom' ? '自定义' : ele,
     value: ele
   }
 })
-
 const options = computed(() => {
   const optionArr = [
     {
       label: props.transType,
       value: 'translate',
-      icon: icon_switch_outlined
+      icon: 'icon_switch_outlined'
     },
     {
-      label: t('data_set.change_field_type'),
+      label: '更换字段类型',
       value: 'translateType',
-      icon: custom_sort,
+      icon: 'custom_sort',
       children: [
         {
-          label: t('data_set.text'),
-          icon: icon_text_outlined,
+          label: '文本',
+          icon: 'icon_text_outlined',
           value: 'text'
         },
         {
-          label: t('data_set.time'),
-          icon: icon_calendar_outlined,
+          label: '时间',
+          icon: 'icon_calendar_outlined',
           value: 'time',
           children: props.showTime ? timeTypesChildren : []
         },
         {
-          label: t('data_set.geographical_location'),
-          icon: icon_local_outlined,
+          label: '地理位置',
+          icon: 'icon_local_outlined',
           value: 'location'
         },
         {
-          label: t('data_set.numerical_value'),
-          icon: icon_number_outlined,
+          label: '数值',
+          icon: 'icon_number_outlined',
           value: 'value'
         },
         {
-          label: t('data_set.numeric_value_decimal'),
-          icon: icon_number_outlined,
+          label: '数值 (小数)',
+          icon: 'icon_number_outlined',
           value: 'float'
-        },
-        {
-          label: 'URL',
-          icon: icon_url_outlined,
-          value: 'url'
         }
       ]
     },
     {
-      label: t('data_set.edit'),
+      label: '编辑',
       value: 'editor',
-      icon: icon_edit_outlined
+      icon: 'icon_edit_outlined'
     },
     {
-      label: t('data_set.rename'),
+      label: '重命名',
       value: 'rename',
-      icon: dvRename
+      icon: 'dv-rename'
     },
     {
-      label: t('data_set.copy'),
+      label: '复制',
       value: 'copy',
-      icon: icon_copy_outlined
+      icon: 'icon_copy_outlined'
     },
     {
-      label: t('data_set.delete'),
+      label: '删除',
       value: 'delete',
-      icon: icon_deleteTrash_outlined
+      icon: 'icon_delete-trash_outlined'
     }
   ]
   if (props.extField !== 2) {
@@ -151,7 +131,7 @@ const handleChange = () => {
   >
     <template #reference>
       <el-icon class="menu-more">
-        <Icon name="more_v"><more_v class="svg-icon" /></Icon>
+        <Icon name="more_v"></Icon>
       </el-icon>
     </template>
     <ElCascaderPanel
@@ -165,16 +145,13 @@ const handleChange = () => {
       <template #default="{ data }">
         <div class="flex-align-center icon">
           <el-icon v-if="data.icon">
-            <Icon
-              ><component
-                class="svg-icon"
-                :class="
-                  ['text', 'location', 'value', 'float', 'time', 'url'].includes(data.value) &&
-                  `field-icon-${fieldType[['float', 'value'].includes(data.value) ? 2 : 0]}`
-                "
-                :is="data.icon"
-              ></component
-            ></Icon>
+            <icon
+              :className="
+                ['text', 'location', 'value', 'float', 'time'].includes(data.value) &&
+                `field-icon-${fieldType[['float', 'value'].includes(data.value) ? 2 : 0]}`
+              "
+              :name="data.icon"
+            ></icon>
           </el-icon>
           <span>
             {{ data.label }}
@@ -220,9 +197,6 @@ const handleChange = () => {
       border-right: none;
       &:nth-child(2) {
         margin-top: 32px;
-        > div {
-          height: 210px;
-        }
       }
       &:nth-child(3) {
         margin-top: 64px;

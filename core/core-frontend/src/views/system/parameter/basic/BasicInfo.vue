@@ -65,8 +65,7 @@ const state = reactive({
     { value: '0', label: '普通登录' },
     { value: '1', label: 'LDAP' },
     { value: '2', label: 'OIDC' },
-    { value: '3', label: 'CAS' },
-    { value: '9', label: 'OAUTH2' }
+    { value: '3', label: 'CAS' }
   ]
 })
 let originData = []

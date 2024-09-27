@@ -13,7 +13,6 @@ const dvMainStore = dvMainStoreWithOut()
 const composeStore = composeStoreWithOut()
 const contextmenuStore = contextmenuStoreWithOut()
 const {
-  multiplexingStyleAdapt,
   curComponent,
   curComponentIndex,
   curMultiplexingComponents,
@@ -53,17 +52,13 @@ export const copyStore = defineStore('copy', {
           // dashboard 平铺2个
           const xPositionOffset = index % 2
           const yPositionOffset = index % 2
-          if (!(copyFrom === 'multiplexing' && !multiplexingStyleAdapt.value)) {
-            newComponent.sizeX = pcMatrixCount.value.x / 2
-            newComponent.sizeY = 14
-            // dataV 数据大屏
-            newComponent.style.width = ((canvasStyleData.value.width / 3) * scale) / 100
-            newComponent.style.height = ((canvasStyleData.value.height / 3) * scale) / 100
-          }
-          // dataV 数据大屏
+          newComponent.sizeX = pcMatrixCount.value.x / 2
+          newComponent.sizeY = 14
           newComponent.x = newComponent.sizeX * xPositionOffset + 1
           newComponent.y = 200
           // dataV 数据大屏
+          newComponent.style.width = (width * scale) / 400
+          newComponent.style.height = (height * scale) / 400
           newComponent.style.left = 0
           newComponent.style.top = 0
         }
@@ -77,7 +72,7 @@ export const copyStore = defineStore('copy', {
       })
     },
     copy() {
-      if (curComponent.value && curComponent.value.component !== 'GroupArea') {
+      if (curComponent.value) {
         this.copyDataInfo([curComponent.value])
       } else if (composeStore.areaData.components.length) {
         this.copyDataInfo(composeStore.areaData.components)
@@ -136,7 +131,7 @@ export const copyStore = defineStore('copy', {
       snapshotStore.recordSnapshotCache()
     },
     cut(curComponentData = componentData.value) {
-      if (curComponent.value && curComponent.value.component !== 'GroupArea') {
+      if (curComponent.value) {
         this.copyDataInfo([curComponent.value])
         dvMainStore.deleteComponentById(curComponent.value.id, curComponentData)
       } else if (composeStore.areaData.components.length) {
@@ -183,16 +178,6 @@ export const copyStore = defineStore('copy', {
     }
   }
 })
-
-export function deepCopyTabItemHelper(newCanvasId, tabComponentData, idMap) {
-  const resultComponentData = []
-  tabComponentData.forEach(item => {
-    const newItem = deepCopyHelper(item, idMap)
-    newItem.canvasId = newCanvasId
-    resultComponentData.push(newItem)
-  })
-  return resultComponentData
-}
 
 function deepCopyHelper(data, idMap) {
   const result = deepCopy(data)

@@ -4,14 +4,11 @@
     :class="{ 'shape-group-area': isGroupArea }"
     ref="shapeInnerRef"
     :id="domId"
-    v-loading="downLoading"
-    element-loading-text="导出中..."
-    element-loading-background="rgba(255, 255, 255, 1)"
     @dblclick="handleDbClick"
   >
     <div v-if="showCheck" class="del-from-mobile" @click="delFromMobile">
       <el-icon>
-        <Icon name="mobile-checkbox"><mobileCheckbox class="svg-icon" /></Icon>
+        <Icon name="mobile-checkbox"></Icon>
       </el-icon>
     </div>
     <div
@@ -34,26 +31,24 @@
         :show-position="showPosition"
         :canvas-id="canvasId"
         @userViewEnlargeOpen="userViewEnlargeOpen"
-        @datasetParamsInit="datasetParamsInit"
         @linkJumpSetOpen="linkJumpSetOpen"
         @linkageSetOpen="linkageSetOpen"
       ></component-edit-bar>
       <div
         class="shape-inner"
         ref="componentInnerRef"
-        :id="viewDemoInnerId"
         :style="componentBackgroundStyle"
         @click="selectCurComponent"
         @mousedown="handleInnerMouseDownOnShape"
       >
-        <Icon v-if="shapeLock" name="dv-lock"><dvLock class="svg-icon iconfont icon-suo" /></Icon>
+        <Icon v-show="shapeLock" class="iconfont icon-suo" name="dv-lock"></Icon>
         <!--边框背景-->
         <Board
           v-if="svgInnerEnable"
           :style="{ color: element.commonBackground.innerImageColor }"
           :name="commonBackgroundSvgInner"
         ></Board>
-        <div class="component-slot" :style="slotStyle">
+        <div class="component-slot">
           <slot></slot>
         </div>
       </div>
@@ -64,11 +59,7 @@
         :style="getPointStyle(item)"
         @mousedown="handleMouseDownOnPoint(item, $event)"
       ></div>
-      <div
-        class="shape-shadow"
-        v-show="batchOptFlag && element.component !== 'DeTabs'"
-        @mousedown="batchSelected"
-      ></div>
+      <div class="shape-shadow" v-show="batchOptFlag" @mousedown="batchSelected"></div>
       <template v-if="boardMoveActive">
         <div
           v-show="!element.editing"
@@ -97,8 +88,6 @@
 </template>
 
 <script setup lang="ts">
-import mobileCheckbox from '@/assets/svg/mobile-checkbox.svg'
-import dvLock from '@/assets/svg/dv-lock.svg'
 import eventBus from '@/utils/eventBus'
 import calculateComponentPositionAndSize, {
   calculateRadioComponentPositionAndSize
@@ -111,15 +100,14 @@ import { snapshotStoreWithOut } from '@/store/modules/data-visualization/snapsho
 import { contextmenuStoreWithOut } from '@/store/modules/data-visualization/contextmenu'
 import { composeStoreWithOut } from '@/store/modules/data-visualization/compose'
 import { storeToRefs } from 'pinia'
-import { downloadCanvas2, imgUrlTrans } from '@/utils/imgUtils'
+import { downloadCanvas, imgUrlTrans } from '@/utils/imgUtils'
 import Icon from '@/components/icon-custom/src/Icon.vue'
 import ComponentEditBar from '@/components/visualization/ComponentEditBar.vue'
 import { useEmitt } from '@/hooks/web/useEmitt'
 import ComposeShow from '@/components/data-visualization/canvas/ComposeShow.vue'
 import { groupSizeStyleAdaptor, groupStyleRevert } from '@/utils/style'
-import { isDashboard, isGroupCanvas, isMainCanvas, isTabCanvas } from '@/utils/canvasUtils'
+import { isGroupCanvas, isMainCanvas } from '@/utils/canvasUtils'
 import Board from '@/components/de-board/Board.vue'
-import { activeWatermarkCheckUser, removeActiveWatermark } from '@/components/watermark/watermark'
 const dvMainStore = dvMainStoreWithOut()
 const snapshotStore = snapshotStoreWithOut()
 const contextmenuStore = contextmenuStoreWithOut()
@@ -128,8 +116,6 @@ const parentNode = ref(null)
 const shapeInnerRef = ref(null)
 const componentInnerRef = ref(null)
 const componentEditBarRef = ref(null)
-const downLoading = ref(false)
-const viewDemoInnerId = computed(() => 'enlarge-inner-shape-' + element.value.id)
 
 const {
   curComponent,
@@ -146,7 +132,6 @@ const {
 const { editorMap, areaData, isCtrlOrCmdDown } = storeToRefs(composeStore)
 const emit = defineEmits([
   'userViewEnlargeOpen',
-  'datasetParamsInit',
   'onStartResize',
   'onStartMove',
   'onDragging',
@@ -162,7 +147,7 @@ const state = reactive({
     id: ''
   },
   // 禁止移入Tab中的组件
-  ignoreTabMoveComponent: ['de-button', 'de-reset-button', 'DeTabs', 'Group', 'GroupArea'],
+  ignoreTabMoveComponent: ['de-button', 'de-reset-button', 'DeTabs'],
   // 当画布在tab中是 宽度左右拓展的余量
   parentWidthTabOffset: 40,
   canvasChangeTips: 'none',
@@ -318,8 +303,7 @@ const boardMoveActive = computed(() => {
     'table-normal',
     'table-pivot',
     'symbolic-map',
-    'heat-map',
-    't-heatmap'
+    'heat-map'
   ]
   return element.value.isPlugin || CHARTS.includes(element.value.innerType)
 })
@@ -338,10 +322,6 @@ const isActive = () => {
 
 const userViewEnlargeOpen = opt => {
   emit('userViewEnlargeOpen', opt)
-}
-
-const datasetParamsInit = opt => {
-  emit('datasetParamsInit', opt)
 }
 
 const getPointStyle = point => {
@@ -433,7 +413,7 @@ const areaDataPush = component => {
     !component.isLock &&
     component.isShow &&
     component.canvasId === 'canvas-main' &&
-    !['GroupArea', 'DeTabs'].includes(component.component)
+    !['Group', 'GroupArea'].includes(component.component)
   ) {
     areaData.value.components.push(component)
   }
@@ -448,7 +428,12 @@ const handleInnerMouseDownOnShape = e => {
   if (!canvasActive.value) {
     return
   }
-  batchSelected(e)
+  if (batchOptFlag.value) {
+    componentEditBarRef.value.batchOptCheckOut()
+    e.stopPropagation()
+    e.preventDefault()
+    return
+  }
   // ctrl or command 按下时 鼠标点击为选择需要组合的组件(取消需要组合的组件在ComposeShow组件中)
   if (isCtrlOrCmdDown.value && !areaData.value.components.includes(element)) {
     areaDataPush(element.value)
@@ -492,10 +477,6 @@ const handleMouseDownOnShape = e => {
   const pos = { ...defaultStyle.value }
   const startY = e.clientY
   const startX = e.clientX
-
-  const offsetY = e.offsetY
-  const offsetX = e.offsetX
-
   // 如果直接修改属性，值的类型会变为字符串，所以要转为数值型
   const startTop = Number(pos['top'])
   const startLeft = Number(pos['left'])
@@ -509,10 +490,6 @@ const handleMouseDownOnShape = e => {
   //当前组件宽高 定位
   const componentWidth = shapeInnerRef.value.offsetWidth
   const componentHeight = shapeInnerRef.value.offsetHeight
-  let outerTabDom = isTabCanvas(canvasId.value)
-    ? document.getElementById('shape-id-' + canvasId.value.split('--')[0])
-    : null
-  const curDom = document.getElementById(domId.value)
   const move = moveEvent => {
     hasMove = true
     const curX = moveEvent.clientX
@@ -522,23 +499,15 @@ const handleMouseDownOnShape = e => {
     pos['top'] = top
     pos['left'] = left
     // 非主画布非分组画布的情况 需要检测是否从Tab中移除组件(向左移除30px 或者向右移除30px)
-    // 大屏和仪表板暂时做位置算法区分 仪表板暂时使用curX 因为缩放的影响 大屏使用 tab位置 + 组件位置（相对内部画布）+初始触发点
     if (
       !isMainCanvas(canvasId.value) &&
       !isGroupCanvas(canvasId.value) &&
-      !isGroupArea.value &&
       (left < -30 || left + componentWidth - canvasWidth > 30)
     ) {
       contentDisplay.value = false
       dvMainStore.setMousePointShadowMap({
-        mouseX:
-          !isDashboard() && outerTabDom
-            ? outerTabDom.offsetLeft + curDom.offsetLeft + offsetX
-            : curX,
-        mouseY:
-          !isDashboard() && outerTabDom
-            ? outerTabDom.offsetTop + curDom.offsetTop + offsetY + 100
-            : curY,
+        mouseX: curX,
+        mouseY: curY,
         width: componentWidth,
         height: componentHeight
       })
@@ -549,7 +518,7 @@ const handleMouseDownOnShape = e => {
       contentDisplay.value = true
     }
     // 仪表板进行Tab碰撞检查
-    tabMoveInCheck()
+    dashboardActive.value && tabMoveInCheck()
     // 仪表板模式 会造成移动现象 当检测组件正在碰撞有效区内或者移入有效区内 则周边组件不进行移动
     if (
       dashboardActive.value &&
@@ -560,16 +529,15 @@ const handleMouseDownOnShape = e => {
     }
 
     //如果当前组件是Group分组 则要进行内部组件深度计算
-    if (['DeTabs', 'Group'].includes(element.value.component)) {
-      groupSizeStyleAdaptor(element.value)
-    }
+    element.value.component === 'Group' && groupSizeStyleAdaptor(element.value)
     //如果当前画布是Group内部画布 则对应组件定位在resize时要还原到groupStyle中
-    if (isGroupCanvas(canvasId.value) || isTabCanvas(canvasId.value)) {
+    if (isGroupCanvas(canvasId.value)) {
       groupStyleRevert(element.value, {
         width: parentNode.value.offsetWidth,
         height: parentNode.value.offsetHeight
       })
     }
+
     // 防止首次组件在tab旁边无法触发矩阵移动
     if (isFirst) {
       isFirst = false
@@ -750,12 +718,10 @@ const handleMouseDownOnPoint = (point, e) => {
     // 矩阵逻辑 如果当前是仪表板（矩阵模式）则要进行矩阵重排
     dashboardActive.value && emit('onResizing', moveEvent)
     element.value['resizing'] = true
-    //如果当前组件是Group分组或者Tab 则要进行内部组件深度计算
-    if (['DeTabs', 'Group'].includes(element.value.component)) {
-      groupSizeStyleAdaptor(element.value)
-    }
+    //如果当前组件是Group分组 则要进行内部组件深度计算
+    element.value.component === 'Group' && groupSizeStyleAdaptor(element.value)
     //如果当前画布是Group内部画布 则对应组件定位在resize时要还原到groupStyle中
-    if (isGroupCanvas(canvasId.value) || isTabCanvas(canvasId.value)) {
+    if (isGroupCanvas(canvasId.value)) {
       groupStyleRevert(element.value, {
         width: parentNode.value.offsetWidth,
         height: parentNode.value.offsetHeight
@@ -826,30 +792,6 @@ const commonBackgroundSvgInner = computed(() => {
     return element.value.commonBackground.innerImage.replace('board/', '').replace('.svg', '')
   } else {
     return null
-  }
-})
-
-const padding3D = computed(() => {
-  const width = defaultStyle.value.width // 原始元素宽度
-  const height = defaultStyle.value.height // 原始元素高度
-  const rotateX = element.value['multiDimensional'].x // 旋转X角度
-  const rotateY = element.value['multiDimensional'].y // 旋转Y角度
-
-  // 将角度转换为弧度
-  const radX = (rotateX * Math.PI) / 180
-  const radY = (rotateY * Math.PI) / 180
-
-  // 计算旋转后新宽度和高度
-  const newWidth = Math.abs(width * Math.cos(radY)) + Math.abs(height * Math.sin(radX))
-  const newHeight = Math.abs(height * Math.cos(radX)) + Math.abs(width * Math.sin(radY))
-
-  // 计算需要的 padding
-  const paddingX = (newWidth - width) / 2
-  const paddingY = (newHeight - height) / 2
-
-  return {
-    paddingX: `${paddingX}px`,
-    paddingY: `${paddingY}px`
   }
 })
 
@@ -985,34 +927,6 @@ const tabMoveInCheck = async () => {
     }
   }
 }
-const slotStyle = computed(() => {
-  // 3d效果支持
-  if (element.value['multiDimensional'] && element.value['multiDimensional']?.enable) {
-    const width = defaultStyle.value.width // 原始元素宽度
-    const height = defaultStyle.value.height // 原始元素高度
-    const rotateX = element.value['multiDimensional'].x // 旋转X角度
-    const rotateY = element.value['multiDimensional'].y // 旋转Y角度
-
-    // 将角度转换为弧度
-    const radX = (rotateX * Math.PI) / 180
-    const radY = (rotateY * Math.PI) / 180
-
-    // 计算旋转后新宽度和高度
-    const newWidth = Math.abs(width * Math.cos(radY)) + Math.abs(height * Math.sin(radX))
-    const newHeight = Math.abs(height * Math.cos(radX)) + Math.abs(width * Math.sin(radY))
-
-    // 计算需要的 padding
-    const paddingX = (newWidth - width) / 2
-    const paddingY = (newHeight - height) / 2
-
-    return {
-      padding: `${paddingY}px ${paddingX}px`,
-      transform: `rotateX(${element.value['multiDimensional'].x}deg) rotateY(${element.value['multiDimensional'].y}deg) rotateZ(${element.value['multiDimensional'].z}deg)`
-    }
-  } else {
-    return {}
-  }
-})
 
 const batchOptFlag = computed(() => {
   return batchOptStatus.value && dashboardActive.value
@@ -1023,14 +937,8 @@ const dragCollision = computed(() => {
 })
 
 const htmlToImage = () => {
-  downLoading.value = true
   setTimeout(() => {
-    activeWatermarkCheckUser(viewDemoInnerId.value, 'canvas-main', scale.value)
-    downloadCanvas2('img', componentInnerRef.value, '图表', () => {
-      // do callback
-      removeActiveWatermark(viewDemoInnerId.value)
-      downLoading.value = false
-    })
+    downloadCanvas('img', componentInnerRef.value, '图表')
   }, 200)
 }
 
@@ -1066,6 +974,7 @@ onMounted(() => {
 <style lang="less" scoped>
 .shape {
   position: absolute;
+
   .del-from-mobile {
     position: absolute;
     right: 12px;
@@ -1218,6 +1127,5 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   position: relative;
-  transform-style: preserve-3d;
 }
 </style>

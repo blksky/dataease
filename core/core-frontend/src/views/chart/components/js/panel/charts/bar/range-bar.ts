@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { Bar, BarOptions } from '@antv/g2plot/esm/plots/bar'
+import { Bar, BarOptions } from '@antv/g2plot/esm/plots/bar'
 import { getPadding, setGradientColor } from '@/views/chart/components/js/panel/common/common_antv'
 import { cloneDeep, find } from 'lodash-es'
 import { flow, hexColorToRGBA, parseJson } from '@/views/chart/components/js/util'
@@ -107,7 +107,7 @@ export class RangeBar extends G2PlotChartView<BarOptions, Bar> {
     ]
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<Bar>): Promise<Bar> {
+  drawChart(drawOptions: G2PlotDrawOptions<Bar>): Bar {
     const { chart, container, action } = drawOptions
     if (!chart.data?.data?.length) {
       return
@@ -122,35 +122,6 @@ export class RangeBar extends G2PlotChartView<BarOptions, Bar> {
     const ifAggregate = !!chart.aggregate
 
     const isDate = !!chart.data.isDate
-
-    const axis = chart.yAxis ?? chart.yAxisExt ?? []
-    let dateFormat: string
-    const dateSplit = axis[0]?.datePattern === 'date_split' ? '/' : '-'
-    switch (axis[0]?.dateStyle) {
-      case 'y':
-        dateFormat = 'YYYY'
-        break
-      case 'y_M':
-        dateFormat = 'YYYY' + dateSplit + 'MM'
-        break
-      case 'y_M_d':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD'
-        break
-      // case 'H_m_s':
-      //   dateFormat = 'HH:mm:ss'
-      //   break
-      case 'y_M_d_H':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD' + ' HH'
-        break
-      case 'y_M_d_H_m':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD' + ' HH:mm'
-        break
-      case 'y_M_d_H_m_s':
-        dateFormat = 'YYYY' + dateSplit + 'MM' + dateSplit + 'DD' + ' HH:mm:ss'
-        break
-      default:
-        dateFormat = 'YYYY-MM-dd HH:mm:ss'
-    }
 
     const minTime = chart.data.minTime
     const maxTime = chart.data.maxTime
@@ -172,7 +143,7 @@ export class RangeBar extends G2PlotChartView<BarOptions, Bar> {
               type: 'time',
               min: minTime,
               max: maxTime,
-              mask: dateFormat
+              mask: 'YYYY-MM-DD HH:mm:ss'
             },
             tempId: {
               key: true
@@ -182,7 +153,7 @@ export class RangeBar extends G2PlotChartView<BarOptions, Bar> {
             values: {
               min: minNumber,
               max: maxNumber,
-              mask: dateFormat
+              mask: 'YYYY-MM-DD HH:mm:ss'
             },
             tempId: {
               key: true
@@ -192,9 +163,8 @@ export class RangeBar extends G2PlotChartView<BarOptions, Bar> {
 
     const options = this.setupOptions(chart, initOptions)
 
-    const { Bar: BarClass } = await import('@antv/g2plot/esm/plots/bar')
     // 开始渲染
-    const newChart = new BarClass(container, options)
+    const newChart = new Bar(container, options)
 
     newChart.on('interval:click', action)
 

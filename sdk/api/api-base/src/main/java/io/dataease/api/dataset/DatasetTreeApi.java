@@ -10,7 +10,6 @@ import io.dataease.extensions.datasource.dto.DatasetTableDTO;
 import io.dataease.extensions.view.dto.SqlVariableDetails;
 import io.dataease.model.BusiNodeRequest;
 import io.dataease.model.BusiNodeVO;
-import io.dataease.api.dataset.dto.DataSetExportRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,10 +60,6 @@ public interface DatasetTreeApi {
     @PostMapping("move")
     DatasetNodeDTO move(@RequestBody DatasetGroupInfoDTO dto) throws Exception;
 
-    @DePermit({"#p0+':manage'"})
-    @PostMapping("perDelete/{id}")
-    boolean perDelete(@PathVariable("id") Long id);
-
     @Operation(summary = "删除数据集")
     @DePermit({"#p0+':manage'"})
     @PostMapping("delete/{id}")
@@ -97,8 +92,4 @@ public interface DatasetTreeApi {
     @Operation(summary = "带权限查询数据集详情")
     @PostMapping("detailWithPerm")
     List<DatasetTableDTO> detailWithPerm(@RequestBody List<Long> ids) throws Exception;
-
-    @Operation(summary = "数据集导出")
-    @PostMapping("/exportDataset")
-    public void exportDataset(@RequestBody DataSetExportRequest request)  throws Exception;
 }

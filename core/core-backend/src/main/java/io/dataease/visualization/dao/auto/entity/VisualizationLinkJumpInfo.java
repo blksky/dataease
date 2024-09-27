@@ -5,20 +5,17 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 跳转配置表
+ * 
  * </p>
  *
  * @author fit2cloud
- * @since 2024-09-19
+ * @since 2023-09-22
  */
 @TableName("visualization_link_jump_info")
 public class VisualizationLinkJumpInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
     private Long id;
 
     /**
@@ -35,11 +32,6 @@ public class VisualizationLinkJumpInfo implements Serializable {
      * 跳转类型 _blank 新开页面 _self 当前窗口
      */
     private String jumpType;
-
-    /**
-     * 窗口大小large middle small
-     */
-    private String windowSize;
 
     /**
      * 关联仪表板ID
@@ -66,14 +58,8 @@ public class VisualizationLinkJumpInfo implements Serializable {
      */
     private Boolean attachParams;
 
-    /**
-     * 复制来源
-     */
     private Long copyFrom;
 
-    /**
-     * 复制来源ID
-     */
     private Long copyId;
 
     public Long getId() {
@@ -106,14 +92,6 @@ public class VisualizationLinkJumpInfo implements Serializable {
 
     public void setJumpType(String jumpType) {
         this.jumpType = jumpType;
-    }
-
-    public String getWindowSize() {
-        return windowSize;
-    }
-
-    public void setWindowSize(String windowSize) {
-        this.windowSize = windowSize;
     }
 
     public Long getTargetDvId() {
@@ -179,7 +157,6 @@ public class VisualizationLinkJumpInfo implements Serializable {
         ", linkJumpId = " + linkJumpId +
         ", linkType = " + linkType +
         ", jumpType = " + jumpType +
-        ", windowSize = " + windowSize +
         ", targetDvId = " + targetDvId +
         ", sourceFieldId = " + sourceFieldId +
         ", content = " + content +

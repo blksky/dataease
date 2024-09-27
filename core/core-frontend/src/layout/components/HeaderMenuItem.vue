@@ -1,13 +1,16 @@
 <script lang="ts">
 import { h } from 'vue'
-import icon_expandDown_filled from '@/assets/svg/icon_expand-down_filled.svg'
 import { ElMenuItem, ElSubMenu } from 'element-plus-secondary'
+import Icon from '@/components/icon-custom/src/Icon.vue'
 
 const title = props => {
   const { title } = props.menu?.meta || {}
   return [h('span', null, { default: () => title })]
 }
 
+const expandIcon = (name: string) => {
+  return h(Icon, { className: '', name })
+}
 const HeaderMenuItem = props => {
   const { children = [], hidden, path } = props.menu
   if (hidden) {
@@ -21,8 +24,8 @@ const HeaderMenuItem = props => {
         index: path,
         'popper-class': 'popper-class-menu',
         showTimeout: 1,
-        expandCloseIcon: icon_expandDown_filled,
-        expandOpenIcon: icon_expandDown_filled
+        expandCloseIcon: expandIcon('icon_expand-down_filled'),
+        expandOpenIcon: expandIcon('icon_expand-down_filled')
       },
       {
         title: () => title(props),

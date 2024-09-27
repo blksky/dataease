@@ -55,7 +55,7 @@
         :max="3600"
         size="middle"
         :disabled="!canvasStyleData.refreshViewEnable"
-        @change="onRefreshChange"
+        @change="themeChange"
       >
         <template #append>
           <el-select
@@ -63,56 +63,6 @@
             size="middle"
             :effect="themes"
             :disabled="!canvasStyleData.refreshViewEnable"
-            style="width: 90px"
-            @change="themeChange"
-          >
-            <el-option :label="t('visualization.minute')" :value="'minute'" />
-            <el-option :label="t('visualization.second')" :value="'second'" />
-          </el-select>
-        </template>
-      </el-input>
-    </el-form-item>
-    <el-form-item class="form-item" :class="'form-item-' + themes" style="margin-bottom: 8px">
-      <el-checkbox
-        :effect="themes"
-        size="small"
-        v-model="canvasStyleData.refreshBrowserEnable"
-        @change="themeChange"
-      >
-        整体刷新
-      </el-checkbox>
-      <el-tooltip class="item" :effect="toolTip" placement="bottom">
-        <template #content>
-          <div>仅公共链接和新Tab预览生效</div>
-        </template>
-        <el-icon
-          class="hint-icon"
-          style="margin-left: 4px"
-          :class="{ 'hint-icon--dark': themes === 'dark' }"
-        >
-          <Icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></Icon>
-        </el-icon>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item class="form-item" :class="'form-item-' + themes" style="padding-left: 20px">
-      <el-input
-        v-model="canvasStyleData.refreshBrowserTime"
-        :effect="themes"
-        class="time-input-number"
-        :class="[dvInfo.type === 'dashboard' && 'padding20', themes === 'dark' && 'dv-dark']"
-        type="number"
-        :min="1"
-        :max="3600"
-        size="middle"
-        :disabled="!canvasStyleData.refreshBrowserEnable"
-        @change="onRefreshChange"
-      >
-        <template #append>
-          <el-select
-            v-model="canvasStyleData.refreshBrowserUnit"
-            size="middle"
-            :effect="themes"
-            :disabled="!canvasStyleData.refreshBrowserEnable"
             style="width: 90px"
             @change="themeChange"
           >
@@ -145,7 +95,7 @@
               </div>
             </template>
             <el-icon class="hint-icon" :class="{ 'hint-icon--dark': themes === 'dark' }">
-              <Icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></Icon>
+              <Icon name="icon_info_outlined" />
             </el-icon>
           </el-tooltip>
         </span>
@@ -184,7 +134,6 @@
 </template>
 
 <script setup lang="ts">
-import icon_info_outlined from '@/assets/svg/icon_info_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 const { t } = useI18n()
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
@@ -216,7 +165,7 @@ import {
   COMMON_COMPONENT_BACKGROUND_DARK,
   COMMON_COMPONENT_BACKGROUND_LIGHT
 } from '@/custom-component/component-list'
-import { ElFormItem, ElIcon, ElMessage, ElSpace } from 'element-plus-secondary'
+import { ElFormItem, ElIcon, ElSpace } from 'element-plus-secondary'
 import Icon from '@/components/icon-custom/src/Icon.vue'
 const snapshotStore = snapshotStoreWithOut()
 const props = defineProps({
@@ -230,18 +179,7 @@ const toolTip = computed(() => {
 })
 
 const resourceType = computed(() => (dvInfo.value.type === 'dashboard' ? '仪表板' : '数据大屏'))
-
-const onRefreshChange = val => {
-  if (val === '' || parseFloat(val).toString() === 'NaN' || parseFloat(val) < 1) {
-    canvasStyleData.value.refreshTime = 1
-    return
-  } else if (parseFloat(val) > 3600) {
-    canvasStyleData.value.refreshTime = 3600
-  }
-  themeChange()
-}
-
-const themeChange = (modifyName?) => {
+const themeChange = modifyName => {
   if (modifyName === 'themeColor') {
     // 主题变更
     canvasStyleData.value.component.chartCommonStyle.backgroundColorSelect = true

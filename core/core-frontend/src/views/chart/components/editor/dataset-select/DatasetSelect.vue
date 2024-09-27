@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import dvFolder from '@/assets/svg/dv-folder.svg'
-import icon_dataset from '@/assets/svg/icon_dataset.svg'
-import icon_done_outlined from '@/assets/svg/icon_done_outlined.svg'
 import { Tree } from '../../../../visualized/data/dataset/form/CreatDsGroup.vue'
 import { computed, ref, watch, onMounted } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
@@ -13,8 +10,6 @@ import { ElFormItem, FormInstance } from 'element-plus-secondary'
 import { useEmitt } from '@/hooks/web/useEmitt'
 import { useCache } from '@/hooks/web/useCache'
 import { useUserStoreWithOut } from '@/store/modules/user'
-import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
-const dvMainStore = dvMainStoreWithOut()
 
 const { wsCache } = useCache('localStorage')
 const userStore = useUserStoreWithOut()
@@ -205,21 +200,6 @@ function onPopoverHide() {
 function getNode(nodeId: number) {
   return datasetSelector?.value?.getNode(nodeId)
 }
-
-const clearShow = computed(
-  () =>
-    props.sourceType === 'dataset' &&
-    dvMainStore.curComponent &&
-    ['rich-text', 'picture-group'].includes(dvMainStore.curComponent.innerType)
-)
-
-const handleClear = e => {
-  e.preventDefault()
-  e.stopPropagation()
-  dsClick({ leaf: true, id: null } as Tree)
-  useEmitt().emitter.emit('clear-remove', ['xAxis', 'yAxis', 'drillFields'])
-}
-
 const handleFocus = () => {
   if (
     props.sourceType === 'dataset' &&
@@ -266,6 +246,7 @@ onMounted(() => {
               size="middle"
               :effect="themes"
               v-model="selectedNodeName"
+              readonly
               class="data-set-dark"
               @focus="handleFocus"
               :placeholder="'请选择' + sourceName"
@@ -273,9 +254,6 @@ onMounted(() => {
               <template #suffix>
                 <el-icon class="input-arrow-icon" :class="{ reverse: _popoverShow }">
                   <ArrowDown />
-                </el-icon>
-                <el-icon v-if="clearShow" class="input-custom-clear-icon" @click="handleClear">
-                  <CircleClose />
                 </el-icon>
               </template>
             </el-input>
@@ -322,21 +300,28 @@ onMounted(() => {
                 <template #default="{ node, data }">
                   <div
                     class="tree-row-item"
-                    :title="node.label"
                     :class="{ dark: themes === 'dark', active: _modelValue === data.id }"
                   >
                     <div class="m-icon">
                       <el-icon v-if="!data.leaf">
-                        <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+                        <Icon name="dv-folder" />
                       </el-icon>
                       <el-icon v-if="data.leaf">
-                        <Icon name="icon_dataset"><icon_dataset class="svg-icon" /></Icon>
+                        <Icon name="icon_dataset" />
                       </el-icon>
                     </div>
-                    {{ node.label }}
+                    <el-tooltip
+                      :effect="toolTip"
+                      :show-after="1000"
+                      :content="node.label"
+                      placement="top"
+                      :enterable="false"
+                    >
+                      {{ node.label }}
+                    </el-tooltip>
 
                     <el-icon class="checked-item" v-if="_modelValue === data.id">
-                      <Icon name="icon_done_outlined"><icon_done_outlined class="svg-icon" /></Icon>
+                      <Icon name="icon_done_outlined" />
                     </el-icon>
                   </div>
                 </template>
@@ -382,9 +367,6 @@ onMounted(() => {
 </style>
 
 <style lang="less">
-.input-custom-clear-icon {
-  font-size: 14px;
-}
 .input-arrow-icon {
   font-size: 16px;
   transform: rotateZ(0);

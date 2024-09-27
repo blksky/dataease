@@ -114,12 +114,12 @@ public class CopilotManage {
         }
 
         DatasourceSchemaDTO ds = dsMap.entrySet().iterator().next().getValue();
-        String type = engine(ds.getType());// 数据库类型，如mysql，oracle等，可能需要映射成copilot需要的类型
+        String type = ds.getType();// 数据库类型，如mysql，oracle等，可能需要映射成copilot需要的类型
 
         datasetDataManage.buildFieldName(sqlMap, allFields);
         List<String> strings = transCreateTableFields(allFields);
         String createSql = "CREATE TABLE de_tmp_table (" + StringUtils.join(strings, ",") + ")";
-        logger.debug("Copilot Schema SQL: " + createSql);
+        logger.info("Copilot Schema SQL: " + createSql);
 
 //        PerMsgDTO perMsgDTO = new PerMsgDTO();
         msgDTO.setDatasetGroupId(dto.getId());
@@ -178,7 +178,7 @@ public class CopilotManage {
 //        Order2SQLObj.getOrders(sqlMeta, dto.getSortFields(), allFields, crossDs, dsMap);
 //        String querySQL = SQLProvider.createQuerySQL(sqlMeta, false, false, needOrder);
 //        querySQL = provider.rebuildSQL(querySQL, sqlMeta, crossDs, dsMap);
-//        logger.debug("preview sql: " + querySQL);
+//        logger.info("preview sql: " + querySQL);
 
         // 无法加行权限的情况下，直接用sql
         String querySQL = sql;
@@ -197,7 +197,7 @@ public class CopilotManage {
             s = copilotSQL
                     .replaceAll(SqlPlaceholderConstants.KEYWORD_PREFIX_REGEX + "de_tmp_table" + SqlPlaceholderConstants.KEYWORD_SUFFIX_REGEX, "(" + querySQL + ")")
                     .replaceAll(SqlPlaceholderConstants.KEYWORD_PREFIX_REGEX + "DE_TMP_TABLE" + SqlPlaceholderConstants.KEYWORD_SUFFIX_REGEX, "(" + querySQL + ")");
-            logger.debug("copilot sql: " + s);
+            logger.info("copilot sql: " + s);
             datasourceRequest.setQuery(s);
             data = provider.fetchResultField(datasourceRequest);
         } catch (Exception e) {
@@ -205,7 +205,7 @@ public class CopilotManage {
                 s = copilotSQL
                         .replaceAll(SqlPlaceholderConstants.KEYWORD_PREFIX_REGEX + "de_tmp_table" + SqlPlaceholderConstants.KEYWORD_SUFFIX_REGEX, "(" + querySQL + ") tmp")
                         .replaceAll(SqlPlaceholderConstants.KEYWORD_PREFIX_REGEX + "DE_TMP_TABLE" + SqlPlaceholderConstants.KEYWORD_SUFFIX_REGEX, "(" + querySQL + ") tmp");
-                logger.debug("copilot sql: " + s);
+                logger.info("copilot sql: " + s);
                 datasourceRequest.setQuery(s);
                 data = provider.fetchResultField(datasourceRequest);
             } catch (Exception e1) {
@@ -293,8 +293,8 @@ public class CopilotManage {
         if (!receiveDTO.getSqlOk() || !receiveDTO.getChartOk()) {
             DEException.throwException((String) JsonUtil.toJSONString(receiveDTO));
         }
-        logger.debug("Copilot Service SQL: " + receiveDTO.getSql());
-        logger.debug("Copilot Service Chart: " + JsonUtil.toJSONString(receiveDTO.getChart()));
+        logger.info("Copilot Service SQL: " + receiveDTO.getSql());
+        logger.info("Copilot Service Chart: " + JsonUtil.toJSONString(receiveDTO.getChart()));
         return receiveDTO;
     }
 
@@ -450,8 +450,7 @@ public class CopilotManage {
     public String transSql(String type, String copilotSQL, Provider provider, ReceiveDTO receiveDTO) {
         if (type.equals("oracle") || type.equals("sqlServer")) {
             try {
-                copilotSQL = copilotSQL.trim();
-                if (copilotSQL.endsWith(";")) {
+                if (copilotSQL.trim().endsWith(";")) {
                     copilotSQL = copilotSQL.substring(0, copilotSQL.length() - 1);
                 }
                 DatasourceSchemaDTO datasourceSchemaDTO = new DatasourceSchemaDTO();
@@ -462,26 +461,11 @@ public class CopilotManage {
                 SqlNode sqlNode = parser.parseStmt();
                 return sqlNode.toSqlString(dialect).toString().toLowerCase();
             } catch (Exception e) {
-                logger.debug("calcite trans copilot SQL error");
+                logger.info("calcite trans copilot SQL error");
                 return receiveDTO.getSql();
             }
         } else {
             return copilotSQL;
-        }
-    }
-
-    private String engine(String type) {
-        switch (type) {
-            case "ck":
-                return "ClickHouse";
-            case "pg":
-                return "PostgreSQL";
-            case "mysql":
-                return "MySQL";
-            case "sqlServer":
-                return "SQL Server";
-            default:
-                return type;
         }
     }
 }

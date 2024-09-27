@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { ScatterOptions, Scatter as G2Scatter } from '@antv/g2plot/esm/plots/scatter'
+import { ScatterOptions, Scatter as G2Scatter } from '@antv/g2plot/esm/plots/scatter'
 import { flow, parseJson } from '../../../util'
 import { valueFormatter } from '../../../formatter'
 import { getPadding } from '../../common/common_antv'
@@ -16,7 +16,6 @@ const { t } = useI18n()
 export class Scatter extends G2PlotChartView<ScatterOptions, G2Scatter> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'x-axis-selector',
     'y-axis-selector',
@@ -86,7 +85,7 @@ export class Scatter extends G2PlotChartView<ScatterOptions, G2Scatter> {
       limit: 1
     }
   }
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Scatter>): Promise<G2Scatter> {
+  public drawChart(drawOptions: G2PlotDrawOptions<G2Scatter>) {
     const { chart, container, action } = drawOptions
     if (!chart.data?.data) {
       return
@@ -132,7 +131,6 @@ export class Scatter extends G2PlotChartView<ScatterOptions, G2Scatter> {
       ]
     }
     const options = this.setupOptions(chart, baseOptions)
-    const { Scatter: G2Scatter } = await import('@antv/g2plot/esm/plots/scatter')
     const newChart = new G2Scatter(container, options)
     newChart.on('point:click', action)
     return newChart

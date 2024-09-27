@@ -41,26 +41,9 @@
         icon="Download"
         size="middle"
         :loading="exportLoading"
-        :disabled="
-          requestStore.loadingMap[permissionStore.currentPath] > 0 || state.dataFrom === 'template'
-        "
-        @click="downloadViewDetails('view')"
+        @click="downloadViewDetails"
       >
         导出Excel
-      </el-button>
-      <el-button
-        class="m-button"
-        v-if="optType === 'details' && authShow"
-        link
-        icon="Download"
-        size="middle"
-        :loading="exportLoading"
-        @click="downloadViewDetails('dataset')"
-        :disabled="
-          requestStore.loadingMap[permissionStore.currentPath] > 0 || state.dataFrom === 'template'
-        "
-      >
-        导出原始明细
       </el-button>
       <el-button
         class="m-button"
@@ -84,12 +67,10 @@
       v-if="dialogShow"
     >
       <div
-        id="enlarge-inner-content"
         class="enlarge-inner"
         :class="{
           'enlarge-inner-with-header': optType === 'details' && sourceViewType.includes('chart-mix')
         }"
-        v-loading="requestStore.loadingMap[permissionStore.currentPath]"
         ref="viewContainer"
         :style="customExport"
       >
@@ -134,7 +115,7 @@
 
 <script setup lang="ts">
 import ComponentWrapper from '@/components/data-visualization/canvas/ComponentWrapper.vue'
-import { computed, h, nextTick, reactive, ref } from 'vue'
+import { computed, h, nextTick, ref } from 'vue'
 import { toPng } from 'html-to-image'
 import { useI18n } from '@/hooks/web/useI18n'
 import { deepCopy } from '@/utils/utils'
@@ -147,15 +128,9 @@ import { assign } from 'lodash-es'
 import { useEmitt } from '@/hooks/web/useEmitt'
 import { ElMessage, ElButton } from 'element-plus-secondary'
 import { exportPivotExcel } from '@/views/chart/components/js/panel/common/common_table'
-import { useRequestStoreWithOut } from '@/store/modules/request'
-import { usePermissionStoreWithOut } from '@/store/modules/permission'
-import { activeWatermarkCheckUser } from '@/components/watermark/watermark'
-import { getCanvasStyle } from '@/utils/style'
 const downLoading = ref(false)
 const dvMainStore = dvMainStoreWithOut()
 const dialogShow = ref(false)
-const requestStore = useRequestStoreWithOut()
-const permissionStore = usePermissionStoreWithOut()
 let viewInfo = ref<DeepPartial<ChartObj>>(null)
 const config = ref(null)
 const canvasStyleData = ref(null)
@@ -168,7 +143,6 @@ const { dvInfo, editMode } = storeToRefs(dvMainStore)
 const exportLoading = ref(false)
 const sourceViewType = ref()
 const activeName = ref('left')
-const userInfo = ref(null)
 const DETAIL_CHART_ATTR: DeepPartial<ChartObj> = {
   render: 'antv',
   type: 'table-info',
@@ -194,39 +168,27 @@ const DETAIL_CHART_ATTR: DeepPartial<ChartObj> = {
     scrollCfg: {
       open: false
     }
-  },
-  showPosition: 'dialog'
+  }
 }
-
-const state = reactive({
-  scale: 0.5,
-  componentSourceType: null,
-  dataFrom: null
-})
 const DETAIL_TABLE_ATTR: DeepPartial<ChartObj> = {
   senior: {
     scrollCfg: {
       open: false
     }
-  },
-  showPosition: 'dialog'
+  }
 }
 
 const authShow = computed(() => editMode.value === 'edit' || dvInfo.value.weight > 3)
 
 const customExport = computed(() => {
-  const style =
-    canvasStyleData.value &&
-    (optType.value === 'enlarge' || state.componentSourceType?.includes('table'))
-      ? getCanvasStyle(canvasStyleData.value, 'canvas-main')
-      : {}
   if (downLoading.value) {
     const bashStyle = pixel.value.split(' * ')
-    style['width'] = bashStyle[0] + 'px!important'
-    style['height'] = bashStyle[1] + 'px!important'
-    return style
+    return {
+      width: bashStyle[0] + 'px!important',
+      height: bashStyle[1] + 'px!important'
+    }
   } else {
-    return style
+    return {}
   }
 })
 
@@ -268,13 +230,10 @@ const pixelOptions = [
     ]
   }
 ]
-const dialogInit = (canvasStyle, view, item, opt, params = { scale: 0.5 }) => {
-  state.scale = params.scale
+const dialogInit = (canvasStyle, view, item, opt) => {
   sourceViewType.value = view.type
   optType.value = opt
   dialogShow.value = true
-  state.componentSourceType = view.type
-  state.dataFrom = view.dataFrom
   viewInfo.value = deepCopy(view) as DeepPartial<ChartObj>
   viewInfo.value.customStyle.text.show = false
   config.value = deepCopy(item)
@@ -287,9 +246,6 @@ const dialogInit = (canvasStyle, view, item, opt, params = { scale: 0.5 }) => {
     }
     dataDetailsOpt()
   }
-  nextTick(() => {
-    initWatermark()
-  })
 }
 
 const dataDetailsOpt = () => {
@@ -319,19 +275,14 @@ const downloadViewImage = () => {
   htmlToImage()
 }
 
-const downloadViewDetails = (downloadType = 'view') => {
+const downloadViewDetails = () => {
   const viewDataInfo = dvMainStore.getViewDataDetails(viewInfo.value.id)
-  if (!viewDataInfo) {
-    ElMessage.error('当前无字段，无法导出')
-    return
-  }
   const chartExtRequest = dvMainStore.getLastViewRequestInfo(viewInfo.value.id)
   const chart = {
     ...viewInfo.value,
     chartExtRequest,
     data: viewDataInfo,
-    type: sourceViewType.value,
-    downloadType: downloadType
+    type: sourceViewType.value
   }
   exportLoading.value = true
   exportExcelDownload(chart, () => {
@@ -386,9 +337,7 @@ const openMessageLoading = cb => {
 const htmlToImage = () => {
   downLoading.value = true
   useEmitt().emitter.emit('renderChart-' + viewInfo.value.id)
-  const renderTime = viewInfo.value.type?.includes('table') ? 2000 : 500
   setTimeout(() => {
-    initWatermark()
     toPng(viewContainer.value)
       .then(dataUrl => {
         downLoading.value = false
@@ -397,19 +346,13 @@ const htmlToImage = () => {
         a.href = dataUrl
         a.click()
         useEmitt().emitter.emit('renderChart-' + viewInfo.value.id)
-        initWatermark()
       })
       .catch(error => {
         downLoading.value = false
-        initWatermark()
         useEmitt().emitter.emit('renderChart-' + viewInfo.value.id)
         console.error('oops, something went wrong!', error)
       })
-  }, renderTime)
-}
-
-const initWatermark = () => {
-  activeWatermarkCheckUser('enlarge-inner-content', 'canvas-main', state.scale)
+  }, 500)
 }
 
 defineExpose({

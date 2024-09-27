@@ -68,6 +68,4 @@ public class DataSetRowPermissionsTreeDTO  {
     private List<UserFormVO> whiteListUsers;
     private List<RoleVO> whiteListRoles;
     private List<Long> authTargetIds;
-    private  boolean exportData;
-
 }

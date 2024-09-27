@@ -10,7 +10,6 @@ import io.dataease.api.permissions.auth.dto.BusiResourceMover;
 import io.dataease.api.permissions.auth.vo.ResourceNodeVO;
 import io.dataease.model.BusiNodeRequest;
 import io.dataease.model.BusiNodeVO;
-import io.dataease.model.ExportTaskDTO;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -85,7 +84,7 @@ public interface InteractiveAuthApi {
     boolean checkEmpty();
 
     @GetMapping("/OrgNameForResource")
-    String OrgNameForResource(ExportTaskDTO exportTaskDTO);
+    String OrgNameForResource(Long id);
 
     void editResourceExtraFlag(BusiResourceEditor editor);
 }

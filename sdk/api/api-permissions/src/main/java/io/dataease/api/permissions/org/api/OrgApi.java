@@ -61,8 +61,4 @@ public interface OrgApi {
     @Operation(hidden = true)
     @GetMapping("/detail/{oid}")
     OrgDetailVO detail(@PathVariable("oid") Long oid);
-
-    @Operation(hidden = true)
-    @GetMapping("/subOrgs")
-    List<String> subOrgs();
 }

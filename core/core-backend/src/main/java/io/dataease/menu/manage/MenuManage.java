@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,8 +31,7 @@ public class MenuManage {
 
     @XpackInteract(value = "menuApi")
     public List<MenuVO> query(List<CoreMenu> coreMenus) {
-        List<MenuTreeNode> menuTreeNodes = new ArrayList<>(coreMenus.stream().map(menu -> BeanUtils.copyBean(new MenuTreeNode(), menu)).toList());
-        menuTreeNodes.sort(Comparator.comparing(MenuTreeNode::getMenuSort));
+        List<MenuTreeNode> menuTreeNodes = coreMenus.stream().map(menu -> BeanUtils.copyBean(new MenuTreeNode(), menu)).toList();
         List<MenuTreeNode> treeNodes = buildPOTree(menuTreeNodes);
         return convertTree(treeNodes);
     }
@@ -102,8 +100,6 @@ public class MenuManage {
                 || coreMenu.getId().equals(28L)
                 || coreMenu.getId().equals(35L)
                 || coreMenu.getId().equals(40L)
-                || coreMenu.getId().equals(50L)
-                || coreMenu.getId().equals(60L)
-                || coreMenu.getId().equals(61L);
+                || coreMenu.getId().equals(50L);
     }
 }

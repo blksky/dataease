@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import icon_collection_outlined from '@/assets/svg/icon_collection_outlined.svg'
-import visualStar from '@/assets/svg/visual-star.svg'
-import dvInfoSvg from '@/assets/svg/dv-info.svg'
-import dvHeadMore from '@/assets/svg/dv-head-more.svg'
-import icon_pc_fullscreen from '@/assets/svg/icon_pc_fullscreen.svg'
-import icon_pc_outlined from '@/assets/svg/icon_pc_outlined.svg'
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { storeToRefs } from 'pinia'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -17,6 +10,7 @@ import { ref, watch, computed } from 'vue'
 import ShareVisualHead from '@/views/share/share/ShareVisualHead.vue'
 import { XpackComponent } from '@/components/plugin'
 import { useEmitt } from '@/hooks/web/useEmitt'
+import DeFullscreen from '@/components/visualization/common/DeFullscreen.vue'
 const dvMainStore = dvMainStoreWithOut()
 const appStore = useAppStoreWithOut()
 const { dvInfo } = storeToRefs(dvMainStore)
@@ -25,6 +19,7 @@ const { t } = useI18n()
 const embeddedStore = useEmbedded()
 
 const favorited = ref(false)
+const fullScreeRef = ref(null)
 const preview = () => {
   const baseUrl = isDataEaseBi.value ? embeddedStore.baseUrl : ''
   const url = baseUrl + '#/preview?dvId=' + dvInfo.value.id
@@ -113,12 +108,7 @@ const initOpenHandler = newWindow => {
         @click="executeStore"
         :style="{ color: favorited ? '#FFC60A' : '#646A73' }"
       >
-        <icon
-          ><component
-            class="svg-icon"
-            :is="favorited ? visualStar : icon_collection_outlined"
-          ></component
-        ></icon>
+        <icon :name="favorited ? 'visual-star' : 'icon_collection_outlined'"></icon>
       </el-icon>
     </el-tooltip>
     <el-divider style="margin: 0 16px 0 7px" direction="vertical" />
@@ -126,27 +116,22 @@ const initOpenHandler = newWindow => {
       <span style="line-height: 22px">创建人:{{ dvInfo.creatorName }}</span>
       <el-popover show-arrow :offset="8" placement="bottom" width="400" trigger="hover">
         <template #reference>
-          <el-icon class="info-tips"
-            ><Icon name="dv-info"><dvInfoSvg class="svg-icon" /></Icon
-          ></el-icon>
+          <el-icon class="info-tips"><Icon name="dv-info"></Icon></el-icon>
         </template>
         <dv-detail-info></dv-detail-info>
       </el-popover>
     </div>
     <div class="canvas-opt-button">
-      <el-button
-        v-if="!isIframe"
-        secondary
-        @click="() => useEmitt().emitter.emit('canvasFullscreen')"
-      >
+      <de-fullscreen ref="fullScreeRef"></de-fullscreen>
+      <el-button v-if="!isIframe" secondary @click="() => fullScreeRef.toggleFullscreen()">
         <template #icon>
-          <icon name="icon_pc_fullscreen"><icon_pc_fullscreen class="svg-icon" /></icon>
+          <icon name="icon_pc_fullscreen"></icon>
         </template>
         全屏</el-button
       >
       <el-button secondary @click="preview()">
         <template #icon>
-          <icon name="icon_pc_outlined"><icon_pc_outlined class="svg-icon" /></icon>
+          <icon name="icon_pc_outlined"></icon>
         </template>
         预览</el-button
       >
@@ -157,19 +142,19 @@ const initOpenHandler = newWindow => {
       />
       <el-button class="custom-button" v-if="dvInfo.weight > 6" type="primary" @click="dvEdit()">
         <template #icon>
-          <icon name="icon_edit_outlined"><icon_edit_outlined class="svg-icon" /></icon>
+          <icon name="icon_edit_outlined"></icon>
         </template>
         编辑</el-button
       >
       <el-dropdown trigger="click">
         <el-icon class="head-more-icon">
-          <Icon name="dv-head-more"><dvHeadMore class="svg-icon" /></Icon>
+          <Icon name="dv-head-more"></Icon>
         </el-icon>
         <template #dropdown>
           <el-dropdown-menu style="width: 130px">
             <el-dropdown-item icon="Refresh" @click="reload()">刷新数据 </el-dropdown-item>
             <el-dropdown
-              style="width: 100%; overflow: hidden"
+              style="width: 100%"
               trigger="hover"
               placement="left-start"
               v-if="dvInfo.weight > 3"
@@ -185,10 +170,10 @@ const initOpenHandler = newWindow => {
                     >PDF</el-dropdown-item
                   >
                   <el-dropdown-item style="width: 118px" @click="downloadAsAppTemplate('template')"
-                    >样式模板</el-dropdown-item
+                    >模板</el-dropdown-item
                   >
                   <el-dropdown-item style="width: 118px" @click="downloadAsAppTemplate('app')"
-                    >应用模板</el-dropdown-item
+                    >应用</el-dropdown-item
                   >
                   <el-dropdown-item @click="download('img')">{{
                     t('chart.image')

@@ -1,7 +1,4 @@
 <script lang="tsx" setup>
-import icon_bold_outlined from '@/assets/svg/icon_bold_outlined.svg'
-import icon_italic_outlined from '@/assets/svg/icon_italic_outlined.svg'
-import icon_info_outlined from '@/assets/svg/icon_info_outlined.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import { PropType, toRefs, computed } from 'vue'
 import { COLOR_PANEL } from '@/views/chart/components/editor/util/chart'
@@ -67,15 +64,6 @@ if (!chart.value.customStyle.component.hasOwnProperty('labelShow')) {
     queryConditionSpacing: 16,
     labelColorBtn: '#ffffff',
     btnColor: '#3370ff'
-  }
-}
-
-if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
-  chart.value.customStyle.component = {
-    ...chart.value.customStyle.component,
-    placeholderShow: true,
-    placeholder: '请选择',
-    placeholderSize: 14
   }
 }
 </script>
@@ -175,48 +163,24 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
               <el-checkbox
                 :effect="themes"
                 size="small"
-                v-model="chart.customStyle.component.placeholderShow"
+                v-model="chart.customStyle.component.textColorShow"
               >
-                提示词
+                提示文字颜色
               </el-checkbox>
             </el-form-item>
             <el-form-item
-              label="提示词"
               class="form-item"
               style="padding-left: 20px"
               :class="'form-item-' + themes"
             >
-              <el-input
+              <el-color-picker
                 :effect="themes"
-                :disabled="!chart.customStyle.component.placeholderShow"
-                v-model.lazy="chart.customStyle.component.placeholder"
+                :trigger-width="108"
+                is-custom
+                v-model="chart.customStyle.component.text"
+                :disabled="!chart.customStyle.component.textColorShow"
+                :predefine="predefineColors"
               />
-            </el-form-item>
-            <el-form-item
-              label="文本"
-              class="form-item"
-              style="padding-left: 20px"
-              :class="'form-item-' + themes"
-            >
-              <div style="display: flex; align-items: center; width: 100%">
-                <el-color-picker
-                  :effect="themes"
-                  :trigger-width="56"
-                  is-custom
-                  v-model="chart.customStyle.component.text"
-                  :disabled="!chart.customStyle.component.placeholderShow"
-                  :predefine="predefineColors"
-                />
-                <el-input-number
-                  v-model="chart.customStyle.component.placeholderSize"
-                  :min="10"
-                  :max="20"
-                  style="margin-left: 8px"
-                  step-strictly
-                  :effect="themes"
-                  controls-position="right"
-                />
-              </div>
             </el-form-item>
             <el-form-item class="form-item margin-bottom-8" :class="'form-item-' + themes">
               <el-checkbox
@@ -331,7 +295,7 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
                   @click="checkBold('fontWeight')"
                 >
                   <el-icon>
-                    <Icon name="icon_bold_outlined"><icon_bold_outlined class="svg-icon" /></Icon>
+                    <Icon name="icon_bold_outlined" />
                   </el-icon>
                 </div>
               </el-tooltip>
@@ -349,9 +313,7 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
                   @click="checkItalic('fontStyle')"
                 >
                   <el-icon>
-                    <Icon name="icon_italic_outlined"
-                      ><icon_italic_outlined class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_italic_outlined" />
                   </el-icon>
                 </div>
               </el-tooltip>
@@ -389,7 +351,7 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
                     placement="top"
                   >
                     <el-icon class="hint-icon" :class="{ 'hint-icon--dark': themes === 'dark' }">
-                      <Icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></Icon>
+                      <Icon name="icon_info_outlined" />
                     </el-icon>
                   </el-tooltip>
                 </el-checkbox>
@@ -451,7 +413,7 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
                   @click="checkBold('fontWeightBtn')"
                 >
                   <el-icon>
-                    <Icon name="icon_bold_outlined"><icon_bold_outlined class="svg-icon" /></Icon>
+                    <Icon name="icon_bold_outlined" />
                   </el-icon>
                 </div>
               </el-tooltip>
@@ -469,9 +431,7 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
                   @click="checkItalic('fontStyleBtn')"
                 >
                   <el-icon>
-                    <Icon name="icon_italic_outlined"
-                      ><icon_italic_outlined class="svg-icon"
-                    /></Icon>
+                    <Icon name="icon_italic_outlined" />
                   </el-icon>
                 </div>
               </el-tooltip>
@@ -567,15 +527,12 @@ if (!chart.value.customStyle.component.hasOwnProperty('placeholderShow')) {
 
   &.dark {
     color: #a6a6a6;
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
     &.active {
       color: var(--ed-color-primary);
       background-color: var(--ed-color-primary-1a, rgba(51, 112, 255, 0.1));
-      &:hover {
-        background-color: #3370ff33;
-      }
+    }
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 

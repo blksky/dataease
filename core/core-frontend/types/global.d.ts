@@ -2,7 +2,6 @@ export {}
 declare global {
   interface Window {
     DataEaseBi: any
-    _de_get_time_out: number
   }
   interface Fn<T = any> {
     (...arg: T[]): T

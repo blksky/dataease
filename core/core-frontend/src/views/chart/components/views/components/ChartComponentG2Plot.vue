@@ -180,7 +180,7 @@ const calcData = async (view, callback) => {
               dynamicAreaId.value = country.value + dynamicAreaId.value
             }
           }
-          dvMainStore.setViewDataDetails(view.id, res)
+          dvMainStore.setViewDataDetails(view.id, chartData.value)
           if (
             !res.drill &&
             !res.chartExtRequest?.filter?.length &&
@@ -225,7 +225,7 @@ const renderChart = async (view, callback?) => {
       await renderL7(chart, chartView as L7ChartView<any, any>, callback)
       break
     case ChartLibraryType.G2_PLOT:
-      await renderG2Plot(chart, chartView as G2PlotChartView<any, any>)
+      renderG2Plot(chart, chartView as G2PlotChartView<any, any>)
       callback?.()
       break
     default:
@@ -233,28 +233,20 @@ const renderChart = async (view, callback?) => {
   }
 }
 let myChart = null
-let g2Timer: number
-const renderG2Plot = async (chart, chartView: G2PlotChartView<any, any>) => {
-  g2Timer && clearTimeout(g2Timer)
-  g2Timer = setTimeout(async () => {
-    try {
-      myChart?.destroy()
-      myChart = await chartView.drawChart({
-        chartObj: myChart,
-        container: containerId,
-        chart: chart,
-        scale: 1,
-        action,
-        quadrantDefaultBaseline
-      })
-      myChart?.render()
-      if (linkageActiveHistory.value) {
-        linkageActive()
-      }
-    } catch (e) {
-      console.error('renderG2Plot error', e)
-    }
-  }, 300)
+const renderG2Plot = (chart, chartView: G2PlotChartView<any, any>) => {
+  myChart?.destroy()
+  myChart = chartView.drawChart({
+    chartObj: myChart,
+    container: containerId,
+    chart: chart,
+    scale: 1,
+    action,
+    quadrantDefaultBaseline
+  })
+  myChart?.render()
+  if (linkageActiveHistory.value) {
+    linkageActive()
+  }
 }
 
 const dynamicAreaId = ref('')
@@ -319,10 +311,6 @@ const pointClickTrans = () => {
 const action = param => {
   if (param.from === 'map') {
     emitter.emit('map-default-range', param)
-    return
-  }
-  if (param.from === 'word-cloud') {
-    emitter.emit('word-cloud-default-data-range', param)
     return
   }
   state.pointParam = param.data
@@ -542,12 +530,8 @@ onMounted(() => {
   resizeObserver.observe(containerDom)
 })
 onBeforeUnmount(() => {
-  try {
-    myChart?.destroy()
-    resizeObserver?.disconnect()
-  } catch (e) {
-    console.warn(e)
-  }
+  myChart?.destroy()
+  resizeObserver?.disconnect()
 })
 </script>
 

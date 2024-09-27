@@ -2,7 +2,7 @@ import {
   G2PlotChartView,
   G2PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/g2plot'
-import type { Gauge as G2Gauge, GaugeOptions } from '@antv/g2plot/esm/plots/gauge'
+import { Gauge as G2Gauge, GaugeOptions } from '@antv/g2plot/esm/plots/gauge'
 import { flow, parseJson } from '@/views/chart/components/js/util'
 import {
   DEFAULT_LABEL,
@@ -21,7 +21,6 @@ const DEFAULT_DATA = []
 export class Gauge extends G2PlotChartView<GaugeOptions, G2Gauge> {
   properties: EditorProperty[] = [
     'background-overall-component',
-    'border-style',
     'basic-style-selector',
     'label-selector',
     'misc-selector',
@@ -30,7 +29,6 @@ export class Gauge extends G2PlotChartView<GaugeOptions, G2Gauge> {
   ]
   propertyInner: EditorPropertyInner = {
     'background-overall-component': ['all'],
-    'border-style': ['all'],
     'basic-style-selector': ['colors', 'alpha', 'gradient', 'gaugeAxisLine', 'gaugePercentLabel'],
     'label-selector': ['fontSize', 'color', 'labelFormatter'],
     'title-selector': [
@@ -66,7 +64,7 @@ export class Gauge extends G2PlotChartView<GaugeOptions, G2Gauge> {
     }
   }
 
-  async drawChart(drawOptions: G2PlotDrawOptions<G2Gauge>): Promise<G2Gauge> {
+  drawChart(drawOptions: G2PlotDrawOptions<G2Gauge>): G2Gauge {
     const { chart, container, scale } = drawOptions
     if (!chart.data?.series) {
       return
@@ -98,7 +96,6 @@ export class Gauge extends G2PlotChartView<GaugeOptions, G2Gauge> {
       }
     }
     const options = this.setupOptions(chart, initOptions, { scale })
-    const { Gauge: G2Gauge } = await import('@antv/g2plot/esm/plots/gauge')
     return new G2Gauge(container, options)
   }
 
@@ -266,7 +263,8 @@ export class Gauge extends G2PlotChartView<GaugeOptions, G2Gauge> {
               return ''
             }
             if (gaugePercentLabel === false) {
-              return v === '0' ? min : v === '1' ? max : min + (max - min) * v
+              const val = v === '0' ? min : v === '1' ? max : min + (max - min) * v
+              return valueFormatter(val, labelFormatter)
             }
             return v === '0' ? v : v * 100 + '%'
           }

@@ -142,7 +142,9 @@ export const composeStore = defineStore('compose', {
 
       const components = []
       areaData.components.forEach(component => {
-        if (['Group'].includes(component.component)) {
+        if (!['Group', 'GroupArea'].includes(component.component)) {
+          components.push(component)
+        } else {
           // 如果要组合的组件中，已经存在组合数据，则需要提前拆分
           const parentStyle = { ...component.style }
           const subComponents = component.propValue
@@ -153,10 +155,6 @@ export const composeStore = defineStore('compose', {
           })
 
           components.push(...component.propValue)
-        } else if (['DeTabs', 'GroupArea'].includes(component.component)) {
-          // do nothing GroupAreas组合视阔区 DeTabs 均不加入分组中
-        } else {
-          components.push(component)
         }
       })
 
@@ -164,16 +162,16 @@ export const composeStore = defineStore('compose', {
       components.forEach(component => {
         component.canvasId = 'Group-' + newId
       })
-      const groupComponent = deepCopy({
+      const groupComponent = {
         id: newId,
         component: 'Group',
         canvasActive: false,
         name: '组合',
         label: '组合',
         icon: 'group',
-        expand: true,
+        expand: false,
         commonBackground: {
-          ...COMMON_COMPONENT_BACKGROUND_MAP[curOriginThemes.value],
+          ...deepCopy(COMMON_COMPONENT_BACKGROUND_MAP[curOriginThemes.value]),
           backgroundColorSelect: false,
           innerPadding: 0
         },
@@ -183,7 +181,7 @@ export const composeStore = defineStore('compose', {
           ...areaData.style
         },
         propValue: components
-      })
+      }
 
       createGroupStyle(groupComponent)
       dvMainStore.addComponent({
@@ -204,12 +202,10 @@ export const composeStore = defineStore('compose', {
     // 将已经放到 Group 组件数据删除，也就是在 componentData 中删除，因为它们已经从 componentData 挪到 Group 组件中了
     batchDeleteComponent(deleteData) {
       deleteData.forEach(component => {
-        if (!['DeTabs', 'GroupArea'].includes(component.component)) {
-          for (let i = 0, len = componentData.value.length; i < len; i++) {
-            if (component.id == componentData.value[i].id) {
-              componentData.value.splice(i, 1)
-              break
-            }
+        for (let i = 0, len = componentData.value.length; i < len; i++) {
+          if (component.id == componentData.value[i].id) {
+            componentData.value.splice(i, 1)
+            break
           }
         }
       })

@@ -1,8 +1,12 @@
 :root {
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3', Helvetica Neue, Helvetica,
+    '阿里巴巴普惠体 3.0 55 Regular L3', Hiragino Sans GB, Microsoft YaHei, \5fae\8f6f\96c5\9ed1,
+    Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+
   color-scheme: light dark;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -96,7 +100,7 @@ body {
 }
 
 .title-form_primary {
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-style: normal;
   font-weight: 500;
   font-size: 14px;
@@ -147,9 +151,6 @@ body {
 
 .field-icon-red {
   color: #f54a45;
-}
-.field-icon-url {
-  color: #3370ff;
 }
 
 .field-icon-sort {
@@ -269,66 +270,6 @@ body {
 
 .circle-button {
   min-width: auto !important;
-}
-
-.circle-button_icon {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  .ed-icon {
-    font-size: 14px;
-    position: relative;
-    z-index: 5;
-  }
-
-  &:disabled {
-    color: #5f5f5f;
-    cursor: not-allowed;
-    &::after {
-      display: none !important;
-    }
-  }
-
-  width: 14px;
-  height: 14px;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-  }
-
-  &:hover {
-    &::after {
-      display: block;
-      background: var(--ed-color-primary-1a, rgba(51, 112, 255, 0.1));
-    }
-  }
-
-  &:active {
-    &::after {
-      display: block;
-      background: var(--ed-color-primary-33, rgba(51, 112, 255, 0.2));
-    }
-  }
-
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: 0.1s;
-  user-select: none;
-  outline: 0;
-  color: var(--ed-color-primary);
-  border: 0 solid transparent;
-  background-color: transparent;
-  font-size: 14px;
-  font-weight: 400;
 }
 
 .ed-table-v2__empty {
@@ -476,7 +417,7 @@ strong {
   box-shadow: 0px 4px 8px 0px #1f23291a;
 
   & > p {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: AlibabaPuHuiTi;
     font-size: 14px;
     font-weight: 500;
     line-height: 22px;
@@ -574,25 +515,4 @@ strong {
   div {
     overflow: hidden;
   }
-}
-
-.preview-content-inner-full {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: hidden;
-}
-
-.preview-content-inner-width-first {
-  width: 100%;
-  height: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.preview-content-inner-height-first {
-  width: auto;
-  height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
 }

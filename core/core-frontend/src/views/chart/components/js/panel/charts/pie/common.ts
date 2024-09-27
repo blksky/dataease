@@ -4,7 +4,6 @@ const { t } = useI18n()
 
 export const PIE_EDITOR_PROPERTY: EditorProperty[] = [
   'background-overall-component',
-  'border-style',
   'basic-style-selector',
   'title-selector',
   'legend-selector',
@@ -15,7 +14,6 @@ export const PIE_EDITOR_PROPERTY: EditorProperty[] = [
 ]
 export const PIE_EDITOR_PROPERTY_INNER: EditorPropertyInner = {
   'background-overall-component': ['all'],
-  'border-style': ['all'],
   'label-selector': [
     'fontSize',
     'color',
@@ -56,7 +54,7 @@ export const PIE_AXIS_CONFIG: AxisConfig = {
     type: 'd'
   },
   yAxis: {
-    name: `${t('chart.drag_block_pie_angle')} / ${t('chart.quota')}`,
+    name: `${t('chart.drag_block_pie_label')} / ${t('chart.quota')}`,
     type: 'q',
     limit: 1
   }

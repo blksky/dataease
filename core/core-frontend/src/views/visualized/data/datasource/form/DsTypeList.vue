@@ -3,7 +3,6 @@ import { shallowRef, PropType, computed } from 'vue'
 import { dsTypes, typeList, nameMap } from './option'
 import Icon from '@/components/icon-custom/src/Icon.vue'
 import { XpackComponent } from '@/components/plugin'
-import { iconDatasourceMap } from '@/components/icon-group/datasource-list'
 
 export type DsType = 'OLTP' | 'OLAP' | 'DL' | 'OTHER' | 'LOCAL' | 'latestUse' | 'all'
 const props = defineProps({
@@ -97,9 +96,7 @@ const loadDsPlugin = data => {
     }
     const index = typeList.findIndex(ele => ele === node.catalog)
     if (index !== -1) {
-      let copiedArr = JSON.parse(JSON.stringify(databaseList.value))
-      copiedArr[index].push(node)
-      databaseList.value = copiedArr
+      databaseList.value[index].push(node)
     }
   })
 }
@@ -120,9 +117,7 @@ const selectDs = ({ type }) => {
         <div v-for="db in ele.dbList" :key="db.type" class="db-card" @click="selectDs(db)">
           <el-icon class="icon-border">
             <Icon v-if="db['isPlugin']" :static-content="db.icon"></Icon>
-            <Icon v-else
-              ><component :is="iconDatasourceMap[db.type]" class="svg-icon"></component
-            ></Icon>
+            <Icon v-else :name="`${db.type}-ds`"></Icon>
           </el-icon>
           <p class="db-name">{{ db.name }}</p>
         </div>

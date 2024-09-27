@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import icon_done_outlined from '@/assets/svg/icon_done_outlined.svg'
 import { ref, onMounted } from 'vue'
 import { Icon } from '@/components/icon-custom'
 import { useUserStoreWithOut } from '@/store/modules/user'
@@ -39,7 +38,7 @@ onMounted(() => {
     >
       <span>{{ item.name }}</span>
       <el-icon v-if="language === item.value">
-        <Icon name="icon_done_outlined"><icon_done_outlined class="svg-icon" /></Icon>
+        <Icon name="icon_done_outlined"></Icon>
       </el-icon>
     </div>
   </div>

@@ -1,10 +1,9 @@
 <script setup lang="tsx">
-import icon_info_outlined from '@/assets/svg/icon_info_outlined.svg'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { snapshotStoreWithOut } from '@/store/modules/data-visualization/snapshot'
 import { storeToRefs } from 'pinia'
 import { nextTick, onMounted, ref } from 'vue'
-import { ElFormItem, ElIcon } from 'element-plus-secondary'
+import { ElFormItem } from 'element-plus-secondary'
 
 import { merge, cloneDeep } from 'lodash-es'
 import { useEmitt } from '@/hooks/web/useEmitt'
@@ -12,20 +11,12 @@ import ComponentColorSelector from '@/components/dashboard/subject-setting/dashb
 import OverallSetting from '@/components/dashboard/subject-setting/dashboard-style/OverallSetting.vue'
 import CanvasBackground from '@/components/visualization/component-background/CanvasBackground.vue'
 import SeniorStyleSetting from '@/components/dashboard/subject-setting/dashboard-style/SeniorStyleSetting.vue'
-import Icon from '../icon-custom/src/Icon.vue'
-import CanvasBaseSetting from '@/components/visualization/CanvasBaseSetting.vue'
 const dvMainStore = dvMainStoreWithOut()
 const snapshotStore = snapshotStoreWithOut()
 const { canvasStyleData, canvasViewInfo } = storeToRefs(dvMainStore)
 let canvasAttrInit = false
 
-const canvasAttrActiveNames = ref(['size', 'baseSetting', 'background', 'color'])
-
-const screenAdaptorList = [
-  { label: '宽度优先', value: 'widthFirst' },
-  { label: '高度优先', value: 'heightFirst' },
-  { label: '铺满全屏', value: 'full' }
-]
+const canvasAttrActiveNames = ref(['size', 'background', 'color'])
 const init = () => {
   nextTick(() => {
     canvasAttrInit = true
@@ -34,10 +25,6 @@ const init = () => {
 
 const onColorChange = val => {
   themeAttrChange('customAttr', 'color', val)
-}
-
-const onStyleChange = () => {
-  snapshotStore.recordSnapshotCache('renderChart')
 }
 
 const onBaseChange = () => {
@@ -118,38 +105,7 @@ onMounted(() => {
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row v-if="canvasStyleData.screenAdaptor">
-            <el-form-item style="margin-top: 16px">
-              <span class="form-item-scroll"> 缩放方式 </span>
-              <el-tooltip class="item" effect="dark" placement="top">
-                <template #content>
-                  <div>预览时生效</div>
-                </template>
-                <el-icon class="hint-icon--dark">
-                  <Icon name="icon_info_outlined"><icon_info_outlined class="svg-icon" /></Icon>
-                </el-icon>
-              </el-tooltip>
-              <el-select
-                style="margin: 0 0 0 8px; flex: 1"
-                effect="dark"
-                v-model="canvasStyleData.screenAdaptor"
-                @change="onStyleChange"
-                size="small"
-              >
-                <el-option
-                  v-for="option in screenAdaptorList"
-                  size="small"
-                  :key="option.value"
-                  :label="option.label"
-                  :value="option.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-row>
         </el-form>
-      </el-collapse-item>
-      <el-collapse-item effect="dark" title="基础配置" name="baseSetting">
-        <canvas-base-setting themes="dark"></canvas-base-setting>
       </el-collapse-item>
       <el-collapse-item effect="dark" title="背景" name="background">
         <canvas-background themes="dark"></canvas-background>
@@ -173,10 +129,6 @@ onMounted(() => {
 </template>
 
 <style lang="less" scoped>
-.form-item-scroll {
-  font-size: 12px;
-  color: @canvas-main-font-color-dark;
-}
 :deep(.ed-collapse-item) {
   &:first-child {
     .ed-collapse-item__header {
@@ -405,9 +357,5 @@ onMounted(() => {
   :deep(.ed-collapse-item__wrap) {
     border-bottom: none;
   }
-}
-
-.hint-icon--dark {
-  color: #a6a6a6;
 }
 </style>

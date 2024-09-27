@@ -37,9 +37,8 @@ public class ExcelUtils {
     private static String path = "/opt/dataease2.0/data/excel/";
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    private static TypeReference<List<TableField>> TableFieldListTypeReference = new TypeReference<List<TableField>>() {
+    private static  TypeReference<List<TableField>> TableFieldListTypeReference = new TypeReference<List<TableField>>() {
     };
-
     public static List<DatasetTableDTO> getTables(DatasourceRequest datasourceRequest) throws DEException {
         List<DatasetTableDTO> tableDescs = new ArrayList<>();
         try {
@@ -49,7 +48,7 @@ public class ExcelUtils {
                 datasetTableDTO.setTableName(rootNode.get(i).get("deTableName").asText());
                 datasetTableDTO.setName(rootNode.get(i).get("deTableName").asText());
                 datasetTableDTO.setDatasourceId(datasourceRequest.getDatasource().getId());
-                datasetTableDTO.setLastUpdateTime(rootNode.get(i).get("lastUpdateTime") == null ? datasourceRequest.getDatasource().getCreateTime() : rootNode.get(i).get("lastUpdateTime").asLong(0L));
+                datasetTableDTO.setLastUpdateTime(rootNode.get(i).get("lastUpdateTime") == null? datasourceRequest.getDatasource().getCreateTime(): rootNode.get(i).get("lastUpdateTime").asLong(0L));
                 tableDescs.add(datasetTableDTO);
             }
         } catch (Exception e) {
@@ -59,12 +58,12 @@ public class ExcelUtils {
         return tableDescs;
     }
 
-    public static Map<String, String> getTableNamesMap(String configration) throws DEException {
-        Map<String, String> result = new HashMap<>();
+    public static Map<String,String> getTableNamesMap(String configration) throws DEException {
+        Map<String,String> result = new HashMap<>();
         try {
             JsonNode rootNode = objectMapper.readTree(configration);
             for (int i = 0; i < rootNode.size(); i++) {
-                result.put(rootNode.get(i).get("tableName").asText(), rootNode.get(i).get("deTableName").asText());
+                result.put(rootNode.get(i).get("tableName").asText(),rootNode.get(i).get("deTableName").asText());
             }
         } catch (Exception e) {
             DEException.throwException(e);
@@ -294,7 +293,7 @@ public class ExcelUtils {
                     cells.add(str);
                 }
                 if (!isEmpty(cells)) {
-                    if (cells.size() > size) {
+                    if(cells.size() > size){
                         cells = cells.subList(0, size);
                     }
                     data.add(cells.toArray(new String[]{}));
@@ -308,20 +307,13 @@ public class ExcelUtils {
     }
 
     private String cellType(String value) {
-        if (StringUtils.isEmpty(value) || value.length() > 19) {
-            return "TEXT";
-        }
-        String regex = "^\\d+(\\.\\d+)?$";
-        if (!value.matches(regex)) {
+        if(value.length()> 19){
             return "TEXT";
         }
         try {
             Double d = Double.valueOf(value);
             double eps = 1e-10;
             if (d - Math.floor(d) < eps) {
-                if (value.length() > 1 && value.startsWith("0")) {
-                    return "TEXT";
-                }
                 return "LONG";
             } else {
                 return "DOUBLE";
@@ -339,9 +331,9 @@ public class ExcelUtils {
             tableFiled.setFieldType(cellType(value));
         } else {
             String type = cellType(value);
-            if (tableFiled.getFieldType() == null) {
+            if(tableFiled.getFieldType() == null){
                 tableFiled.setFieldType(type);
-            } else {
+            }else {
                 if (type.equalsIgnoreCase("TEXT")) {
                     tableFiled.setFieldType(type);
                 }
@@ -462,7 +454,7 @@ public class ExcelUtils {
             String[] split = s.split(",");
             for (int i = 0; i < split.length; i++) {
                 String filedName = split[i];
-                if (StringUtils.isEmpty(filedName)) {
+                if(StringUtils.isEmpty(filedName)){
                     DEException.throwException("首行行中不允许有空单元格！");
                 }
                 if (filedName.startsWith(UFEFF)) {

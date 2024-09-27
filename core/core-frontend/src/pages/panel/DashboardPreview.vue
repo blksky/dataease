@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive, onBeforeMount, nextTick, inject } from 'vue'
+import { ref, reactive, onBeforeMount, nextTick } from 'vue'
 import { initCanvasData, initCanvasDataMobile } from '@/utils/canvasUtils'
 import { interactiveStoreWithOut } from '@/store/modules/interactive'
 import { useEmbedded } from '@/store/modules/embedded'
@@ -13,16 +13,12 @@ import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { useI18n } from '@/hooks/web/useI18n'
 import VanSticky from 'vant/es/sticky'
 import VanNavBar from 'vant/es/nav-bar'
-import request from '@/config/axios'
 import 'vant/es/nav-bar/style'
 import 'vant/es/sticky/style'
 const { wsCache } = useCache()
 const interactiveStore = interactiveStoreWithOut()
 const embeddedStore = useEmbedded()
 const dashboardPreview = ref(null)
-const embeddedParamsDiv = inject('embeddedParams') as object
-
-const embeddedParams = embeddedParamsDiv?.dvId ? embeddedParamsDiv : embeddedStore
 const { t } = useI18n()
 const state = reactive({
   canvasDataPreview: null,
@@ -37,51 +33,41 @@ const checkPer = async resourceId => {
   if (!window.DataEaseBi || !resourceId) {
     return true
   }
-  const request = { busiFlag: embeddedParams.busiFlag }
+  const request = { busiFlag: embeddedStore.busiFlag }
   await interactiveStore.setInteractive(request)
-  const key = embeddedParams.busiFlag === 'dataV' ? 'screen-weight' : 'panel-weight'
+  const key = embeddedStore.busiFlag === 'dataV' ? 'screen-weight' : 'panel-weight'
   return check(wsCache.get(key), resourceId, 1)
 }
 const isPc = ref(true)
 onBeforeMount(async () => {
-  const checkResult = await checkPer(embeddedParams.dvId)
+  const checkResult = await checkPer(embeddedStore.dvId)
   if (!checkResult) {
     return
   }
-  let tokenInfo = null
-  if (embeddedStore.getToken && !Object.keys((tokenInfo = embeddedStore.getTokenInfo)).length) {
-    const res = await request.get({ url: '/embedded/getTokenArgs' })
-    embeddedStore.setTokenInfo(res.data)
-    tokenInfo = embeddedStore.getTokenInfo
-  }
   // 添加外部参数
   let attachParams
-  await getOuterParamsInfo(embeddedParams.dvId).then(rsp => {
+  await getOuterParamsInfo(embeddedStore.dvId).then(rsp => {
     dvMainStore.setNowPanelOuterParamsInfo(rsp.data)
   })
 
   // div嵌入
-  if (embeddedParams.outerParams) {
+  if (embeddedStore.outerParams) {
     try {
-      const outerPramsParse = JSON.parse(embeddedParams.outerParams)
+      const outerPramsParse = JSON.parse(embeddedStore.outerParams)
       attachParams = outerPramsParse.attachParams
       dvMainStore.setEmbeddedCallBack(outerPramsParse.callBackFlag || 'no')
     } catch (e) {
       console.error(e)
       ElMessage.error(t('visualization.outer_param_decode_error'))
-      return
     }
-  }
-  if (tokenInfo && Object.keys(tokenInfo).length) {
-    attachParams = Object.assign({}, attachParams, tokenInfo)
   }
 
   isPc.value = !isMobile()
   const req = isPc.value ? initCanvasData : initCanvasDataMobile
 
   req(
-    embeddedParams.dvId,
-    embeddedParams.busiFlag,
+    embeddedStore.dvId,
+    embeddedStore.busiFlag,
     function ({
       canvasDataResult,
       canvasStyleResult,
@@ -119,6 +105,9 @@ onBeforeMount(async () => {
     :class="isPc ? 'dashboard-preview' : 'dv-common-layout-mobile_embedded'"
     v-if="state.canvasStylePreview"
   >
+    <van-sticky v-if="!isPc">
+      <van-nav-bar :title="state.dvInfo.name" />
+    </van-sticky>
     <de-preview
       ref="dashboardPreview"
       :dv-info="state.dvInfo"

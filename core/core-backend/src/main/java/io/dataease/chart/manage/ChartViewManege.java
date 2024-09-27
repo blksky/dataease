@@ -1,32 +1,25 @@
 package io.dataease.chart.manage;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dataease.api.chart.vo.ChartBaseVO;
+import io.dataease.extensions.datasource.dto.DatasetTableFieldDTO;
+import io.dataease.extensions.datasource.model.SQLObj;
+import io.dataease.extensions.view.dto.*;
+import io.dataease.extensions.view.filter.FilterTreeObj;
 import io.dataease.api.chart.vo.ViewSelectorVO;
 import io.dataease.chart.dao.auto.entity.CoreChartView;
 import io.dataease.chart.dao.auto.mapper.CoreChartViewMapper;
-import io.dataease.chart.dao.ext.entity.ChartBasePO;
 import io.dataease.chart.dao.ext.mapper.ExtChartViewMapper;
 import io.dataease.dataset.dao.auto.entity.CoreDatasetTableField;
 import io.dataease.dataset.dao.auto.mapper.CoreDatasetTableFieldMapper;
-import io.dataease.dataset.manage.DatasetTableFieldManage;
 import io.dataease.dataset.manage.PermissionManage;
 import io.dataease.dataset.utils.TableUtils;
 import io.dataease.engine.constant.ExtFieldConstant;
 import io.dataease.engine.func.FunctionConstant;
 import io.dataease.engine.utils.Utils;
 import io.dataease.exception.DEException;
-import io.dataease.extensions.datasource.api.PluginManageApi;
-import io.dataease.extensions.datasource.dto.CalParam;
-import io.dataease.extensions.datasource.dto.DatasetTableFieldDTO;
-import io.dataease.extensions.datasource.model.SQLObj;
-import io.dataease.extensions.view.dto.*;
-import io.dataease.extensions.view.filter.FilterTreeObj;
 import io.dataease.i18n.Translator;
-import io.dataease.license.config.XpackInteract;
 import io.dataease.utils.BeanUtils;
 import io.dataease.utils.IDUtils;
 import io.dataease.utils.JsonUtil;
@@ -35,7 +28,6 @@ import io.dataease.visualization.dao.auto.mapper.DataVisualizationInfoMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -63,11 +55,6 @@ public class ChartViewManege {
     @Resource
     private ExtChartViewMapper extChartViewMapper;
 
-    @Resource
-    private DatasetTableFieldManage datasetTableFieldManage;
-    @Autowired(required = false)
-    private PluginManageApi pluginManage;
-
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
@@ -84,23 +71,13 @@ public class ChartViewManege {
         if (ObjectUtils.isEmpty(coreChartView)) {
             coreChartViewMapper.insert(record);
         } else {
-            UpdateWrapper<CoreChartView> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id", record.getId());
-            //富文本允许设置空的tableId 这里额外更新一下
-            if (record.getTableId() == null) {
-                updateWrapper.set("table_id", null);
-            }
-            coreChartViewMapper.update(record, updateWrapper);
+            coreChartViewMapper.updateById(record);
         }
         return chartViewDTO;
     }
 
     public void delete(Long id) {
         coreChartViewMapper.deleteById(id);
-    }
-
-    @XpackInteract(value = "chartViewManage")
-    public void disuse(List<Long> chartIdList) {
     }
 
     @Transactional
@@ -126,14 +103,7 @@ public class ChartViewManege {
     public List<ChartViewDTO> listBySceneId(Long sceneId) {
         QueryWrapper<CoreChartView> wrapper = new QueryWrapper<>();
         wrapper.eq("scene_id", sceneId);
-        List<ChartViewDTO> chartViewDTOS = transChart(coreChartViewMapper.selectList(wrapper));
-        for (ChartViewDTO dto : chartViewDTOS) {
-            QueryWrapper<CoreDatasetTableField> wp = new QueryWrapper<>();
-            wp.eq("dataset_group_id", dto.getTableId());
-            List<CoreDatasetTableField> coreDatasetTableFields = coreDatasetTableFieldMapper.selectList(wp);
-            dto.setCalParams(Utils.getParams(datasetTableFieldManage.transDTO(coreDatasetTableFields)));
-        }
-        return chartViewDTOS;
+        return transChart(coreChartViewMapper.selectList(wrapper));
     }
 
     public List<ChartViewDTO> transChart(List<CoreChartView> list) {
@@ -160,13 +130,10 @@ public class ChartViewManege {
         wrapper.eq("checked", true);
         wrapper.isNull("chart_id");
 
-        TypeReference<List<CalParam>> typeToken = new TypeReference<>() {
-        };
         List<CoreDatasetTableField> fields = coreDatasetTableFieldMapper.selectList(wrapper);
         List<DatasetTableFieldDTO> collect = fields.stream().map(ele -> {
             DatasetTableFieldDTO dto = new DatasetTableFieldDTO();
             BeanUtils.copyBean(dto, ele);
-            dto.setParams(JsonUtil.parseList(ele.getParams(), typeToken));
             return dto;
         }).collect(Collectors.toList());
         // filter column disable field
@@ -192,12 +159,10 @@ public class ChartViewManege {
 
         for (ChartViewFieldDTO ele : list) {
             if (Objects.equals(ele.getExtField(), ExtFieldConstant.EXT_CALC)) {
-                List<DatasetTableFieldDTO> f = list.stream().map(e -> {
+                String originField = Utils.calcFieldRegex(ele.getOriginName(), tableObj, list.stream().peek(e -> {
                     DatasetTableFieldDTO dto = new DatasetTableFieldDTO();
                     BeanUtils.copyBean(dto, e);
-                    return dto;
-                }).collect(Collectors.toList());
-                String originField = Utils.calcFieldRegex(ele.getOriginName(), tableObj, f, true, null, Utils.mergeParam(Utils.getParams(f), null), pluginManage);
+                }).collect(Collectors.toList()), true, null);
                 for (String func : FunctionConstant.AGG_FUNC) {
                     if (Utils.matchFunction(func, originField)) {
                         ele.setSummary("");
@@ -255,30 +220,6 @@ public class ChartViewManege {
         coreDatasetTableFieldMapper.delete(queryWrapper);
     }
 
-    public ChartBaseVO chartBaseInfo(Long id) {
-        ChartBasePO po = extChartViewMapper.queryChart(id);
-        if (ObjectUtils.isEmpty(po)) return null;
-        ChartBaseVO vo = BeanUtils.copyBean(new ChartBaseVO(), po);
-        TypeReference<List<ChartViewFieldDTO>> tokenType = new TypeReference<>() {
-        };
-        vo.setXAxis(JsonUtil.parseList(po.getXAxis(), tokenType));
-        vo.setXAxisExt(JsonUtil.parseList(po.getXAxisExt(), tokenType));
-        vo.setYAxis(JsonUtil.parseList(po.getYAxis(), tokenType));
-        vo.setYAxisExt(JsonUtil.parseList(po.getYAxisExt(), tokenType));
-        vo.setExtStack(JsonUtil.parseList(po.getExtStack(), tokenType));
-        vo.setExtBubble(JsonUtil.parseList(po.getExtBubble(), tokenType));
-        vo.setFlowMapStartName(JsonUtil.parseList(po.getFlowMapStartName(), tokenType));
-        vo.setFlowMapEndName(JsonUtil.parseList(po.getFlowMapEndName(), tokenType));
-        if (StringUtils.isBlank(po.getExtColor()) || StringUtils.equals("null", po.getExtColor())) {
-            vo.setExtColor(new ArrayList<>());
-        } else {
-            vo.setExtColor(JsonUtil.parseList(po.getExtColor(), tokenType));
-        }
-        vo.setExtLabel(JsonUtil.parseList(po.getExtLabel(), tokenType));
-        vo.setExtTooltip(JsonUtil.parseList(po.getExtTooltip(), tokenType));
-        return vo;
-    }
-
     public DatasetTableFieldDTO createCountField(Long id) {
         DatasetTableFieldDTO dto = new DatasetTableFieldDTO();
         dto.setId(-1L);
@@ -304,7 +245,7 @@ public class ChartViewManege {
             dto.setDatePattern("date_sub");
             dto.setChartType("bar");
 
-            if (dto.getId() == -1L || dto.getDeType() == 0 || dto.getDeType() == 1 || dto.getDeType() == 7) {
+            if (dto.getId() == -1L || dto.getDeType() == 0 || dto.getDeType() == 1) {
                 dto.setSummary("count");
             } else {
                 dto.setSummary("sum");
@@ -340,9 +281,6 @@ public class ChartViewManege {
         record.setDrillFields(objectMapper.writeValueAsString(dto.getDrillFields()));
         record.setCustomFilter(objectMapper.writeValueAsString(dto.getCustomFilter()));
         record.setViewFields(objectMapper.writeValueAsString(dto.getViewFields()));
-        record.setFlowMapStartName(objectMapper.writeValueAsString(dto.getFlowMapStartName()));
-        record.setFlowMapEndName(objectMapper.writeValueAsString(dto.getFlowMapEndName()));
-        record.setExtColor(objectMapper.writeValueAsString(dto.getExtColor()));
 
         return record;
     }
@@ -368,9 +306,6 @@ public class ChartViewManege {
         dto.setDrillFields(JsonUtil.parseList(record.getDrillFields(), tokenType));
         dto.setCustomFilter(JsonUtil.parseObject(record.getCustomFilter(), FilterTreeObj.class));
         dto.setViewFields(JsonUtil.parseList(record.getViewFields(), tokenType));
-        dto.setFlowMapStartName(JsonUtil.parseList(record.getFlowMapStartName(), tokenType));
-        dto.setFlowMapEndName(JsonUtil.parseList(record.getFlowMapEndName(), tokenType));
-        dto.setExtColor(JsonUtil.parseList(record.getExtColor(), tokenType));
 
         return dto;
 
@@ -392,10 +327,10 @@ public class ChartViewManege {
     public List<ViewSelectorVO> viewOption(Long resourceId) {
         List<ViewSelectorVO> result = extChartViewMapper.queryViewOption(resourceId);
         DataVisualizationInfo dvInfo = visualizationInfoMapper.selectById(resourceId);
-        if (dvInfo != null && !CollectionUtils.isEmpty(result)) {
+        if(dvInfo != null && !CollectionUtils.isEmpty(result)){
             String componentData = dvInfo.getComponentData();
-            return result.stream().filter(item -> componentData.indexOf(String.valueOf(item.getId())) > 0).toList();
-        } else {
+            return result.stream().filter(item ->componentData.indexOf(String.valueOf(item.getId()))>0).toList();
+        }else{
             return result;
         }
     }

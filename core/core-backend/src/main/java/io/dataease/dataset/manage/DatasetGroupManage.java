@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.dataease.api.dataset.union.DatasetGroupInfoDTO;
 import io.dataease.api.dataset.union.UnionDTO;
 import io.dataease.api.dataset.vo.DataSetBarVO;
-import io.dataease.api.permissions.relation.api.RelationApi;
 import io.dataease.commons.constants.OptConstants;
 import io.dataease.dataset.dao.auto.entity.CoreDatasetGroup;
 import io.dataease.dataset.dao.auto.entity.CoreDatasetTable;
@@ -36,7 +35,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,9 +74,6 @@ public class DatasetGroupManage {
 
     @Resource
     private CoreOptRecentManage coreOptRecentManage;
-
-    @Autowired(required = false)
-    private RelationApi relationManage;
 
     private static final String leafType = "dataset";
 
@@ -179,21 +174,6 @@ public class DatasetGroupManage {
         coreDatasetGroupMapper.updateById(coreDatasetGroup);
         coreOptRecentManage.saveOpt(coreDatasetGroup.getId(), OptConstants.OPT_RESOURCE_TYPE.DATASET, OptConstants.OPT_TYPE.UPDATE);
         return datasetGroupInfoDTO;
-    }
-
-    public boolean perDelete(Long id) {
-        if (LicenseUtil.licenseValid()) {
-            try {
-                relationManage.checkAuth();
-            } catch (Exception e) {
-                return false;
-            }
-            Long count = relationManage.getDatasetResource(id);
-            if (count > 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @XpackInteract(value = "authResourceTree", before = false)
@@ -395,6 +375,10 @@ public class DatasetGroupManage {
         return dto;
     }
 
+    public DatasetGroupInfoDTO getDatasetGroupInfoDTO(Long id, String type) throws Exception {
+        return get(id, type);
+    }
+
     public DatasetGroupInfoDTO getDetail(Long id) throws Exception {
         CoreDatasetGroup coreDatasetGroup = coreDatasetGroupMapper.selectById(id);
         if (coreDatasetGroup == null) {
@@ -431,7 +415,7 @@ public class DatasetGroupManage {
         return dto;
     }
 
-    public DatasetGroupInfoDTO getDatasetGroupInfoDTO(Long id, String type) throws Exception {
+    public DatasetGroupInfoDTO get(Long id, String type) throws Exception {
         CoreDatasetGroup coreDatasetGroup = coreDatasetGroupMapper.selectById(id);
         if (coreDatasetGroup == null) {
             return null;
@@ -553,11 +537,8 @@ public class DatasetGroupManage {
         }
     }
 
-    public void geFullName(Long pid, List<String> fullName) {
+    private void geFullName(Long pid, List<String> fullName) {
         CoreDatasetGroup parent = coreDatasetGroupMapper.selectById(pid);// 查找父级folder
-        if (parent == null) {
-            return;
-        }
         fullName.add(parent.getName());
         if (parent.getPid() != null && parent.getPid() != 0) {
             geFullName(parent.getPid(), fullName);

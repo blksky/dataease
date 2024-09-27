@@ -1,12 +1,4 @@
-import {
-  type LayoutResult,
-  S2Event,
-  S2Options,
-  TableColCell,
-  TableDataCell,
-  TableSheet,
-  ViewMeta
-} from '@antv/s2'
+import { S2Event, S2Options, TableColCell, TableDataCell, TableSheet, ViewMeta } from '@antv/s2'
 import { formatterItem, valueFormatter } from '../../../formatter'
 import { parseJson } from '../../../util'
 import { S2ChartView, S2DrawOptions } from '../../types/impl/s2'
@@ -16,31 +8,7 @@ import { isNumber } from 'lodash-es'
 import { copyContent, SortTooltip } from '@/views/chart/components/js/panel/common/common_table'
 
 const { t } = useI18n()
-class ImageCell extends TableDataCell {
-  protected drawTextShape(): void {
-    const img = new Image()
-    const { x, y, width, height, fieldValue } = this.meta
-    img.src = fieldValue as string
-    img.setAttribute('crossOrigin', 'anonymous')
-    img.onload = () => {
-      !this.cfg.children && (this.cfg.children = [])
-      const { width: imgWidth, height: imgHeight } = img
-      const ratio = Math.max(imgWidth / width, imgHeight / height)
-      // 不铺满，部分留白
-      const imgShowWidth = (imgWidth / ratio) * 0.8
-      const imgShowHeight = (imgHeight / ratio) * 0.8
-      this.textShape = this.addShape('image', {
-        attrs: {
-          x: x + (imgShowWidth < width ? (width - imgShowWidth) / 2 : 0),
-          y: y + (imgShowHeight < height ? (height - imgShowHeight) / 2 : 0),
-          width: imgShowWidth,
-          height: imgShowHeight,
-          img
-        }
-      })
-    }
-  }
-}
+
 /**
  * 明细表
  */
@@ -132,21 +100,12 @@ export class TableInfo extends S2ChartView<TableSheet> {
     }
 
     const customAttr = parseJson(chart.customAttr)
-    const style = this.configStyle(chart)
-    // 自适应列宽模式下，URL 字段的宽度固定为 120
-    if (customAttr.basicStyle.tableColumnMode === 'adapt') {
-      const urlFields = fields.filter(field => field.deType === 7)
-      style.colCfg.widthByFieldValue = urlFields?.reduce((p, n) => {
-        p[n.chartShowName ?? n.name] = 120
-        return p
-      }, {})
-    }
     // options
     const s2Options: S2Options = {
       width: containerDom.offsetWidth,
       height: containerDom.offsetHeight,
       showSeriesNumber: customAttr.tableHeader.showIndex,
-      style,
+      style: this.configStyle(chart),
       conditions: this.configConditions(chart),
       tooltip: {
         getContainer: () => containerDom,
@@ -155,35 +114,32 @@ export class TableInfo extends S2ChartView<TableSheet> {
     }
     // 开启序号之后，第一列就是序号列，修改 label 即可
     if (s2Options.showSeriesNumber) {
-      let indexLabel = customAttr.tableHeader.indexLabel
-      if (!indexLabel) {
-        indexLabel = ''
-      }
-      s2Options.layoutCoordinate = (_, __, col) => {
-        if (col.colIndex === 0 && col.rowIndex === 0) {
-          col.label = indexLabel
-          col.value = indexLabel
+      s2Options.colCell = (node, sheet, config) => {
+        if (node.colIndex === 0) {
+          let indexLabel = customAttr.tableHeader.indexLabel
+          if (!indexLabel) {
+            indexLabel = ''
+          }
+          const cell = new TableColCell(node, sheet, config)
+          const shape = cell.getTextShape() as any
+          shape.attrs.text = indexLabel
+          return cell
         }
+        return new TableColCell(node, sheet, config)
       }
-    }
-    s2Options.dataCell = viewMeta => {
-      const field = fields.filter(f => f.dataeaseName === viewMeta.valueField)?.[0]
-      if (field?.deType === 7 && chart.showPosition !== 'dialog') {
-        return new ImageCell(viewMeta, viewMeta?.spreadsheet)
+      s2Options.dataCell = viewMeta => {
+        if (viewMeta.colIndex === 0) {
+          viewMeta.fieldValue =
+            pageInfo.pageSize * (pageInfo.currentPage - 1) + viewMeta.rowIndex + 1
+        }
+        return new TableDataCell(viewMeta, viewMeta?.spreadsheet)
       }
-      if (viewMeta.colIndex === 0 && s2Options.showSeriesNumber) {
-        viewMeta.fieldValue = pageInfo.pageSize * (pageInfo.currentPage - 1) + viewMeta.rowIndex + 1
-      }
-      return new TableDataCell(viewMeta, viewMeta?.spreadsheet)
     }
     // tooltip
     this.configTooltip(chart, s2Options)
     // 隐藏表头，保留顶部的分割线, 禁用表头横向 resize
     if (customAttr.tableHeader.showTableHeader === false) {
       s2Options.style.colCfg.height = 1
-      if (customAttr.tableCell.showHorizonBorder === false) {
-        s2Options.style.colCfg.height = 0
-      }
       s2Options.interaction = {
         resize: {
           colCellVertical: false
@@ -195,66 +151,11 @@ export class TableInfo extends S2ChartView<TableSheet> {
       }
     } else {
       // header interaction
-      chart.container = container
       this.configHeaderInteraction(chart, s2Options)
     }
     // 开始渲染
     const newChart = new TableSheet(containerDom, s2DataConfig, s2Options)
 
-    // 自适应铺满
-    if (customAttr.basicStyle.tableColumnMode === 'adapt') {
-      newChart.on(S2Event.LAYOUT_RESIZE_COL_WIDTH, () => {
-        newChart.store.set('lastLayoutResult', newChart.facet.layoutResult)
-      })
-      newChart.on(S2Event.LAYOUT_AFTER_HEADER_LAYOUT, (ev: LayoutResult) => {
-        const status = newChart.store.get('status')
-        if (status === 'default') {
-          return
-        }
-        const lastLayoutResult = newChart.store.get('lastLayoutResult') as LayoutResult
-        if (status === 'expanded' && lastLayoutResult) {
-          // 拖拽表头定义宽度，和上一次布局对比，保留除已拖拽列之外的宽度
-          const widthByFieldValue = newChart.options.style?.colCfg?.widthByFieldValue
-          const lastLayoutWidthMap: Record<string, number> = lastLayoutResult?.colLeafNodes.reduce(
-            (p, n) => {
-              p[n.value] = widthByFieldValue?.[n.value] ?? n.width
-              return p
-            },
-            {}
-          )
-          const totalWidth = ev.colLeafNodes.reduce((p, n) => {
-            n.width = lastLayoutWidthMap[n.value]
-            n.x = p
-            return p + n.width
-          }, 0)
-          ev.colsHierarchy.width = totalWidth
-        } else {
-          // 第一次渲染初始化，把图片字段固定为 120 进行计算
-          const urlFields = fields.filter(field => field.deType === 7).map(f => f.dataeaseName)
-          const totalWidthWithImg = ev.colLeafNodes.reduce((p, n) => {
-            return p + (urlFields.includes(n.field) ? 120 : n.width)
-          }, 0)
-          if (containerDom.offsetWidth <= totalWidthWithImg) {
-            // 图库计算的布局宽度已经大于等于容器宽度，不需要再扩大，不处理
-            newChart.store.set('status', 'default')
-            return
-          }
-          // 图片字段固定 120, 剩余宽度按比例均摊到其他字段进行扩大
-          const totalWidthWithoutImg = ev.colLeafNodes.reduce((p, n) => {
-            return p + (urlFields.includes(n.field) ? 0 : n.width)
-          }, 0)
-          const restWidth = containerDom.offsetWidth - urlFields.length * 120
-          const scale = restWidth / totalWidthWithoutImg
-          const totalWidth = ev.colLeafNodes.reduce((p, n) => {
-            n.width = urlFields.includes(n.field) ? 120 : n.width * scale
-            n.x = p
-            return p + n.width
-          }, 0)
-          ev.colsHierarchy.width = Math.min(containerDom.offsetWidth, totalWidth)
-          newChart.store.set('status', 'expanded')
-        }
-      })
-    }
     // click
     newChart.on(S2Event.DATA_CELL_CLICK, ev => {
       const cell = newChart.getCell(ev.target)

@@ -1,7 +1,6 @@
 package io.dataease.chart.server;
 
 import io.dataease.api.chart.ChartViewApi;
-import io.dataease.api.chart.vo.ChartBaseVO;
 import io.dataease.extensions.view.dto.ChartViewDTO;
 import io.dataease.extensions.view.dto.ChartViewFieldDTO;
 import io.dataease.api.chart.vo.ViewSelectorVO;
@@ -72,10 +71,5 @@ public class ChartViewServer implements ChartViewApi {
     @Override
     public void deleteFieldByChart(Long chartId) {
         chartViewManege.deleteFieldByChartId(chartId);
-    }
-
-    @Override
-    public ChartBaseVO chartBaseInfo(Long id) {
-        return chartViewManege.chartBaseInfo(id);
     }
 }

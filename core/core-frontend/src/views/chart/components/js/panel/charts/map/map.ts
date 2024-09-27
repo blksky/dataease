@@ -2,22 +2,22 @@ import {
   L7PlotChartView,
   L7PlotDrawOptions
 } from '@/views/chart/components/js/panel/types/impl/l7plot'
-import type { Choropleth, ChoroplethOptions } from '@antv/l7plot/dist/esm/plots/choropleth'
+import { Choropleth, ChoroplethOptions } from '@antv/l7plot/dist/esm/plots/choropleth'
 import {
   filterChartDataByRange,
   flow,
   getDynamicColorScale,
   getGeoJsonFile,
+  setMapChartDefaultMaxAndMinValueByData,
   hexColorToRGBA,
-  parseJson,
-  getMaxAndMinValueByData
+  parseJson
 } from '@/views/chart/components/js/util'
 import {
   handleGeoJson,
   mapRendered,
   mapRendering
 } from '@/views/chart/components/js/panel/common/common_antv'
-import type { FeatureCollection } from '@antv/l7plot/dist/esm/plots/choropleth/types'
+import { FeatureCollection } from '@antv/l7plot/dist/esm/plots/choropleth/types'
 import { cloneDeep, defaultsDeep } from 'lodash-es'
 import { useI18n } from '@/hooks/web/useI18n'
 import { valueFormatter } from '../../../formatter'
@@ -27,7 +27,7 @@ import {
   MAP_EDITOR_PROPERTY_INNER,
   MapMouseEvent
 } from '@/views/chart/components/js/panel/charts/map/common'
-import type { CategoryLegendListItem } from '@antv/l7plot-component/dist/lib/types/legend'
+import { CategoryLegendListItem } from '@antv/l7plot-component/dist/lib/types/legend'
 import createDom from '@antv/dom-util/esm/create-dom'
 import {
   CONTAINER_TPL,
@@ -35,7 +35,6 @@ import {
   LIST_CLASS
 } from '@antv/l7plot-component/dist/esm/legend/category/constants'
 import substitute from '@antv/util/esm/substitute'
-import { configCarouselTooltip } from '@/views/chart/components/js/panel/charts/map/tooltip-carousel'
 
 const { t } = useI18n()
 
@@ -47,8 +46,7 @@ export class Map extends L7PlotChartView<ChoroplethOptions, Choropleth> {
   propertyInner: EditorPropertyInner = {
     ...MAP_EDITOR_PROPERTY_INNER,
     'basic-style-selector': ['colors', 'alpha', 'areaBorderColor', 'zoom', 'gradient-color'],
-    'legend-selector': ['icon', 'fontSize', 'color'],
-    'tooltip-selector': [...MAP_EDITOR_PROPERTY_INNER['tooltip-selector'], 'carousel']
+    'legend-selector': ['icon', 'fontSize', 'color']
   }
   axis = MAP_AXIS_TYPE
   axisConfig: AxisConfig = {
@@ -81,7 +79,7 @@ export class Map extends L7PlotChartView<ChoroplethOptions, Choropleth> {
     if (!misc.mapAutoLegend && legend.show) {
       let minValue = misc.mapLegendMin
       let maxValue = misc.mapLegendMax
-      getMaxAndMinValueByData(sourceData, 'value', maxValue, minValue, (max, min) => {
+      setMapChartDefaultMaxAndMinValueByData(sourceData, maxValue, minValue, (max, min) => {
         maxValue = max
         minValue = min
         action({
@@ -145,7 +143,6 @@ export class Map extends L7PlotChartView<ChoroplethOptions, Choropleth> {
     }
     const context = { drawOption, geoJson }
     options = this.setupOptions(chart, options, context)
-    const { Choropleth } = await import('@antv/l7plot/dist/esm/plots/choropleth')
     const view = new Choropleth(container, options)
     this.configZoomButton(chart, view)
     mapRendering(container)
@@ -163,8 +160,6 @@ export class Map extends L7PlotChartView<ChoroplethOptions, Choropleth> {
           }
         })
       })
-      chart.container = container
-      configCarouselTooltip(chart, view, data, null)
     })
     return view
   }
@@ -202,7 +197,7 @@ export class Map extends L7PlotChartView<ChoroplethOptions, Choropleth> {
     let maxValue = misc.mapLegendMax
     if (legend.show) {
       let mapLegendNumber = misc.mapLegendNumber
-      getMaxAndMinValueByData(sourceData, 'value', maxValue, minValue, (max, min) => {
+      setMapChartDefaultMaxAndMinValueByData(sourceData, maxValue, minValue, (max, min) => {
         maxValue = max
         minValue = min
         mapLegendNumber = 9

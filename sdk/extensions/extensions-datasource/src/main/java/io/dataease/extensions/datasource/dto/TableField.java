@@ -2,12 +2,11 @@ package io.dataease.extensions.datasource.dto;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.List;
 
 
 @Data
-public class TableField implements Serializable {
+public class TableField {
     private String name;
     private String originName;
     private String type;               //SQL type from java.sql.Types
@@ -16,13 +15,11 @@ public class TableField implements Serializable {
     private int scale;
     private boolean checked = false;
     private String fieldType;
-    private Integer deType;
-    private Integer deExtractType;
+    private int deType;
+    private int deExtractType;
     private int extField;
     private String jsonPath;
-    private boolean primary;
     List<Object> value;
 
-    private int inCount;
 
 }

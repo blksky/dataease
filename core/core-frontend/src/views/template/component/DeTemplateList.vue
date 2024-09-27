@@ -144,7 +144,7 @@ defineExpose({
     align-items: center;
     border-radius: 4px;
     color: var(--deTextPrimary, #1f2329);
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -205,8 +205,8 @@ defineExpose({
   }
 
   li.select {
-    background: var(--ed-color-primary-1a, #e0eaff) !important;
-    color: var(--ed-color-primary, #3370ff) !important;
+    background: var(--deWhiteHover, #e0eaff) !important;
+    color: var(--TextActive, #3370ff) !important;
   }
 
   .de-btn-fix {

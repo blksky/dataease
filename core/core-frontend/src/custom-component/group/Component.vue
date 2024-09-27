@@ -9,6 +9,7 @@ import { groupSizeStyleAdaptor } from '@/utils/style'
 const dvMainStore = dvMainStoreWithOut()
 const { canvasStyleData, curComponent } = storeToRefs(dvMainStore)
 const sourceCanvasStyle = deepCopy(DEFAULT_CANVAS_STYLE_DATA_DARK)
+
 const props = defineProps({
   propValue: {
     type: Array,
@@ -58,7 +59,7 @@ const props = defineProps({
   }
 })
 
-const { propValue, dvInfo, element, scale, canvasViewInfo, searchCount } = toRefs(props)
+const { propValue, dvInfo, element, scale, canvasViewInfo } = toRefs(props)
 const customCanvasStyle = computed(() => {
   const result = sourceCanvasStyle
   result.scale = canvasStyleData.value.scale
@@ -111,7 +112,6 @@ onMounted(() => {
       :is-edit="isEdit"
       :element="element"
       :scale="scale"
-      :search-count="searchCount"
     >
     </canvas-group>
   </div>

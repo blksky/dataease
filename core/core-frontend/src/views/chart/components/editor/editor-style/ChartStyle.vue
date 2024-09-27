@@ -14,7 +14,6 @@ import { storeToRefs } from 'pinia'
 import CollapseSwitchItem from '@/components/collapse-switch-item/src/CollapseSwitchItem.vue'
 import { ElCollapse, ElCollapseItem } from 'element-plus-secondary'
 import BasicStyleSelector from '@/views/chart/components/editor/editor-style/components/BasicStyleSelector.vue'
-import DualBasicStyleSelector from '@/views/chart/components/editor/editor-style/components/DualBasicStyleSelector.vue'
 import ComponentPosition from '@/components/visualization/common/ComponentPosition.vue'
 import BackgroundOverallCommon from '@/components/visualization/component-background/BackgroundOverallCommon.vue'
 import TableHeaderSelector from '@/views/chart/components/editor/editor-style/components/table/TableHeaderSelector.vue'
@@ -26,12 +25,9 @@ import IndicatorNameSelector from '@/views/chart/components/editor/editor-style/
 import QuadrantSelector from '@/views/chart/components/editor/editor-style/components/QuadrantSelector.vue'
 import FlowMapLineSelector from '@/views/chart/components/editor/editor-style/components/FlowMapLineSelector.vue'
 import FlowMapPointSelector from '@/views/chart/components/editor/editor-style/components/FlowMapPointSelector.vue'
-import CommonEvent from '@/custom-component/common/CommonEvent.vue'
-import CommonBorderSetting from '@/custom-component/common/CommonBorderSetting.vue'
-import PictureGroupAttr from '@/custom-component/picture-group/Attr.vue'
 
 const dvMainStore = dvMainStoreWithOut()
-const { dvInfo, batchOptStatus, curComponent } = storeToRefs(dvMainStore)
+const { dvInfo, batchOptStatus } = storeToRefs(dvMainStore)
 const { t } = useI18n()
 
 const state = {
@@ -42,14 +38,6 @@ const state = {
 
 const props = defineProps({
   commonBackgroundPop: {
-    type: Object,
-    required: false
-  },
-  commonBorderPop: {
-    type: Object,
-    required: false
-  },
-  eventInfo: {
     type: Object,
     required: false
   },
@@ -96,15 +84,8 @@ const props = defineProps({
   }
 })
 
-const {
-  chart,
-  themes,
-  properties,
-  propertyInnerAll,
-  commonBackgroundPop,
-  commonBorderPop,
-  selectorSpec
-} = toRefs(props)
+const { chart, themes, properties, propertyInnerAll, commonBackgroundPop, selectorSpec } =
+  toRefs(props)
 const emit = defineEmits([
   'onColorChange',
   'onMiscChange',
@@ -117,7 +98,6 @@ const emit = defineEmits([
   'onLegendChange',
   'onBasicStyleChange',
   'onBackgroundChange',
-  'onStyleAttrChange',
   'onTableHeaderChange',
   'onTableCellChange',
   'onTableTotalChange',
@@ -135,18 +115,6 @@ const indicatorNameRef = ref()
 
 const positionComponentShow = computed(() => {
   return !batchOptStatus.value && dvInfo.value.type !== 'dashboard'
-})
-
-const eventsShow = computed(() => {
-  return (
-    !batchOptStatus.value &&
-    ['indicator', 'rich-text'].includes(chart.value.type) &&
-    props.eventInfo
-  )
-})
-
-const pictureGroupShow = computed(() => {
-  return curComponent.value?.innerType === 'picture-group'
 })
 
 const showProperties = (property: EditorProperty) => properties.value?.includes(property)
@@ -208,19 +176,6 @@ const onBasicStyleChange = (val, prop) => {
 
 const onBackgroundChange = (val, prop) => {
   state.initReady && emit('onBackgroundChange', val, prop)
-}
-
-const onActiveChange = val => {
-  state.initReady &&
-    emit('onStyleAttrChange', {
-      custom: 'style',
-      property: 'active',
-      value: commonBorderPop.value.borderActive
-    })
-}
-
-const onStyleAttrChange = ({ key, value }) => {
-  state.initReady && emit('onStyleAttrChange', { custom: 'style', property: key, value: value })
 }
 
 const onTableHeaderChange = (val, prop) => {
@@ -287,20 +242,6 @@ watch(
               @onMiscChange="onMiscChange"
             />
           </el-collapse-item>
-          <el-collapse-item
-            :effect="themes"
-            name="basicStyle"
-            :title="t('chart.basic_style')"
-            v-if="showProperties('dual-basic-style-selector')"
-          >
-            <DualBasicStyleSelector
-              :property-inner="propertyInnerAll['dual-basic-style-selector']"
-              :themes="themes"
-              :chart="chart"
-              @onBasicStyleChange="onBasicStyleChange"
-              @onMiscChange="onMiscChange"
-            />
-          </el-collapse-item>
           <collapse-switch-item
             :themes="themes"
             v-model="chart.customStyle.text.show"
@@ -348,24 +289,6 @@ watch(
               @onBackgroundChange="onBackgroundChange"
               component-position="component"
             />
-          </el-collapse-item>
-          <collapse-switch-item
-            v-if="showProperties('border-style') && commonBorderPop && !batchOptStatus"
-            v-model="commonBorderPop.borderActive"
-            @modelChange="val => onActiveChange(val)"
-            :themes="themes"
-            :title="'边框'"
-            name="borderSetting"
-            class="common-style-area"
-          >
-            <common-border-setting
-              :style-info="commonBorderPop"
-              :themes="themes"
-              @onStyleAttrChange="onStyleAttrChange"
-            ></common-border-setting>
-          </collapse-switch-item>
-          <el-collapse-item :effect="themes" name="events" title="事件" v-if="eventsShow">
-            <common-event :themes="themes" :events-info="eventInfo"></common-event>
           </el-collapse-item>
           <el-collapse-item
             :effect="themes"
@@ -432,9 +355,12 @@ watch(
               @onChangeMiscStyleForm="onChangeMiscStyleForm"
             />
           </el-collapse-item>
-          <el-collapse-item
+          <collapse-switch-item
             :themes="themes"
             v-if="showProperties('label-selector')"
+            v-model="chart.customAttr.label.show"
+            :change-model="chart.customAttr.label"
+            @modelChange="val => onLabelChange({ data: val }, 'show')"
             :title="t('chart.label')"
             name="label"
           >
@@ -446,7 +372,7 @@ watch(
               :all-fields="props.allFields"
               @onLabelChange="onLabelChange"
             />
-          </el-collapse-item>
+          </collapse-switch-item>
           <collapse-switch-item
             v-if="showProperties('tooltip-selector')"
             v-model="chart.customAttr.tooltip.show"
@@ -598,22 +524,17 @@ watch(
             :change-model="chart.customStyle.yAxis"
             @modelChange="val => onChangeYAxisForm(val, 'show')"
             name="yAxis"
-            :title="selectorSpec['dual-y-axis-selector']?.title ?? t('chart.yAxis')"
+            :title="selectorSpec['dual-y-axis-selector']?.title"
           >
             <dual-y-axis-selector
               class="attr-selector"
-              :property-inner="propertyInnerAll['dual-y-axis-selector']"
+              :property-inner="propertyInnerAll['y-axis-selector']"
               :themes="themes"
               :chart="chart"
               @onChangeYAxisForm="onChangeYAxisForm"
               @onChangeYAxisExtForm="onChangeYAxisExtForm"
             />
           </collapse-switch-item>
-          <PictureGroupAttr
-            v-if="pictureGroupShow"
-            :themes="themes"
-            :element="curComponent"
-          ></PictureGroupAttr>
         </el-collapse>
       </el-row>
     </div>

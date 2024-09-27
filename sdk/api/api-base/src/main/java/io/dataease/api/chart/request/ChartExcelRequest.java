@@ -24,6 +24,4 @@ public class ChartExcelRequest extends ChartExcelRequestInner {
 
     private boolean dataEaseBi = false;
 
-    private String downloadType;
-
 }

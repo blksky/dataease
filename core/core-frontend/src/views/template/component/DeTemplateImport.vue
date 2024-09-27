@@ -73,7 +73,6 @@ import { useI18n } from '@/hooks/web/useI18n'
 const emits = defineEmits(['closeEditTemplateDialog', 'refresh', 'addCategoryInfo'])
 const { t } = useI18n()
 const filesRef = ref(null)
-const maxImageSize = 35000000
 const props = defineProps({
   pid: {
     type: String,
@@ -245,7 +244,7 @@ const importTemplate = () => {
         if (response.data.indexOf('exist') > -1) {
           ElMessage.warning('当前名称已在模版管理中存在，请修改')
         } else {
-          save(state.templateInfo).then(rsp => {
+          save(state.templateInfo).then(response => {
             ElMessage.success(t('导入成功'))
             emits('refresh', getRefreshPInfo())
             emits('closeEditTemplateDialog')
@@ -259,10 +258,6 @@ const importTemplate = () => {
 const handleFileChange = e => {
   const file = e.target.files[0]
   const reader = new FileReader()
-  if (file.size > maxImageSize) {
-    ElMessage.success('模板大小需小于35MB')
-    return
-  }
   reader.onload = res => {
     const result = res.target.result as string
     state.importTemplateInfo = JSON.parse(result)

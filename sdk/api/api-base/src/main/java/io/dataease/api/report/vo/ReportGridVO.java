@@ -27,7 +27,5 @@ public class ReportGridVO implements Serializable {
 
     private String creator;
 
-    private String updater;
-
     private Long createTime;
 }

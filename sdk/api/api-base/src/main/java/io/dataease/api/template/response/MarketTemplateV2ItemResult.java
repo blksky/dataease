@@ -1,7 +1,6 @@
 package io.dataease.api.template.response;
 
 import io.dataease.api.template.vo.MarketApplicationVO;
-import io.dataease.api.template.vo.MarketLatestReleaseVO;
 import lombok.Data;
 
 /**
@@ -12,7 +11,5 @@ import lombok.Data;
 public class MarketTemplateV2ItemResult {
 
     private MarketApplicationVO application;
-
-    private MarketLatestReleaseVO latestRelease;
 
 }

@@ -8,11 +8,9 @@ import { i18n } from '@/plugins/vue-i18n'
 import * as Vue from 'vue'
 import axios from 'axios'
 import * as Pinia from 'pinia'
-import * as echarts from 'echarts'
 import router from '@/router'
 import tinymce from 'tinymce/tinymce'
 import { useEmitt } from '@/hooks/web/useEmitt'
-import { isNull } from '@/utils/utils'
 
 const { wsCache } = useCache()
 
@@ -108,15 +106,10 @@ onMounted(async () => {
   let distributed = false
   if (wsCache.get(key) === null) {
     const res = await xpackModelApi()
-    const resData = isNull(res.data) ? 'null' : res.data
-    wsCache.set('xpack-model-distributed', resData)
+    wsCache.set('xpack-model-distributed', res.data)
     distributed = res.data
   } else {
     distributed = wsCache.get(key)
-  }
-  if (isNull(distributed)) {
-    emits('loadFail')
-    return
   }
   if (distributed) {
     if (window['DEXPack']) {
@@ -124,13 +117,12 @@ onMounted(async () => {
       plugin.value = xpack.default
     } else if (!window._de_xpack_not_loaded) {
       window._de_xpack_not_loaded = true
-      window['VueDe'] = Vue
-      window['AxiosDe'] = axios
-      window['PiniaDe'] = Pinia
-      window['vueRouterDe'] = router
-      window['MittAllDe'] = useEmitt().emitter.all
-      window['I18nDe'] = i18n
-      window['EchartsDE'] = echarts
+      window['Vue'] = Vue
+      window['Axios'] = axios
+      window['Pinia'] = Pinia
+      window['vueRouter'] = router
+      window['MittAll'] = useEmitt().emitter.all
+      window['I18n'] = i18n
       if (!window.tinymce) {
         window.tinymce = tinymce
       }

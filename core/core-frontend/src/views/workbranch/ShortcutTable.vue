@@ -1,19 +1,9 @@
 <script lang="ts" setup>
-import icon_collection_outlined from '@/assets/svg/icon_collection_outlined.svg'
-import visualStar from '@/assets/svg/visual-star.svg'
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
-import icon_app_outlined from '@/assets/svg/icon_app_outlined.svg'
-import icon_dashboard_outlined from '@/assets/svg/icon_dashboard_outlined.svg'
-import icon_database_outlined from '@/assets/svg/icon_database_outlined.svg'
-import icon_operationAnalysis_outlined from '@/assets/svg/icon_operation-analysis_outlined.svg'
-import dvDashboardSpineMobile from '@/assets/svg/dv-dashboard-spine-mobile.svg'
-import icon_pc_outlined from '@/assets/svg/icon_pc_outlined.svg'
-import icon_cancel_store from '@/assets/svg/icon_cancel_store.svg'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ref, reactive, onMounted, computed } from 'vue'
 import type { TabsPaneContext } from 'element-plus-secondary'
 import GridTable from '@/components/grid-table/src/GridTable.vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import { shortcutOption } from './ShortcutOption'
 /* import { XpackComponent } from '@/components/plugin' */
@@ -25,7 +15,6 @@ import ShareGrid from '@/views/share/share/ShareGrid.vue'
 import ShareHandler from '@/views/share/share/ShareHandler.vue'
 import { useAppStoreWithOut } from '@/store/modules/app'
 import { useEmbedded } from '@/store/modules/embedded'
-import { XpackComponent } from '@/components/plugin'
 const userStore = useUserStoreWithOut()
 const { resolve } = useRouter()
 const { t } = useI18n()
@@ -33,6 +22,7 @@ const interactiveStore = interactiveStoreWithOut()
 const { wsCache } = useCache()
 const appStore = useAppStoreWithOut()
 const embeddedStore = useEmbedded()
+const route = useRoute()
 const { push } = useRouter()
 defineProps({
   expand: {
@@ -51,14 +41,14 @@ const state = reactive({
 })
 const busiDataMap = computed(() => interactiveStore.getData)
 const iconMap = {
-  panel: icon_dashboard_outlined,
-  panelMobile: dvDashboardSpineMobile,
-  dashboard: icon_dashboard_outlined,
-  dashboardMobile: dvDashboardSpineMobile,
-  screen: icon_operationAnalysis_outlined,
-  dataV: icon_operationAnalysis_outlined,
-  dataset: icon_app_outlined,
-  datasource: icon_database_outlined
+  panel: 'icon_dashboard_outlined',
+  panelMobile: 'dv-dashboard-spine-mobile',
+  dashboard: 'icon_dashboard_outlined',
+  dashboardMobile: 'dv-dashboard-spine-mobile',
+  screen: 'icon_operation-analysis_outlined',
+  dataV: 'icon_operation-analysis_outlined',
+  dataset: 'icon_app_outlined',
+  datasource: 'icon_database_outlined'
 }
 
 const jumpActiveCheck = row => {
@@ -112,12 +102,12 @@ const formatterTime = (_, _column, cellValue) => {
 }
 
 const typeMap = {
-  screen: t('work_branch.big_data_screen'),
-  dataV: t('work_branch.big_data_screen'),
-  dashboard: t('work_branch.dashboard'),
-  panel: t('work_branch.dashboard'),
-  dataset: t('work_branch.data_set'),
-  datasource: t('work_branch.data_source')
+  screen: '数据大屏',
+  dataV: '数据大屏',
+  dashboard: '仪表板',
+  panel: '仪表板',
+  dataset: '数据集',
+  datasource: '数据源'
 }
 
 const loadTableData = () => {
@@ -144,14 +134,10 @@ const loadTableData = () => {
 } */
 
 const tablePaneList = ref([
-  { title: t('work_branch.recently_used'), name: 'recent', disabled: false },
-  { title: t('work_branch.my_collection'), name: 'store', disabled: false },
+  { title: '最近使用', name: 'recent', disabled: false },
+  { title: '我的收藏', name: 'store', disabled: false },
   { title: t('visualization.share_out'), name: 'share', disabled: false }
 ])
-
-const loadedDataFilling = data => {
-  tablePaneList.value.push(data)
-}
 
 const busiAuthList = getBusiListWithPermission()
 onMounted(() => {
@@ -237,13 +223,13 @@ const getEmptyImg = (): string => {
 
 const getEmptyDesc = (): string => {
   if (panelKeyword.value) {
-    return t('work_branch.relevant_content_found')
+    return '没有找到相关内容'
   }
   if (activeName.value === 'recent') {
-    return t('work_branch.no_content_yet')
+    return '暂无内容'
   }
   if (activeName.value === 'store') {
-    return t('work_branch.no_favorites_yet')
+    return '暂无收藏'
   }
   return ''
 }
@@ -266,11 +252,7 @@ const getEmptyDesc = (): string => {
       >
         <template #label>
           <span class="custom-tabs-label">
-            <el-tooltip
-              placement="top"
-              v-if="item.disabled"
-              :content="t('work_branch.permission_denied')"
-            >
+            <el-tooltip placement="top" v-if="item.disabled" content="没有权限">
               <span>{{ item.title }}</span>
             </el-tooltip>
             <span v-else>{{ item.title }}</span>
@@ -302,13 +284,11 @@ const getEmptyDesc = (): string => {
           v-model="panelKeyword"
           clearable
           @change="triggerFilterPanel"
-          :placeholder="t('work_branch.search_keyword')"
+          placeholder="搜索关键词"
         >
           <template #prefix>
             <el-icon>
-              <Icon name="icon_search-outline_outlined"
-                ><icon_searchOutline_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_search-outline_outlined"></Icon>
             </el-icon>
           </template>
         </el-input>
@@ -328,12 +308,10 @@ const getEmptyDesc = (): string => {
           <template v-slot:default="scope">
             <div class="name-content" :class="{ 'jump-active': jumpActiveCheck(scope.row) }">
               <el-icon v-if="scope.row.extFlag" style="margin-right: 12px; font-size: 18px">
-                <Icon
-                  ><component class="svg-icon" :is="iconMap[scope.row.type + 'Mobile']"></component
-                ></Icon>
+                <Icon :name="iconMap[scope.row.type + 'Mobile']" />
               </el-icon>
               <el-icon v-else :class="`main-color color-${scope.row.type}`">
-                <Icon><component class="svg-icon" :is="iconMap[scope.row.type]"></component></Icon>
+                <Icon :name="iconMap[scope.row.type]" />
               </el-icon>
               <el-tooltip placement="top">
                 <template #content>{{ scope.row.name }}</template>
@@ -346,9 +324,7 @@ const getEmptyDesc = (): string => {
                 :style="{ color: scope.row.favorite ? '#FFC60A' : '#646A73' }"
               >
                 <icon
-                  ><component
-                    :is="scope.row.favorite ? visualStar : icon_collection_outlined"
-                  ></component
+                  :name="scope.row.favorite ? 'visual-star' : 'icon_collection_outlined'"
                 ></icon>
               </el-icon>
             </div>
@@ -381,18 +357,14 @@ const getEmptyDesc = (): string => {
         <el-table-column width="100" fixed="right" key="_operation" :label="$t('common.operate')">
           <template #default="scope">
             <template v-if="['dashboard', 'dataV', 'panel', 'screen'].includes(scope.row.type)">
-              <el-tooltip
-                effect="dark"
-                :content="t('work_branch.new_page_preview')"
-                placement="top"
-              >
+              <el-tooltip effect="dark" content="新页面预览" placement="top">
                 <el-icon
                   class="hover-icon hover-icon-in-table"
                   @click.stop="
                     preview(activeName === 'recent' ? scope.row.id : scope.row.resourceId)
                   "
                 >
-                  <Icon name="icon_pc_outlined"><icon_pc_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_pc_outlined"></Icon>
                 </el-icon>
               </el-tooltip>
               <ShareHandler
@@ -411,27 +383,27 @@ const getEmptyDesc = (): string => {
               <el-tooltip
                 v-if="activeName === 'store'"
                 effect="dark"
-                :content="t('work_branch.cancel_favorites')"
+                content="取消收藏"
                 placement="top"
               >
                 <el-icon
                   class="hover-icon hover-icon-in-table"
                   @click.stop="executeCancelStore(scope.row)"
                 >
-                  <Icon name="icon_cancel_store"><icon_cancel_store class="svg-icon" /></Icon>
+                  <Icon name="icon_cancel_store"></Icon>
                 </el-icon>
               </el-tooltip>
             </template>
 
             <template v-if="['dataset'].includes(scope.row.type)">
-              <el-tooltip effect="dark" :content="t('work_branch.open_dataset')" placement="top">
+              <el-tooltip effect="dark" content="打开数据集" placement="top">
                 <el-icon
                   class="hover-icon hover-icon-in-table"
                   @click.stop="
                     openDataset(activeName === 'recent' ? scope.row.id : scope.row.resourceId)
                   "
                 >
-                  <Icon name="icon_pc_outlined"><icon_pc_outlined class="svg-icon" /></Icon>
+                  <Icon name="icon_pc_outlined"></Icon>
                 </el-icon>
               </el-tooltip>
             </template>
@@ -439,20 +411,8 @@ const getEmptyDesc = (): string => {
         </el-table-column>
       </GridTable>
     </div>
-    <XpackComponent
-      jsname="L21lbnUvZGF0YS9kYXRhLWZpbGxpbmcvZmlsbC9UYWJQYW5l"
-      @loaded="loadedDataFilling"
-    />
-    <XpackComponent
-      jsname="L21lbnUvZGF0YS9kYXRhLWZpbGxpbmcvZmlsbC9UYWJQYW5lVGFibGU="
-      v-if="activeName === 'data-filling'"
-    />
   </div>
-  <el-empty
-    class="dashboard-type"
-    v-else
-    :description="t('work_branch.administrator_for_authorization')"
-  />
+  <el-empty class="dashboard-type" v-else description="没有任何业务菜单权限，请联系管理员授权" />
 </template>
 
 <style lang="less" scoped>

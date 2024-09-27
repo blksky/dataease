@@ -57,10 +57,6 @@ declare interface ChartFunctionCfg {
    */
   emptyDataStrategy: string
   /**
-   * 自定义值
-   */
-  emptyDataCustomValue: string
-  /**
    * 空值字段控制
    */
   emptyDataFieldCtrl: []
@@ -194,32 +190,6 @@ declare interface Threshold {
    * 背景颜色
    */
   backgroundColor: string
-  /**
-   * url
-   */
-  url: string
-  /**
-   * 类型，固定值、动态值
-   */
-  type: 'fixed' | 'dynamic'
-  /**
-   * 动态值字段
-   */
-  dynamicField: ThresholdDynamicField
-  /**
-   * 动态值最小值字段 仅当term为between时使用
-   */
-  dynamicMinField: ThresholdDynamicField
-  /**
-   * 动态值最大值字段 仅当term为between时使用
-   */
-  dynamicMaxField: ThresholdDynamicField
-}
-
-declare interface ThresholdDynamicField {
-  fieldId: string
-  summary: string
-  field: ChartViewField
 }
 
 /**

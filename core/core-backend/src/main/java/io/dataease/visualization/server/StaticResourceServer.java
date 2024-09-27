@@ -1,5 +1,6 @@
 package io.dataease.visualization.server;
 
+
 import io.dataease.api.visualization.StaticResourceApi;
 import io.dataease.api.visualization.request.StaticResourceRequest;
 import io.dataease.exception.DEException;
@@ -16,9 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -59,15 +64,22 @@ public class StaticResourceServer implements StaticResourceApi {
     }
 
     private boolean isImage(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
+        BufferedImage image = null;
+        try (InputStream input = file.getInputStream()) {
+            image = ImageIO.read(input);
+        } catch (IOException e) {
+            LogUtil.error(e.getMessage(), e);
             return false;
         }
-        String mimeType = file.getContentType();
-        if (StringUtils.isEmpty(mimeType)) {
+        // 判断是否为SVG
+        if(isValidSVG(file)){
+            return true;
+        }
+        // 判断其他图片
+        if (image == null || image.getWidth() <= 0 || image.getHeight() <= 0) {
             return false;
         }
-        // 判断是否为图片或SVG
-        return (mimeType != null && mimeType.startsWith("image/")) || isValidSVG(file);
+        return true;
     }
 
     public void saveFilesToServe(String staticResource) {
@@ -121,14 +133,9 @@ public class StaticResourceServer implements StaticResourceApi {
         }
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
 
         try (InputStream inputStream = file.getInputStream()) {
-            // 禁用外部实体解析以防止XXE攻击
-            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            dbf.setNamespaceAware(true);
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(inputStream);
 

@@ -12,7 +12,7 @@ const textEnum = ['eq', 'not_eq', 'like', 'not like', 'null', 'not_null', 'empty
 const textOptions = textEnum.map(formatEnum)
 
 const dateEnum = ['eq', 'not_eq', 'lt', 'gt', 'le', 'ge']
-const dateOptions = dateEnum.concat(['null', 'not_null']).map(formatEnum)
+const dateOptions = dateEnum.map(formatEnum)
 
 const valueEnum = [...dateEnum]
 const valueOptions = valueEnum.map(formatEnum)
@@ -26,7 +26,7 @@ const sysParamsIlns = sysParamsEnum.map(_ => {
   return { value: `\${sysParams.${_}}`, label: `auth.sysParams_type.${toLine(_)}` }
 })
 
-const fieldEnums = ['text', 'time', 'value', 'value', 'value', 'location', 'binary', 'url']
+const fieldEnums = ['text', 'time', 'value', 'value', 'value', 'location']
 
 export {
   textOptions,

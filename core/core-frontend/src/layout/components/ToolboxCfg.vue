@@ -1,8 +1,4 @@
 <script lang="ts" setup>
-import toolboxData_fill from '@/assets/svg/toolbox-data_fill.svg'
-import toolboxIcon_template from '@/assets/svg/toolbox-icon_template.svg'
-import toolboxLog from '@/assets/svg/toolbox-log.svg'
-import sysTools from '@/assets/svg/sys-tools.svg'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import TopDocCard from '@/layout/components/TopDocCard.vue'
@@ -14,11 +10,7 @@ const { push, resolve } = useRouter()
 const showToolbox = ref(true)
 
 const cardInfoList = ref([] as unknown[])
-const iconMap = {
-  'toolbox-data_fill': toolboxData_fill,
-  'toolbox-icon_template': toolboxIcon_template,
-  'toolbox-log': toolboxLog
-}
+
 const loadInfoList = () => {
   const toolboxMenu = resolve('/toolbox')
   if (!toolboxMenu) {
@@ -30,13 +22,12 @@ const loadInfoList = () => {
     showToolbox.value = false
     return
   }
-
   children.forEach(item => {
     const temp = {
       name: item.meta.title,
       rName: item.name,
       path: item.path,
-      icon: iconMap['toolbox-' + item.meta.icon]
+      icon: 'toolbox-' + item.meta.icon
     }
     cardInfoList.value.push(temp)
   })
@@ -74,7 +65,7 @@ onMounted(() => {
         }"
       >
         <el-icon>
-          <Icon name="sys-tools"><sysTools class="svg-icon" /></Icon>
+          <Icon name="sys-tools" />
         </el-icon>
       </div>
     </template>

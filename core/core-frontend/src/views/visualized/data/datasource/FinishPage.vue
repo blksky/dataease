@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import icon_succeed_colorful from '@/assets/svg/icon_succeed_colorful.svg'
-import icon_dataset from '@/assets/svg/icon_dataset.svg'
 import { ref } from 'vue'
 import { propTypes } from '@/utils/propTypes'
 import { useCache } from '@/hooks/web/useCache'
@@ -36,7 +34,7 @@ const handleChange = (val: boolean) => {
   <div class="finish-page-content">
     <div class="finish-page">
       <el-icon class="succeed-icon">
-        <Icon name="icon_succeed_colorful"><icon_succeed_colorful class="svg-icon" /></Icon>
+        <Icon name="icon_succeed_colorful"></Icon>
       </el-icon>
 
       <div class="succeed-text">创建成功</div>
@@ -52,7 +50,7 @@ const handleChange = (val: boolean) => {
         <div class="title">您可能还想</div>
         <div class="ds-info">
           <el-icon class="ds">
-            <Icon name="icon_dataset"><icon_dataset class="svg-icon" /></Icon>
+            <Icon name="icon_dataset"></Icon>
           </el-icon>
           <div class="info">
             <p class="name">{{ $t('auth.dataset') }}</p>
@@ -89,7 +87,7 @@ const handleChange = (val: boolean) => {
     flex-direction: column;
     align-items: center;
     padding-top: 83px;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-style: normal;
     font-weight: 400;
 
@@ -138,7 +136,7 @@ const handleChange = (val: boolean) => {
         }
 
         .info {
-          font-family: var(--de-custom_font, 'PingFang');
+          font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
           font-style: normal;
           font-weight: 400;
           .name {

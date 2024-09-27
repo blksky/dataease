@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import dvFolder from '@/assets/svg/dv-folder.svg'
-import icon_searchOutline_outlined from '@/assets/svg/icon_search-outline_outlined.svg'
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus-secondary'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -146,8 +144,7 @@ const createInit = (type, data: Tree, exec, name: string) => {
   datasetForm.name = ''
   filterText.value = ''
   nodeType.value = type
-  placeholder.value =
-    type === 'folder' ? t('data_set.a_folder_name') : t('data_set.the_dataset_name')
+  placeholder.value = type === 'folder' ? '请输入文件夹名称' : '请输入数据集名称'
   if (type === 'dataset') {
     union = data.union
     allfields = data.allfields
@@ -158,7 +155,7 @@ const createInit = (type, data: Tree, exec, name: string) => {
       dfs(res as unknown as Tree[])
       state.tData = (res as unknown as Tree[]) || []
       if (state.tData.length && state.tData[0].name === 'root' && state.tData[0].id === '0') {
-        state.tData[0].name = t('data_set.data_set')
+        state.tData[0].name = '数据集'
       }
       data.id = formatRootMiss(data.id, state.tData)
       if (exec) {
@@ -189,9 +186,9 @@ const createInit = (type, data: Tree, exec, name: string) => {
         trigger: 'blur'
       },
       {
-        min: 1,
+        min: 2,
         max: 64,
-        message: t('datasource.input_limit_1_64', [1, 64]),
+        message: t('datasource.input_limit_2_25', [2, 64]),
         trigger: 'blur'
       }
     ],
@@ -225,7 +222,7 @@ const nodeClick = (data: Tree) => {
 }
 const checkPid = pid => {
   if (pid !== 0 && !pid) {
-    ElMessage.error(t('data_set.the_destination_folder'))
+    ElMessage.error('请选择目标文件夹')
     return false
   }
   return true
@@ -268,10 +265,10 @@ const saveDataset = () => {
           emits('finish', res)
           switch (cmd.value) {
             case 'move':
-              ElMessage.success(t('data_set.moved_successfully'))
+              ElMessage.success('移动成功')
               break
             case 'rename':
-              ElMessage.success(t('data_set.rename_successful'))
+              ElMessage.success('重命名成功')
               break
             default:
               useEmitt().emitter.emit('onDatasetSave')
@@ -296,6 +293,7 @@ const emits = defineEmits(['finish'])
 
 <template>
   <el-dialog
+    v-loading="loading"
     :title="dialogTitle"
     v-model="createDataset"
     class="create-dialog"
@@ -327,7 +325,7 @@ const emits = defineEmits(['finish'])
         >
           <template #default="{ data: { name } }">
             <el-icon>
-              <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+              <Icon name="dv-folder"></Icon>
             </el-icon>
             <span :title="name">{{ name }}</span>
           </template>
@@ -337,9 +335,7 @@ const emits = defineEmits(['finish'])
         <el-input style="margin-bottom: 12px" v-model="filterText" clearable>
           <template #prefix>
             <el-icon>
-              <Icon name="icon_search-outline_outlined"
-                ><icon_searchOutline_outlined class="svg-icon"
-              /></Icon>
+              <Icon name="icon_search-outline_outlined"></Icon>
             </el-icon>
           </template>
         </el-input>
@@ -358,7 +354,7 @@ const emits = defineEmits(['finish'])
             <template #default="{ data }">
               <span class="custom-tree-node">
                 <el-icon style="font-size: 18px">
-                  <Icon name="dv-folder"><dvFolder class="svg-icon" /></Icon>
+                  <Icon name="dv-folder"></Icon>
                 </el-icon>
                 <span class="node-text" :title="data.name">{{ data.name }}</span>
               </span>
@@ -366,16 +362,14 @@ const emits = defineEmits(['finish'])
           </el-tree>
           <div v-if="searchEmpty" class="empty-search">
             <img :src="nothingTree" />
-            <span>{{ t('data_set.relevant_content_found') }}</span>
+            <span>没有找到相关内容</span>
           </div>
         </div>
       </div>
     </el-form>
     <template #footer>
       <el-button secondary @click="resetForm">{{ t('dataset.cancel') }} </el-button>
-      <el-button v-loading="loading" type="primary" @click="saveDataset"
-        >{{ t('dataset.confirm') }}
-      </el-button>
+      <el-button type="primary" @click="saveDataset">{{ t('dataset.confirm') }} </el-button>
     </template>
   </el-dialog>
 </template>
@@ -415,7 +409,7 @@ const emits = defineEmits(['finish'])
       margin-bottom: 8px;
     }
     span {
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-size: 14px;
       font-weight: 400;
       line-height: 22px;

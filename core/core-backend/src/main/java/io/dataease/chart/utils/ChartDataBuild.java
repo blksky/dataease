@@ -1,7 +1,6 @@
 package io.dataease.chart.utils;
 
-import io.dataease.api.chart.dto.ScatterChartDataDTO;
-import io.dataease.api.chart.dto.Series;
+import io.dataease.api.chart.dto.*;
 import io.dataease.extensions.view.dto.*;
 import io.dataease.i18n.Lang;
 import io.dataease.i18n.Translator;
@@ -424,7 +423,7 @@ public class ChartDataBuild {
                     axisChartDataDTO.setValue(new BigDecimal(0));
                 }
                 axisChartDataDTO.setCategory(StringUtils.defaultIfBlank(yAxis.get(j).getChartShowName(), yAxis.get(j).getName()));
-                buildDynamicValue(view, axisChartDataDTO, row, size, ObjectUtils.isNotEmpty(extBubble) ? extSize - 1 : extSize);
+                buildDynamicValue(view, axisChartDataDTO, row, size, ObjectUtils.isNotEmpty(extBubble)?extSize-1:extSize);
                 // pop
                 if (ObjectUtils.isNotEmpty(extBubble)) {
                     try {
@@ -505,11 +504,6 @@ public class ChartDataBuild {
 
     // antV组合图形
     public static Map<String, Object> transMixChartDataAntV(List<ChartViewFieldDTO> xAxisBase, List<ChartViewFieldDTO> xAxis, List<ChartViewFieldDTO> xAxisExt, List<ChartViewFieldDTO> yAxis, ChartViewDTO view, List<String[]> data, boolean isDrill) {
-        return transMixChartDataAntV(xAxisBase, xAxis, xAxisExt, yAxis, view, data, isDrill, false);
-    }
-
-    public static Map<String, Object> transMixChartDataAntV(List<ChartViewFieldDTO> xAxisBase, List<ChartViewFieldDTO> xAxis, List<ChartViewFieldDTO> xAxisExt, List<ChartViewFieldDTO> yAxis, ChartViewDTO view, List<String[]> data, boolean isDrill, boolean isLine) {
-
         Map<String, Object> map = new HashMap<>();
 
         List<Series> series = new ArrayList<>();
@@ -577,16 +571,8 @@ public class ChartDataBuild {
                 } catch (Exception e) {
                     axisChartDataDTO.setValue(new BigDecimal(0));
                 }
-
                 String category = StringUtils.defaultIfBlank(b.toString(),
                         StringUtils.defaultIfBlank(yAxis.get(j).getChartShowName(), yAxis.get(j).getName()));
-
-                if (isLine) {
-                    if (ObjectUtils.isEmpty(xAxisExt)) {
-                        category = StringUtils.defaultIfBlank(yAxis.get(j).getChartShowName(), yAxis.get(j).getName());
-                    }
-                }
-
                 axisChartDataDTO.setCategory(category);
                 categories.add(category);
 
@@ -623,22 +609,28 @@ public class ChartDataBuild {
         for (int i1 = 0; i1 < data.size(); i1++) {
             String[] row = data.get(i1);
 
-            AxisChartDataAntVDTO axisChartDataDTO = new AxisChartDataAntVDTO();
             StringBuilder a = new StringBuilder();
             if (isDrill) {
                 a.append(row[xAxis.size() - 1]);
             } else {
-                for (int i = 0; i < xAxisBase.size(); i++) {
-                    if (i == xAxisBase.size() - 1) {
+                for (int i = 0; i < xAxis.size(); i++) {
+                    if (i == xAxis.size() - 1) {
                         a.append(row[i]);
                     } else {
                         a.append(row[i]).append("\n");
                     }
                 }
             }
+
+            // yAxis最后的数据对应extLabel和extTooltip，将他们从yAxis中去掉，同时转换成动态值
+            int size = xAxis.size() + extStack.size() + yAxis.size();
+            int extSize = view.getExtLabel().size() + view.getExtTooltip().size();
+
+            int i = xAxis.size();
+            AxisChartDataAntVDTO axisChartDataDTO = new AxisChartDataAntVDTO();
             axisChartDataDTO.setField(a.toString());
             axisChartDataDTO.setName(a.toString());
-            String category = row[xAxisBase.size()];
+            String category = row[xAxis.size()];
             axisChartDataDTO.setCategory(category);
             if (category != null) {
                 categories.add(category);
@@ -653,12 +645,17 @@ public class ChartDataBuild {
                 chartDimensionDTO.setValue(row[k]);
                 dimensionList.add(chartDimensionDTO);
             }
+            ChartDimensionDTO chartDimensionDTO = new ChartDimensionDTO();
+            chartDimensionDTO.setId(extStack.get(0).getId());
+            chartDimensionDTO.setValue(row[xAxis.size()]);
+            dimensionList.add(chartDimensionDTO);
             axisChartDataDTO.setDimensionList(dimensionList);
 
+            int j = i - xAxis.size();
+            int valueIndex = xAxis.size() + extStack.size();
             if (ObjectUtils.isNotEmpty(yAxis)) {
-                int valueIndex = xAxis.size();
                 ChartQuotaDTO chartQuotaDTO = new ChartQuotaDTO();
-                chartQuotaDTO.setId(yAxis.get(0).getId());
+                chartQuotaDTO.setId(yAxis.get(j).getId());
                 quotaList.add(chartQuotaDTO);
                 axisChartDataDTO.setQuotaList(quotaList);
                 try {
@@ -666,13 +663,14 @@ public class ChartDataBuild {
                 } catch (Exception e) {
                     axisChartDataDTO.setValue(new BigDecimal(0));
                 }
+                buildDynamicValue(view, axisChartDataDTO, row, size, extSize);
             } else {
                 axisChartDataDTO.setQuotaList(quotaList);
                 axisChartDataDTO.setValue(new BigDecimal(0));
             }
-            series.get(0).getData().add(axisChartDataDTO);
-        }
 
+            series.get(j).getData().add(axisChartDataDTO);
+        }
         if (CollectionUtils.isNotEmpty(series)) {
             series.get(0).setCategories(categories);
         }
@@ -1307,14 +1305,10 @@ public class ChartDataBuild {
                 }
                 if (i == ele.length) break;
                 ChartViewFieldDTO chartViewFieldDTO = fields.get(i);
-                if (chartViewFieldDTO.getDeType() == 0 || chartViewFieldDTO.getDeType() == 1 || chartViewFieldDTO.getDeType() == 5 || chartViewFieldDTO.getDeType() == 7) {
+                if (chartViewFieldDTO.getDeType() == 0 || chartViewFieldDTO.getDeType() == 1 || chartViewFieldDTO.getDeType() == 5) {
                     d.put(fields.get(i).getDataeaseName(), StringUtils.isEmpty(ele[i]) ? "" : ele[i]);
                 } else if (chartViewFieldDTO.getDeType() == 2 || chartViewFieldDTO.getDeType() == 3 || chartViewFieldDTO.getDeType() == 4) {
-                    if (view.getIsExcelExport()) {
-                        d.put(fields.get(i).getDataeaseName(), StringUtils.isEmpty(ele[i]) ? "" : ele[i]);
-                    } else {
-                        d.put(fields.get(i).getDataeaseName(), StringUtils.isEmpty(ele[i]) ? null : new BigDecimal(ele[i]).setScale(8, RoundingMode.HALF_UP));
-                    }
+                    d.put(fields.get(i).getDataeaseName(), StringUtils.isEmpty(ele[i]) ? null : new BigDecimal(ele[i]).setScale(8, RoundingMode.HALF_UP));
                 }
             }
             tableRow.add(d);
@@ -1766,7 +1760,7 @@ public class ChartDataBuild {
         }
     }
 
-    public static Map<String, Object> transSymbolicMapNormalWithDetail(ChartViewDTO view, List<ChartViewFieldDTO> xAxis, List<ChartViewFieldDTO> yAxis, List<ChartViewFieldDTO> extBubble, List<String[]> data, List<ChartViewFieldDTO> detailFields, List<String[]> detailData) {
+    public static Map<String, Object> transSymbolicMapNormalWithDetail(List<ChartViewFieldDTO> xAxis, List<ChartViewFieldDTO> yAxis, List<String[]> data, List<ChartViewFieldDTO> detailFields, List<String[]> detailData) {
         int detailIndex = xAxis.size();
 
         List<ChartViewFieldDTO> realDetailFields = detailFields.subList(detailIndex, detailFields.size());
@@ -1774,43 +1768,34 @@ public class ChartDataBuild {
         List<ChartViewFieldDTO> fields = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(xAxis))
             fields.addAll(xAxis);
-        if (ObjectUtils.isNotEmpty(extBubble))
-            fields.addAll(extBubble);
         if (ObjectUtils.isNotEmpty(yAxis))
             fields.addAll(yAxis);
-        Map<String, Object> map = transTableNormal(fields, view, data, new HashMap<>());
+        Map<String, Object> map = transTableNormal(fields, null, data, new HashMap<>());
         List<Map<String, Object>> tableRow = (List<Map<String, Object>>) map.get("tableRow");
         final int xEndIndex = detailIndex;
         Map<String, List<String[]>> groupDataList = detailData.stream().collect(Collectors.groupingBy(item -> "(" + StringUtils.join(ArrayUtils.subarray(item, 0, xEndIndex), ")-de-(") + ")"));
-        String extBubbleDataeaseName = ObjectUtils.isNotEmpty(extBubble) ? extBubble.get(0).getDataeaseName() : "";
+
         tableRow.forEach(row -> {
-            BigDecimal rowValue = row.get(extBubbleDataeaseName) == null ? BigDecimal.ZERO : new BigDecimal(row.get(extBubbleDataeaseName).toString());
             String key = xAxis.stream().map(x -> String.format(format, row.get(x.getDataeaseName()).toString())).collect(Collectors.joining("-de-"));
             List<String[]> detailFieldValueList = groupDataList.get(key);
             List<Map<String, Object>> detailValueMapList = Optional.ofNullable(detailFieldValueList).orElse(new ArrayList<>()).stream().map((detailArr -> {
                 Map<String, Object> temp = new HashMap<>();
                 for (int i = 0; i < realDetailFields.size(); i++) {
                     ChartViewFieldDTO realDetailField = realDetailFields.get(i);
-                    if (StringUtils.equalsIgnoreCase(extBubbleDataeaseName, realDetailField.getDataeaseName())) {
-                        temp.put(realDetailField.getDataeaseName(), rowValue);
-                    } else {
-                        temp.put(realDetailField.getDataeaseName(), detailArr[detailIndex + i]);
-                    }
+                    temp.put(realDetailField.getDataeaseName(), detailArr[detailIndex + i]);
                 }
                 return temp;
             })).collect(Collectors.toList());
             //详情只要一个
-            row.put("details", !detailValueMapList.isEmpty() ? Collections.singletonList(detailValueMapList.getFirst()) : detailValueMapList);
+            row.put("details", !detailValueMapList.isEmpty() ?Collections.singletonList(detailValueMapList.getFirst()):detailValueMapList);
         });
-        // 先过滤掉所有记录数字段
-        List<ChartViewFieldDTO> filterCountAxis = fields.stream()
-                .filter(item -> !StringUtils.equalsIgnoreCase(item.getDataeaseName(), "*"))
-                .collect(Collectors.toList());
-        // 如果气泡大小是记录数，添加到字段列表中
-        if (ObjectUtils.isNotEmpty(extBubble) && "*".equals(extBubble.get(0).getDataeaseName())) {
-            filterCountAxis.addAll(yAxis);
-        }
-        map.put("fields", filterCountAxis);
+
+        ChartViewFieldDTO detailFieldDTO = new ChartViewFieldDTO();
+        detailFieldDTO.setId(IDUtils.snowID());
+        detailFieldDTO.setName("detail");
+        detailFieldDTO.setDataeaseName("detail");
+        fields.add(detailFieldDTO);
+        map.put("fields", fields);
         map.put("detailFields", realDetailFields);
         map.put("tableRow", tableRow);
         return map;

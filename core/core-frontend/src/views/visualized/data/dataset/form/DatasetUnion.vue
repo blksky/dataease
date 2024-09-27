@@ -1,15 +1,4 @@
 <script lang="ts" setup>
-import icon_edit_outlined from '@/assets/svg/icon_edit_outlined.svg'
-import icon_rename_outlined from '@/assets/svg/icon_rename_outlined.svg'
-import icon_deleteTrash_outlined from '@/assets/svg/icon_delete-trash_outlined.svg'
-import icon_textBox_outlined from '@/assets/svg/icon_text-box_outlined.svg'
-import icon_fullAssociation from '@/assets/svg/icon_full-association.svg'
-import icon_intersect from '@/assets/svg/icon_intersect.svg'
-import icon_leftAssociation from '@/assets/svg/icon_left-association.svg'
-import icon_rightAssociation from '@/assets/svg/icon_right-association.svg'
-import icon_sql_outlined from '@/assets/svg/icon_sql_outlined.svg'
-import referenceTable from '@/assets/svg/reference-table.svg'
-import icon_moreVertical_outlined from '@/assets/svg/icon_more-vertical_outlined.svg'
 import { reactive, computed, ref, nextTick, inject, type Ref, watch, unref } from 'vue'
 import AddSql from './AddSql.vue'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -45,10 +34,10 @@ const primaryColor = computed(() => {
 })
 
 const iconName = {
-  left: icon_leftAssociation,
-  right: icon_rightAssociation,
-  inner: icon_intersect,
-  full: icon_fullAssociation
+  left: 'icon_left-association',
+  right: 'icon_right-association',
+  inner: 'icon_intersect',
+  full: 'icon_full-association'
 }
 const { t } = useI18n()
 const editSqlField = ref(false)
@@ -124,9 +113,6 @@ const dfsForDsId = (arr, datasourceId) => {
   return arr.every(ele => {
     if (ele.children?.length) {
       return dfsForDsId(ele.children, datasourceId)
-    }
-    if (!ele.datasourceId) {
-      return true
     }
     return ele.datasourceId === datasourceId
   })
@@ -363,10 +349,7 @@ const confirmEditUnion = () => {
   if (!!ids.length) {
     const idArr = allfields.value.reduce((pre, next) => {
       if (next.extField === 2) {
-        let idMap = next.originName.match(/\[(.+?)\]/g)
-        idMap = idMap.filter(
-          itx => !next.params?.map(element => element.id).includes(itx.slice(1, -1))
-        )
+        const idMap = next.originName.match(/\[(.+?)\]/g)
         const result = idMap.map(itm => {
           return itm.slice(1, -1)
         })
@@ -380,32 +363,34 @@ const confirmEditUnion = () => {
     }, [])
 
     if (!!idArr.length) {
-      ElMessageBox.confirm('字段选择', {
-        confirmButtonText: t('dataset.confirm'),
-        cancelButtonText: t('common.cancel'),
-        showCancelButton: true,
-        tip: `${t('data_set.field')}: ${allfields.value
+      ElMessageBox.confirm(
+        `字段${allfields.value
           .filter(ele => [...new Set(idArr)].includes(ele.id) && ele.extField !== 2)
           .map(ele => ele.name)
-          .join(',')}, 未被勾选, 与其相关的计算字段将被删除，确认删除？`,
-        confirmButtonType: 'danger',
-        type: 'warning',
-        autofocus: false,
-        showClose: false,
-        callback: (action: Action) => {
-          if (action === 'confirm') {
-            delUpdateDsFields(currentNode.value.id, state.nodeList)
-            const [fir] = state.nodeList
-            if (fir.isShadow) {
-              delete fir.isShadow
+          .join(',')}未被选择，其相关的新建字段将被删除，是否继续？`,
+        {
+          confirmButtonText: t('dataset.confirm'),
+          cancelButtonText: t('common.cancel'),
+          showCancelButton: true,
+          confirmButtonType: 'danger',
+          type: 'warning',
+          autofocus: false,
+          showClose: false,
+          callback: (action: Action) => {
+            if (action === 'confirm') {
+              delUpdateDsFields(currentNode.value.id, state.nodeList)
+              const [fir] = state.nodeList
+              if (fir.isShadow) {
+                delete fir.isShadow
+              }
+              closeEditUnion()
+              nextTick(() => {
+                emits('updateAllfields')
+              })
             }
-            closeEditUnion()
-            nextTick(() => {
-              emits('updateAllfields')
-            })
           }
         }
-      })
+      )
       return
     }
   }
@@ -464,26 +449,32 @@ const handleCommand = (ele, command) => {
         return pre
       }, [])
       fakeDelId = []
+
       if (!!idArr.length) {
-        ElMessageBox.confirm(`确定要删除 ${ele.tableName} 吗`, {
-          confirmButtonText: t('dataset.confirm'),
-          cancelButtonText: t('common.cancel'),
-          showCancelButton: true,
-          tip: '删除后，被关联的表或sql片段将被删除，与其相关的计算字段也将被删除。',
-          confirmButtonType: 'danger',
-          type: 'warning',
-          autofocus: false,
-          showClose: false,
-          callback: (action: Action) => {
-            if (action === 'confirm') {
-              delNode(ele.id, state.nodeList)
-              nextTick(() => {
-                emits('addComplete')
-                emits('updateAllfields')
-              })
+        ElMessageBox.confirm(
+          `字段${allfields.value
+            .filter(ele => [...new Set(idArr)].includes(ele.id) && ele.extField !== 2)
+            .map(ele => ele.name)
+            .join(',')}未被选择，其相关的新建字段将被删除，是否继续？`,
+          {
+            confirmButtonText: t('dataset.confirm'),
+            cancelButtonText: t('common.cancel'),
+            showCancelButton: true,
+            confirmButtonType: 'danger',
+            type: 'warning',
+            autofocus: false,
+            showClose: false,
+            callback: (action: Action) => {
+              if (action === 'confirm') {
+                delNode(ele.id, state.nodeList)
+                nextTick(() => {
+                  emits('addComplete')
+                  emits('updateAllfields')
+                })
+              }
             }
           }
-        })
+        )
         return
       }
     }
@@ -540,31 +531,27 @@ const dfsNodeFieldBack = (list, { originName, datasetTableId }) => {
   })
 }
 
-const dfsNodeFieldBackReal = ele => {
-  dfsNodeFieldBack(state.nodeList, ele)
-}
-
 const menuList = [
   {
-    svgName: icon_textBox_outlined,
-    label: t('data_set.field_selection'),
+    svgName: 'icon_text-box_outlined',
+    label: '字段选择',
     command: 'editerField'
   },
   {
-    svgName: icon_deleteTrash_outlined,
-    label: t('data_set.delete'),
+    svgName: 'icon_delete-trash_outlined',
+    label: '删除',
     command: 'del'
   }
 ]
 
 const sqlMenu = [
   {
-    svgName: icon_edit_outlined,
-    label: t('data_set.edit_sql'),
+    svgName: 'icon_edit_outlined',
+    label: '编辑SQL',
     command: 'editerSql'
   },
   {
-    svgName: icon_rename_outlined,
+    svgName: 'icon_rename_outlined',
     label: t('datasource.field_rename'),
     command: 'rename'
   }
@@ -1027,7 +1014,7 @@ defineExpose({
   getNodeList,
   setStateBack,
   notConfirm,
-  dfsNodeFieldBackReal,
+  dfsNodeFieldBack,
   initState,
   setChangeStatus,
   crossDatasources
@@ -1089,18 +1076,13 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
           ]"
         >
           <el-icon>
-            <Icon
-              ><component
-                class="svg-icon"
-                :is="ele.type !== 'sql' ? referenceTable : icon_sql_outlined"
-              ></component
-            ></Icon>
+            <Icon :name="ele.type !== 'sql' ? 'reference-table' : 'icon_sql_outlined'"></Icon>
           </el-icon>
           <span class="tableName">{{ ele.tableName }}</span>
           <span class="placeholder">拖拽表或自定义SQL至此处</span>
           <handle-more
             style="margin-left: auto"
-            :iconName="icon_moreVertical_outlined"
+            iconName="icon_more-vertical_outlined"
             :menuList="ele.type === 'sql' ? [...sqlMenu, ...menuList] : menuList"
             @handle-command="command => handleCommand(ele, command)"
           ></handle-more>
@@ -1122,7 +1104,7 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
           :style="{ borderColor: ele.sqlChangeFlag ? '#F54A45' : '' }"
         >
           <el-icon>
-            <Icon><component class="svg-icon" :is="iconName[ele.to.unionType]"></component></Icon>
+            <Icon :name="iconName[ele.to.unionType]"></Icon>
           </el-icon>
         </div>
       </foreignObject>
@@ -1138,15 +1120,15 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
     ></div>
     <div class="zero" v-if="!state.nodeList.length">
       <img :src="zeroNodeImg" alt="" />
-      <p>{{ t('data_set.on_the_left') }}</p>
-      <p>{{ t('data_set.a_data_set') }}</p>
+      <p>将左侧的数据表、自定义SQL</p>
+      <p>拖拽到这里创建数据集</p>
     </div>
   </div>
   <el-dialog
     v-model="dialogRename"
     :close-on-press-escape="false"
     :close-on-click-modal="false"
-    :title="t('data_set.rename_table')"
+    title="重命名表"
     width="420px"
   >
     <el-form
@@ -1157,7 +1139,7 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
     >
       <el-form-item
         prop="name"
-        :label="t('data_set.table_name')"
+        label="表名称"
         :rules="[
           {
             required: true,
@@ -1189,13 +1171,13 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
     <template #header v-if="currentNode">
       <div class="info-content">
         <div class="info">
-          <span class="label">{{ t('data_set.table_name_de') }}</span>
+          <span class="label">表名</span>
           <span :title="currentNode.tableName" class="name ellipsis">{{
             currentNode.tableName
           }}</span>
         </div>
         <div class="info">
-          <span class="label">{{ t('data_set.table_remarks') }}</span>
+          <span class="label">表备注</span>
           <span :title="currentNode.noteName" style="max-width: 240px" class="name ellipsis">{{
             currentNode.noteName || '-'
           }}</span>
@@ -1246,7 +1228,7 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
 .union-item-drawer {
   .ed-drawer__header {
     height: 82px;
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
 
     .ed-drawer__close-btn {
       top: 26px;
@@ -1289,7 +1271,7 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
   width: 100%;
   border: 1px solid #dee0e3;
   border-radius: 4px;
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-size: 14px;
   font-weight: 400;
   color: #1f2329;
@@ -1411,7 +1393,7 @@ const emits = defineEmits(['addComplete', 'joinEditor', 'updateAllfields', 'chan
   }
 
   p {
-    font-family: var(--de-custom_font, 'PingFang');
+    font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
     font-style: normal;
     font-weight: 400;
     font-size: 14px;

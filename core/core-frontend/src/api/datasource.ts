@@ -91,12 +91,6 @@ export const save = async (data = {}): Promise<Dataset> => {
   })
 }
 
-export const perDeleteDatasource = async (id): Promise<boolean> => {
-  return request.post({ url: `/datasource/perDelete/${id}`, data: {} }).then(res => {
-    return res?.data
-  })
-}
-
 export const update = async (data = {}): Promise<Dataset> => {
   return request.post({ url: '/datasource/update', data }).then(res => {
     return res?.data

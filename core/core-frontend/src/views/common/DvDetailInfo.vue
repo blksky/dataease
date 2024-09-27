@@ -1,7 +1,5 @@
 <template>
   <div class="info-card">
-    <div class="info-title">{{ `${dvInfo.type === 'dashboard' ? '仪表板' : '数据大屏'}ID` }}</div>
-    <div class="info-content">{{ dvInfo.id }}</div>
     <div v-if="dvInfo.creatorName" class="info-title">{{ t('visualization.create_by') }}</div>
     <div v-if="dvInfo.creatorName" class="info-content">{{ dvInfo.creatorName }}</div>
     <div class="info-title">{{ t('visualization.create_time') }}</div>
@@ -35,7 +33,7 @@ const timestampFormatDate = value => {
 
 <style lang="less" scoped>
 .info-card {
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-style: normal;
   padding-left: 4px;
   font-weight: 400;

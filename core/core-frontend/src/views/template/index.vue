@@ -18,7 +18,7 @@
     >
       <template #prefix>
         <el-icon>
-          <Icon name="de-search"><deSearch class="svg-icon" /></Icon>
+          <Icon name="de-search" />
         </el-icon>
       </template>
     </el-input>
@@ -56,9 +56,7 @@
                 v-if="!state.currentTemplateShowList.length && !state.templateFilterText"
                 class="custom-position"
               >
-                <Icon name="dv-empty"
-                  ><dvEmpty style="width: 125px; height: 125px" class="svg-icon"
-                /></Icon>
+                <Icon style="width: 125px; height: 125px" name="dv-empty" />
                 <span style="margin-top: 8px; font-size: 14px"> 暂无模板 </span>
               </el-row>
 
@@ -67,9 +65,7 @@
                 v-if="!currentTemplateShowListComputed.length && state.templateFilterText"
                 class="custom-position"
               >
-                <Icon name="dv-nothing"
-                  ><dvNothing style="width: 125px; height: 125px" class="svg-icon"
-                /></Icon>
+                <Icon style="width: 125px; height: 125px" name="dv-nothing" />
                 <span style="margin-top: 8px; font-size: 14px"> 没有找到相关模板 </span>
               </el-row>
 
@@ -101,9 +97,7 @@
     </div>
     <div class="container-sys-param" v-show="!state.templateCategories.length">
       <el-row style="height: 100%" class="custom-position">
-        <Icon name="dv-empty"
-          ><dvEmpty style="width: 125px; height: 125px" class="svg-icon"
-        /></Icon>
+        <Icon style="width: 125px; height: 125px" name="dv-empty" />
         <span style="margin-top: 8px; font-size: 14px">
           <el-button
             style="float: right"
@@ -189,9 +183,6 @@
 </template>
 
 <script lang="ts" setup>
-import deSearch from '@/assets/svg/de-search.svg'
-import dvEmpty from '@/assets/svg/dv-empty.svg'
-import dvNothing from '@/assets/svg/dv-nothing.svg'
 import {
   save,
   templateDelete,
@@ -595,7 +586,7 @@ onMounted(() => {
     .active-template {
       height: 56px;
       padding: 0px 24px;
-      font-family: var(--de-custom_font, 'PingFang');
+      font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
       font-style: normal;
       font-weight: 500;
       font-size: 16px;
@@ -621,7 +612,7 @@ onMounted(() => {
 .router-title {
   color: #1f2329;
   font-feature-settings: 'clig' off, 'liga' off;
-  font-family: var(--de-custom_font, 'PingFang');
+  font-family: '阿里巴巴普惠体 3.0 55 Regular L3';
   font-size: 20px;
   font-style: normal;
   font-weight: 500;

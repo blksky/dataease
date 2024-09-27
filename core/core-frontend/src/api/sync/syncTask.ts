@@ -109,7 +109,6 @@ export interface ITarget {
   property: ITargetProperty
   incrementSync: string
   incrementField: string
-  incrementFieldType: string
 }
 
 export class ITaskInfoRes {
