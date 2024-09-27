@@ -191,7 +191,7 @@ public class XpackShareManage {
     }
 
     public XpackShareProxyVO proxyInfo(XpackShareProxyRequest request) {
-        boolean inIframeError = request.isInIframe() && !LicenseUtil.licenseValid();
+        boolean inIframeError = false;// request.isInIframe() && !LicenseUtil.licenseValid();
         if (inIframeError) {
             return new XpackShareProxyVO();
         }
