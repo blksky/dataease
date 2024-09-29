@@ -231,6 +231,7 @@ const clearCanvas = () => {
 
 const backToMain = () => {
   const backUrl = getSearchParams().get('backUrl')
+  const isBackUrl = !!backUrl
   let url = '#/panel/index'
   if (backUrl) {
     url = backUrl
@@ -244,15 +245,15 @@ const backToMain = () => {
       autofocus: false,
       showClose: false
     }).then(() => {
-      backHandler(url)
+      backHandler(url, isBackUrl)
     })
   } else {
-    backHandler(url)
+    backHandler(url, isBackUrl)
   }
 }
 const embeddedStore = useEmbedded()
 
-const backHandler = (url: string) => {
+const backHandler = (url: string, isBackUrl?: boolean) => {
   if (isEmbedded.value) {
     embeddedStore.clearState()
     useEmitt().emitter.emit('changeCurrentComponent', 'DashboardPanel')
@@ -270,7 +271,11 @@ const backHandler = (url: string) => {
     return
   }
   wsCache.delete('DE-DV-CATCH-' + dvInfo.value.id)
-  window.open(url, '_self')
+  if (isBackUrl) {
+    window.top.location.href = url
+  } else {
+    window.open(url, '_self')
+  }
 }
 
 const multiplexingCanvasOpen = () => {
