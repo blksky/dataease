@@ -35,7 +35,7 @@ const userViewGroup = ref<InstanceType<typeof ElScrollbar>>()
 
 const state = reactive({
   curCategory: 'quota',
-  chartGroupList: CHART_TYPE_CONFIGS
+  chartGroupList: CHART_TYPE_CONFIGS()
 })
 
 const scrollTo = offsetTop => {

@@ -1,6 +1,7 @@
 import { useI18n } from '@/hooks/web/useI18n'
 import { deepCopy } from '@/utils/utils'
 import { formatterItem } from '@/views/chart/components/js/formatter'
+
 const { t } = useI18n()
 
 export const DEFAULT_COLOR_CASE: DeepPartial<ChartAttr> = {
@@ -1113,365 +1114,368 @@ export const DEFAULT_MAP = {
   lineAnimateTrailLength: 0.1
 }
 
-export const CHART_TYPE_CONFIGS = [
-  {
-    category: 'quota',
-    title: t('chart.chart_type_quota'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'quota',
-        value: 'gauge',
-        title: t('chart.chart_gauge'),
-        icon: 'gauge'
-      },
-      {
-        render: 'antv',
-        category: 'quota',
-        value: 'liquid',
-        title: t('chart.chart_liquid'),
-        icon: 'liquid'
-      },
-      {
-        render: 'custom',
-        category: 'quota',
-        value: 'indicator',
-        title: t('chart.chart_indicator'),
-        icon: 'indicator'
-      }
-    ]
-  },
-  {
-    category: 'table',
-    title: t('chart.chart_type_table'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'table',
-        value: 'table-info',
-        title: t('chart.chart_table_info'),
-        icon: 'table-info'
-      },
-      {
-        render: 'antv',
-        category: 'table',
-        value: 'table-normal',
-        title: t('chart.chart_table_normal'),
-        icon: 'table-normal'
-      },
-      {
-        render: 'antv',
-        category: 'table',
-        value: 'table-pivot',
-        title: t('chart.chart_table_pivot'),
-        icon: 'table-pivot'
-      }
-    ]
-  },
-  {
-    category: 'trend',
-    title: t('chart.chart_type_trend'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'trend',
-        value: 'line',
-        title: t('chart.chart_line'),
-        icon: 'line'
-      },
-      {
-        render: 'antv',
-        category: 'trend',
-        value: 'area',
-        title: t('chart.chart_area'),
-        icon: 'area'
-      },
-      {
-        render: 'antv',
-        category: 'trend',
-        value: 'area-stack',
-        title: t('chart.chart_area_stack'),
-        icon: 'area-stack'
-      }
-    ]
-  },
-  {
-    category: 'compare',
-    title: t('chart.chart_type_compare'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar',
-        title: t('chart.chart_bar'),
-        icon: 'bar'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar-stack',
-        title: t('chart.chart_bar_stack'),
-        icon: 'bar-stack'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'percentage-bar-stack',
-        title: t('chart.chart_percentage_bar_stack'),
-        icon: 'percentage-bar-stack'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar-group',
-        title: t('chart.chart_bar_group'),
-        icon: 'bar-group'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar-group-stack',
-        title: t('chart.chart_bar_group_stack'),
-        icon: 'bar-group-stack'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'waterfall',
-        title: t('chart.chart_waterfall'),
-        icon: 'waterfall'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar-horizontal',
-        title: t('chart.chart_bar_horizontal'),
-        icon: 'bar-horizontal'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar-stack-horizontal',
-        title: t('chart.chart_bar_stack_horizontal'),
-        icon: 'bar-stack-horizontal'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'percentage-bar-stack-horizontal',
-        title: t('chart.chart_percentage_bar_stack_horizontal'),
-        icon: 'percentage-bar-stack-horizontal'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bar-range',
-        title: t('chart.chart_bar_range'),
-        icon: 'bar-range'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'bidirectional-bar',
-        title: t('chart.chart_bidirectional_bar'),
-        icon: 'bidirectional-bar'
-      },
-      {
-        render: 'antv',
-        category: 'compare',
-        value: 'progress-bar',
-        title: t('chart.chart_progress_bar'),
-        icon: 'progress-bar'
-      },
-      {
-        render: 'antv',
-        category: 'trend',
-        value: 'stock-line',
-        title: 'K 线图',
-        icon: 'stock-line'
-      }
-    ]
-  },
-  {
-    category: 'distribute',
-    title: t('chart.chart_type_distribute'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'pie',
-        title: t('chart.chart_pie'),
-        icon: 'pie'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'pie-donut',
-        title: t('chart.chart_pie_donut'),
-        icon: 'pie-donut'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'pie-rose',
-        title: t('chart.chart_pie_rose'),
-        icon: 'pie-rose'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'pie-donut-rose',
-        title: t('chart.chart_pie_donut_rose'),
-        icon: 'pie-donut-rose'
-      },
-      {
-        render: 'antv',
-        category: 'chart.chart_type_distribute',
-        value: 'radar',
-        title: t('chart.chart_radar'),
-        icon: 'radar'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'treemap',
-        title: t('chart.chart_treemap'),
-        icon: 'treemap'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'word-cloud',
-        title: t('chart.chart_word_cloud'),
-        icon: 'word-cloud'
-      }
-    ]
-  },
-  {
-    category: 'map',
-    title: t('chart.chart_type_space'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'map',
-        value: 'map',
-        title: t('chart.chart_map'),
-        icon: 'map'
-      },
-      {
-        render: 'antv',
-        category: 'map',
-        value: 'bubble-map',
-        title: t('chart.chart_bubble_map'),
-        icon: 'bubble-map'
-      },
-      {
-        render: 'antv',
-        category: 'map',
-        value: 'flow-map',
-        title: t('chart.chart_flow_map'),
-        icon: 'flow-map'
-      },
-      {
-        render: 'antv',
-        category: 'map',
-        value: 'heat-map',
-        title: t('chart.chart_heat_map'),
-        icon: 'heat-map'
-      },
-      {
-        render: 'antv',
-        category: 'map',
-        value: 'symbolic-map',
-        title: '符号地图',
-        icon: 'symbolic-map'
-      }
-    ]
-  },
-  {
-    category: 'relation',
-    title: t('chart.chart_type_relation'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'scatter',
-        title: t('chart.chart_scatter'),
-        icon: 'scatter'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'quadrant',
-        title: t('chart.chart_quadrant'),
-        icon: 'quadrant'
-      },
-      {
-        render: 'antv',
-        category: 'distribute',
-        value: 'funnel',
-        title: t('chart.chart_funnel'),
-        icon: 'funnel'
-      },
-      {
-        render: 'antv',
-        category: 'relation',
-        value: 'sankey',
-        title: t('chart.chart_sankey'),
-        icon: 'sankey'
-      }
-    ]
-  },
-  {
-    category: 'dual_axes',
-    title: t('chart.chart_type_dual_axes'),
-    display: 'show',
-    details: [
-      {
-        render: 'antv',
-        category: 'dual_axes',
-        value: 'chart-mix',
-        title: t('chart.chart_mix'),
-        icon: 'chart-mix'
-      },
-      {
-        render: 'antv',
-        category: 'dual_axes',
-        value: 'chart-mix-group',
-        title: t('chart.chart_mix_group_column'),
-        icon: 'chart-mix-group'
-      },
-      {
-        render: 'antv',
-        category: 'dual_axes',
-        value: 'chart-mix-stack',
-        title: t('chart.chart_mix_stack_column'),
-        icon: 'chart-mix-stack'
-      }
-    ]
-  },
-  {
-    category: 'other',
-    title: '富文本',
-    display: 'hidden',
-    details: [
-      {
-        render: 'custom',
-        category: 'quota',
-        value: 'rich-text',
-        title: '富文本',
-        icon: 'rich-text'
-      }
-    ]
-  }
-]
+export const CHART_TYPE_CONFIGS = () => {
+  const { t } = useI18n()
+  return [
+    {
+      category: 'quota',
+      title: t('chart.chart_type_quota'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'quota',
+          value: 'gauge',
+          title: t('chart.chart_gauge'),
+          icon: 'gauge'
+        },
+        {
+          render: 'antv',
+          category: 'quota',
+          value: 'liquid',
+          title: t('chart.chart_liquid'),
+          icon: 'liquid'
+        },
+        {
+          render: 'custom',
+          category: 'quota',
+          value: 'indicator',
+          title: t('chart.chart_indicator'),
+          icon: 'indicator'
+        }
+      ]
+    },
+    {
+      category: 'table',
+      title: t('chart.chart_type_table'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'table',
+          value: 'table-info',
+          title: t('chart.chart_table_info'),
+          icon: 'table-info'
+        },
+        {
+          render: 'antv',
+          category: 'table',
+          value: 'table-normal',
+          title: t('chart.chart_table_normal'),
+          icon: 'table-normal'
+        },
+        {
+          render: 'antv',
+          category: 'table',
+          value: 'table-pivot',
+          title: t('chart.chart_table_pivot'),
+          icon: 'table-pivot'
+        }
+      ]
+    },
+    {
+      category: 'trend',
+      title: t('chart.chart_type_trend'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'trend',
+          value: 'line',
+          title: t('chart.chart_line'),
+          icon: 'line'
+        },
+        {
+          render: 'antv',
+          category: 'trend',
+          value: 'area',
+          title: t('chart.chart_area'),
+          icon: 'area'
+        },
+        {
+          render: 'antv',
+          category: 'trend',
+          value: 'area-stack',
+          title: t('chart.chart_area_stack'),
+          icon: 'area-stack'
+        }
+      ]
+    },
+    {
+      category: 'compare',
+      title: t('chart.chart_type_compare'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar',
+          title: t('chart.chart_bar'),
+          icon: 'bar'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar-stack',
+          title: t('chart.chart_bar_stack'),
+          icon: 'bar-stack'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'percentage-bar-stack',
+          title: t('chart.chart_percentage_bar_stack'),
+          icon: 'percentage-bar-stack'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar-group',
+          title: t('chart.chart_bar_group'),
+          icon: 'bar-group'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar-group-stack',
+          title: t('chart.chart_bar_group_stack'),
+          icon: 'bar-group-stack'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'waterfall',
+          title: t('chart.chart_waterfall'),
+          icon: 'waterfall'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar-horizontal',
+          title: t('chart.chart_bar_horizontal'),
+          icon: 'bar-horizontal'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar-stack-horizontal',
+          title: t('chart.chart_bar_stack_horizontal'),
+          icon: 'bar-stack-horizontal'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'percentage-bar-stack-horizontal',
+          title: t('chart.chart_percentage_bar_stack_horizontal'),
+          icon: 'percentage-bar-stack-horizontal'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bar-range',
+          title: t('chart.chart_bar_range'),
+          icon: 'bar-range'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'bidirectional-bar',
+          title: t('chart.chart_bidirectional_bar'),
+          icon: 'bidirectional-bar'
+        },
+        {
+          render: 'antv',
+          category: 'compare',
+          value: 'progress-bar',
+          title: t('chart.chart_progress_bar'),
+          icon: 'progress-bar'
+        },
+        {
+          render: 'antv',
+          category: 'trend',
+          value: 'stock-line',
+          title: 'K 线图',
+          icon: 'stock-line'
+        }
+      ]
+    },
+    {
+      category: 'distribute',
+      title: t('chart.chart_type_distribute'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'pie',
+          title: t('chart.chart_pie'),
+          icon: 'pie'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'pie-donut',
+          title: t('chart.chart_pie_donut'),
+          icon: 'pie-donut'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'pie-rose',
+          title: t('chart.chart_pie_rose'),
+          icon: 'pie-rose'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'pie-donut-rose',
+          title: t('chart.chart_pie_donut_rose'),
+          icon: 'pie-donut-rose'
+        },
+        {
+          render: 'antv',
+          category: 'chart.chart_type_distribute',
+          value: 'radar',
+          title: t('chart.chart_radar'),
+          icon: 'radar'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'treemap',
+          title: t('chart.chart_treemap'),
+          icon: 'treemap'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'word-cloud',
+          title: t('chart.chart_word_cloud'),
+          icon: 'word-cloud'
+        }
+      ]
+    },
+    {
+      category: 'map',
+      title: t('chart.chart_type_space'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'map',
+          value: 'map',
+          title: t('chart.chart_map'),
+          icon: 'map'
+        },
+        {
+          render: 'antv',
+          category: 'map',
+          value: 'bubble-map',
+          title: t('chart.chart_bubble_map'),
+          icon: 'bubble-map'
+        },
+        {
+          render: 'antv',
+          category: 'map',
+          value: 'flow-map',
+          title: t('chart.chart_flow_map'),
+          icon: 'flow-map'
+        },
+        {
+          render: 'antv',
+          category: 'map',
+          value: 'heat-map',
+          title: t('chart.chart_heat_map'),
+          icon: 'heat-map'
+        },
+        {
+          render: 'antv',
+          category: 'map',
+          value: 'symbolic-map',
+          title: '符号地图',
+          icon: 'symbolic-map'
+        }
+      ]
+    },
+    {
+      category: 'relation',
+      title: t('chart.chart_type_relation'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'scatter',
+          title: t('chart.chart_scatter'),
+          icon: 'scatter'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'quadrant',
+          title: t('chart.chart_quadrant'),
+          icon: 'quadrant'
+        },
+        {
+          render: 'antv',
+          category: 'distribute',
+          value: 'funnel',
+          title: t('chart.chart_funnel'),
+          icon: 'funnel'
+        },
+        {
+          render: 'antv',
+          category: 'relation',
+          value: 'sankey',
+          title: t('chart.chart_sankey'),
+          icon: 'sankey'
+        }
+      ]
+    },
+    {
+      category: 'dual_axes',
+      title: t('chart.chart_type_dual_axes'),
+      display: 'show',
+      details: [
+        {
+          render: 'antv',
+          category: 'dual_axes',
+          value: 'chart-mix',
+          title: t('chart.chart_mix'),
+          icon: 'chart-mix'
+        },
+        {
+          render: 'antv',
+          category: 'dual_axes',
+          value: 'chart-mix-group',
+          title: t('chart.chart_mix_group_column'),
+          icon: 'chart-mix-group'
+        },
+        {
+          render: 'antv',
+          category: 'dual_axes',
+          value: 'chart-mix-stack',
+          title: t('chart.chart_mix_stack_column'),
+          icon: 'chart-mix-stack'
+        }
+      ]
+    },
+    {
+      category: 'other',
+      title: '富文本',
+      display: 'hidden',
+      details: [
+        {
+          render: 'custom',
+          category: 'quota',
+          value: 'rich-text',
+          title: '富文本',
+          icon: 'rich-text'
+        }
+      ]
+    }
+  ]
+}
 
 export const DEFAULT_BASIC_STYLE: ChartBasicStyle = {
   alpha: 100,
@@ -1603,7 +1607,7 @@ export function getScaleValue(propValue, scale) {
 
 export function getViewConfig(name) {
   let viewConfigResult = null
-  CHART_TYPE_CONFIGS.forEach(category => {
+  CHART_TYPE_CONFIGS().forEach(category => {
     category.details.forEach(viewConfig => {
       if (viewConfig.value === name) {
         viewConfigResult = deepCopy(viewConfig)

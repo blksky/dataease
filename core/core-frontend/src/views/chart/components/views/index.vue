@@ -741,7 +741,7 @@ const showActionIcons = computed(() => {
   }
   return trackMenu.value.length > 0 || state.title_remark.show
 })
-const chartConfigs = ref(CHART_TYPE_CONFIGS)
+const chartConfigs = ref(CHART_TYPE_CONFIGS())
 const pluginLoaded = computed(() => {
   let result = false
   chartConfigs.value.forEach(cat => {
