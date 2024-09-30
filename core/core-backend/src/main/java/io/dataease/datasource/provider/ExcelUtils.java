@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dataease.api.ds.vo.ExcelFileData;
 import io.dataease.api.ds.vo.ExcelSheetData;
+import io.dataease.constant.StaticResourceConstants;
 import io.dataease.datasource.dao.auto.entity.CoreDatasource;
 import io.dataease.exception.DEException;
 import io.dataease.extensions.datasource.dto.DatasetTableDTO;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class ExcelUtils {
     public static final String UFEFF = "\uFEFF";
-    private static String path = "/opt/dataease2.0/data/excel/";
+    private static String path = StaticResourceConstants.USER_HOME + "/excel/";
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     private static  TypeReference<List<TableField>> TableFieldListTypeReference = new TypeReference<List<TableField>>() {

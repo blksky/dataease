@@ -10,6 +10,8 @@
 
     <persistence directory="/opt/dataease2.0/cache" />
 
+<!--    <persistence directory="/Users/zhangwenjun9/open-projects/dataease/dataease-files/cache" />-->
+
     <cache-template name="common-cache">
         <expiry>
             <none/>

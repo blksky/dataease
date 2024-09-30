@@ -9,6 +9,7 @@ import io.dataease.api.exportCenter.vo.ExportTaskDTO;
 import io.dataease.auth.bo.TokenUserBO;
 import io.dataease.chart.dao.auto.mapper.CoreChartViewMapper;
 import io.dataease.chart.server.ChartDataServer;
+import io.dataease.constant.StaticResourceConstants;
 import io.dataease.exception.DEException;
 import io.dataease.exportCenter.dao.auto.entity.CoreExportTask;
 import io.dataease.exportCenter.dao.auto.mapper.CoreExportTaskMapper;
@@ -59,7 +60,7 @@ public class ExportCenterManage {
     @Value("${export.dataset.limit:100000}")
     private int limit;
     private final static String DATA_URL_TITLE = "data:image/jpeg;base64,";
-    private static final String exportData_path = "/opt/dataease2.0/data/exportData/";
+    private static final String exportData_path = StaticResourceConstants.USER_HOME + "/exportData/";
     @Value("${extract.page.size:50000}")
     private Integer extractPageSize;
     static private List<String> STATUS = Arrays.asList("SUCCESS", "FAILED", "PENDING", "IN_PROGRESS", "ALL");

@@ -1,17 +1,24 @@
 package io.dataease.constant;
 
 import java.io.File;
+import org.springframework.stereotype.Component;
 
 import static io.dataease.utils.StaticResourceUtils.ensureSuffix;
 
 
 public class StaticResourceConstants {
 
+    public static String ROOT_HOME = "/opt/dataease2.0"; // "/Users/zhangwenjun9/open-projects/dataease/dataease-files";
+
     public static final String FILE_PROTOCOL = "file://";
 
     public static final String FILE_SEPARATOR = File.separator;
 
-    public static final String USER_HOME = "/opt/dataease2.0/data";
+    public static final String DRIVER_PATH = ensureSuffix(ROOT_HOME, FILE_SEPARATOR) + "drivers";
+
+    public static final String DRIVER_CUSTOM_PATH = ensureSuffix(ROOT_HOME, FILE_SEPARATOR) + "custom-drivers/";
+
+    public static final String USER_HOME = ensureSuffix(ROOT_HOME, FILE_SEPARATOR) + "data"; // "/opt/dataease2.0/data";
 
     public static String WORK_DIR = ensureSuffix(USER_HOME, FILE_SEPARATOR) + "static-resource" + FILE_SEPARATOR;
 

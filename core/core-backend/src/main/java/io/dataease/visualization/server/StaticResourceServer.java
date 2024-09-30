@@ -3,6 +3,7 @@ package io.dataease.visualization.server;
 
 import io.dataease.api.visualization.StaticResourceApi;
 import io.dataease.api.visualization.request.StaticResourceRequest;
+import io.dataease.constant.StaticResourceConstants;
 import io.dataease.exception.DEException;
 import io.dataease.utils.FileUtils;
 import io.dataease.utils.JsonUtil;
@@ -37,7 +38,7 @@ import java.util.Map;
 @RequestMapping("/staticResource")
 public class StaticResourceServer implements StaticResourceApi {
 
-    private final Path staticDir = Paths.get("/opt/dataease2.0/data/static-resource/");
+    private final Path staticDir = Paths.get(StaticResourceConstants.USER_HOME+ "/static-resource/");
 
     @Override
     public void upload(String fileId, MultipartFile file) {

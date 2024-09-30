@@ -5,6 +5,7 @@ import io.dataease.api.ds.DatasourceDriverApi;
 
 import io.dataease.api.ds.vo.DriveDTO;
 import io.dataease.api.ds.vo.DriveJarDTO;
+import io.dataease.constant.StaticResourceConstants;
 import io.dataease.datasource.dao.auto.entity.CoreDriver;
 import io.dataease.datasource.dao.auto.entity.CoreDriverJar;
 import io.dataease.datasource.dao.auto.mapper.CoreDriverJarMapper;
@@ -31,7 +32,7 @@ import java.util.*;
 @RequestMapping("/datasourceDriver")
 public class DatasourceDriverServer implements DatasourceDriverApi {
 
-    private final static String DRIVER_PATH = "/opt/dataease2.0/custom-drivers/";
+    private final static String DRIVER_PATH = StaticResourceConstants.DRIVER_CUSTOM_PATH;
 
     @Resource
     private CoreDriverMapper coreDriverMapper;

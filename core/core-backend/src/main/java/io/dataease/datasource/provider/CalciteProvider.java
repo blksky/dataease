@@ -2,6 +2,7 @@ package io.dataease.datasource.provider;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.dataease.commons.utils.CommonThreadPool;
+import io.dataease.constant.StaticResourceConstants;
 import io.dataease.dataset.utils.FieldUtils;
 import io.dataease.datasource.dao.auto.entity.CoreDatasource;
 import io.dataease.datasource.dao.auto.entity.CoreDriver;
@@ -51,8 +52,8 @@ public class CalciteProvider extends Provider {
     private EngineManage engineManage;
     protected ExtendedJdbcClassLoader extendedJdbcClassLoader;
     private Map<Long, ExtendedJdbcClassLoader> customJdbcClassLoaders = new HashMap<>();
-    private final String FILE_PATH = "/opt/dataease2.0/drivers";
-    private final String CUSTOM_PATH = "/opt/dataease2.0/custom-drivers/";
+    private final String FILE_PATH = StaticResourceConstants.DRIVER_PATH;
+    private final String CUSTOM_PATH = StaticResourceConstants.DRIVER_CUSTOM_PATH;
     private static String split = "DE";
     @Resource
     private CommonThreadPool commonThreadPool;

@@ -1,5 +1,6 @@
 package io.dataease.visualization.utils;
 
+import io.dataease.constant.StaticResourceConstants;
 import io.dataease.engine.constant.DeTypeConstants;
 import io.dataease.utils.FileUtils;
 import io.dataease.utils.LogUtil;
@@ -20,7 +21,7 @@ import java.util.regex.Pattern;
 public class VisualizationExcelUtils {
 
     private static final String suffix = ".xlsx";
-    private static final String BASE_ROOT = "/opt/dataease2.0/data/report/";
+    private static final String BASE_ROOT = StaticResourceConstants.USER_HOME + "/report/";
 
     public static File exportExcel(List<ExcelSheetModel> sheets, String fileName, String folderId) throws Exception {
         AtomicReference<String> realFileName = new AtomicReference<>(fileName);

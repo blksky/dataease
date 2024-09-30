@@ -16,4 +16,7 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:mybatis/*.xml
 
+dataease:
+  home-path: /Users/zhangwenjun9/open-projects/dataease/dataease-files
+
 

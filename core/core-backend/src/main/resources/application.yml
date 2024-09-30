@@ -48,6 +48,7 @@ dataease:
   version: '@project.version@'
   xpack-front-distributed: true
   origin-list: http://192.168.1.9:9080
+  home-path: /Users/zhangwenjun9/open-projects/dataease/dataease-files
   apisix-api:
     domain: http://192.168.1.9:9180
     key: edd1c9f034335f136f87ad84b625c8f1
