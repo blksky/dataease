@@ -207,6 +207,7 @@ const { canvasStyleData } = storeToRefs(dvMainStore)
 const emit = defineEmits(['reload'])
 import { guid } from '@/views/visualized/data/dataset/form/util.js'
 import SubjectEditDialog from '@/components/dashboard/subject-setting/pre-subject/SubjectEditDialog.vue'
+import { FrameMsgUtils } from '@/utils/frameMsgUtils'
 
 const subjectEditDialogRef = ref(null)
 const props = defineProps({
@@ -251,6 +252,7 @@ const querySubjectWithGroup = () => {
     .then(response => {
       state.sliders = []
       state.sliders = response.data
+      FrameMsgUtils.REPORT_THEME_LIST = response.data
       state.slidersLoading = false
       if (state.sliders.length < state.currentIndex) {
         state.currentIndex = 1
