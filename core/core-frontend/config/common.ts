@@ -1,5 +1,6 @@
 import path from 'path'
 import { resolve } from 'path'
+import qiankun from 'vite-plugin-qiankun'
 import Vue from '@vitejs/plugin-vue'
 import eslintPlugin from 'vite-plugin-eslint'
 import VueJsx from '@vitejs/plugin-vue-jsx'
@@ -22,6 +23,9 @@ export default {
   base: './',
   plugins: [
     Vue(),
+    qiankun('vue3', {
+      useDevMode: true
+    }),
     svgLoader({
       svgo: false,
       defaultImport: 'component' // or 'raw'
