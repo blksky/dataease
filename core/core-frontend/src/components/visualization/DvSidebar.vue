@@ -3,6 +3,7 @@ import { computed, toRefs } from 'vue'
 import { ElIcon } from 'element-plus-secondary'
 import { dvMainStoreWithOut } from '@/store/modules/data-visualization/dvMain'
 import { storeToRefs } from 'pinia'
+import { getSearchParams } from '@/utils/login'
 const dvMainStore = dvMainStoreWithOut()
 const { canvasCollapse } = storeToRefs(dvMainStore)
 
@@ -44,6 +45,10 @@ const widthShow = computed(() => `${canvasCollapse.value[sideName.value] ? 36 : 
 const slideStyle = computed(() => {
   return { '--de-scroll-width': props.scrollWidth + 'px', width: widthShow.value }
 })
+
+if (getSearchParams().get('defaultSide') === 'true') {
+  canvasCollapse.value['defaultSide'] = true
+}
 </script>
 
 <template>

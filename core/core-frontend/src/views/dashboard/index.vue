@@ -205,6 +205,7 @@ onMounted(async () => {
     }
     nextTick(() => {
       dvMainStore.createInit('dashboard', null, pid, watermarkBaseInfo, preName)
+
       // 从模板新建
       if (createType === 'template') {
         wsCache.delete('de-template-data')
