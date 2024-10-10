@@ -3,6 +3,7 @@ import { snapshotStoreWithOut } from '@/store/modules/data-visualization/snapsho
 import { storeToRefs } from 'pinia'
 import { adaptCurThemeCommonStyleAll } from '@/utils/canvasStyle'
 import { useEmitt } from '@/hooks/web/useEmitt'
+import { querySubjectWithGroupApi } from '@/api/visualization/dataVisualization'
 
 export const EnumFrameMessageType = {
   INIT: 'INIT',
@@ -23,7 +24,7 @@ export class FrameMsgUtils {
    */
   static initReceiveMessage(callback = null) {
     try {
-      const receiveMessage = event => {
+      const receiveMessage = async event => {
         const { type } = event.data || {}
         const dvMainStore = dvMainStoreWithOut()
         const snapshotStore = snapshotStoreWithOut()
@@ -31,6 +32,10 @@ export class FrameMsgUtils {
         if (type === EnumFrameMessageType.CHANGE_THEME) {
           const { canvasStyleData } = storeToRefs(dvMainStore)
           const currentThemeId = canvasStyleData.value.themeId
+          if (!FrameMsgUtils.REPORT_THEME_LIST?.length) {
+            const response = await querySubjectWithGroupApi({})
+            FrameMsgUtils.REPORT_THEME_LIST = response.data
+          }
           const otherTheme = FrameMsgUtils.REPORT_THEME_LIST?.[0]?.find(
             d => d.id !== currentThemeId
           )
